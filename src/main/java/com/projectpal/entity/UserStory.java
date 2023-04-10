@@ -15,6 +15,7 @@ public class UserStory {
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
+	
 	@NonNull
 	private String name;
 
@@ -25,6 +26,9 @@ public class UserStory {
 	
 	@ManyToOne
 	private Epic epic;
+	
+	@ManyToOne
+	private Sprint sprint;
 	
 	//Getters and Setters
 

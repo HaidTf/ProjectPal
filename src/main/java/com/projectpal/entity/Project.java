@@ -2,7 +2,6 @@ package com.projectpal.entity;
 
 import org.springframework.lang.NonNull;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -21,7 +20,6 @@ public class Project {
 	private String name;
 
 	private String description;
-	
 	
 	@OneToOne
 	private User user;

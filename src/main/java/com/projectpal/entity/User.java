@@ -17,7 +17,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

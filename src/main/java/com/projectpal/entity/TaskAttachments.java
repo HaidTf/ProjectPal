@@ -20,7 +20,7 @@ public class TaskAttachments {
 	@NonNull
 	private String fileName;
 
-	@ManyToOne(cascade = { CascadeType.REMOVE, CascadeType.REMOVE })
+	@ManyToOne(cascade = { CascadeType.REMOVE, CascadeType.PERSIST })
 	private Task task;
 
 	// Getters and Setters

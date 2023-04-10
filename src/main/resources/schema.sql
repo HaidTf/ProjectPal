@@ -1,4 +1,7 @@
- create table epic (
+
+--CREATIONS:
+
+create table epic (
        id bigint not null,
         description varchar(255),
         name varchar(255),
@@ -71,9 +74,11 @@
         name varchar(255),
         priority TINYINT,
         epic_id bigint,
+        sprint_id bigint,
         primary key (id)
     ) ;
 
+    --ALTERS:
     
     alter table user 
        add constraint UK-email unique (email);
@@ -123,3 +128,19 @@
        add constraint FK-epic-id
        foreign key (epic_id) 
        references epic (id);
+       
+       alter table user_story 
+       add constraint FK-sprint-id
+       foreign key (sprint_id) 
+       references sprint(id);
+       
+       --TRIGGERS:
+       
+	 CREATE TRIGGER delete_user_stories
+			AFTER DELETE ON project
+			FOR EACH ROW
+			BEGIN
+			  DELETE FROM user_story WHERE epic_id IN (
+			    SELECT id FROM epic WHERE project_id = OLD.id
+			  );
+			END;
