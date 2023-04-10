@@ -18,10 +18,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
-@Builder
+@NoArgsConstructor
 @Entity
 public class User implements UserDetails {
+	
+	public User(String username, String email, String password, Role role) {
+		this.username = username;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+	}
 
 	@Transient
 	private static final long serialVersionUID = 1234L;
