@@ -2,15 +2,23 @@ package com.projectpal.entity;
 
 import org.springframework.lang.NonNull;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Entity
 public class Project {
+
+	public Project(String name, String description, User user) {
+		this.name = name;
+		this.description = description;
+		this.user = user;
+	}
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
@@ -21,7 +29,8 @@ public class Project {
 
 	private String description;
 	
-	@OneToOne
+	@OneToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "owner_id")
 	private User user;
 	
 	//Getters and Setters

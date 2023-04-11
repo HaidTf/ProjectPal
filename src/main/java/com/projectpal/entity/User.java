@@ -16,6 +16,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
@@ -23,7 +24,8 @@ import lombok.NoArgsConstructor;
 @Entity
 public class User implements UserDetails {
 	
-	public User(String username, String email, String password, Role role) {
+	public User(String username, String email, String password, Role role,Project project) {
+		this.project = project;
 		this.username = username;
 		this.email = email;
 		this.password = password;
@@ -51,6 +53,9 @@ public class User implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	@NonNull
 	private Role role;
+	
+	@ManyToOne
+	private Project project;
 
 	// Getters and Setters
 
@@ -125,6 +130,14 @@ public class User implements UserDetails {
 
 	public void setRole(Role role) {
 		this.role = role;
+	}
+
+	public Project getProject() {
+		return project;
+	}
+
+	public void setProject(Project project) {
+		this.project = project;
 	}
 
 }
