@@ -2,16 +2,23 @@ package com.projectpal.entity;
 
 import org.springframework.lang.NonNull;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.NoArgsConstructor;
+
 @NoArgsConstructor
 @Entity
 public class Epic {
+
+	public Epic(String name, String description, Byte priority, Project project) {
+		this.name = name;
+		this.description = description;
+		this.priority = priority;
+		this.project = project;
+	}
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
@@ -24,7 +31,7 @@ public class Epic {
 	@Column(columnDefinition = "TINYINT")
 	private Byte priority;
 	
-	@ManyToOne(cascade = CascadeType.REMOVE)
+	@ManyToOne
 	private Project project;
 	
 	//Getters and Setters

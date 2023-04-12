@@ -1,17 +1,33 @@
 package com.projectpal.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.lang.NonNull;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.NoArgsConstructor;
-@NoArgsConstructor
+import jakarta.persistence.OneToMany;
+
+
 @Entity
 public class UserStory {
+	public UserStory() {
+		tasks = new ArrayList<Task>();
+	}
 	
+	public UserStory(String name, String description, Byte priority, Epic epic, Sprint sprint) {
+		this.name = name;
+		this.description = description;
+		this.priority = priority;
+		this.epic = epic;
+		this.sprint = sprint;
+	}
+
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
@@ -29,6 +45,9 @@ public class UserStory {
 	
 	@ManyToOne
 	private Sprint sprint;
+	
+	@OneToMany(mappedBy = "userStory",cascade = CascadeType.REMOVE)
+	private List<Task> tasks;
 	
 	//Getters and Setters
 
@@ -70,6 +89,26 @@ public class UserStory {
 
 	public void setPriority(Byte priority) {
 		this.priority = priority;
+	}
+
+	public Sprint getSprint() {
+		return sprint;
+	}
+
+	public void setSprint(Sprint sprint) {
+		this.sprint = sprint;
+	}
+
+	public List<Task> getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(List<Task> tasks) {
+		this.tasks = tasks;
+	}
+	
+	public void addTask(Task task) {
+		tasks.add(task);
 	}
 
 	

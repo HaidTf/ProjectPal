@@ -1,10 +1,9 @@
 package com.projectpal.entity;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.springframework.lang.NonNull;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -12,9 +11,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.NoArgsConstructor;
+
 @NoArgsConstructor
 @Entity
 public class Sprint {
+	
+	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate, Project project) {
+		this.name = name;
+		this.description = description;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.project = project;
+	}
+
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
@@ -25,11 +34,11 @@ public class Sprint {
 	private String description;
 
 	@Temporal(TemporalType.DATE)
-	private Date startDate;
+	private LocalDate startDate;
 	@Temporal(TemporalType.DATE)
-	private Date endDate;
+	private LocalDate endDate;
 
-	@ManyToOne(cascade = CascadeType.REMOVE)
+	@ManyToOne
 	private Project project;
 	
 	//Getters and Setters
@@ -66,19 +75,19 @@ public class Sprint {
 		this.description = description;
 	}
 
-	public Date getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(Date startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public Date getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(Date endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 

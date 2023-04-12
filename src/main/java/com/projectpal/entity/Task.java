@@ -1,5 +1,8 @@
 package com.projectpal.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.lang.NonNull;
 
 import jakarta.persistence.CascadeType;
@@ -8,11 +11,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.OneToMany;
 
-@NoArgsConstructor
+
 @Entity
 public class Task {
+
+	public Task(String name, String description, Byte priority, UserStory userStory, User assignedUser) {
+		this.name = name;
+		this.description = description;
+		this.priority = priority;
+		this.userStory = userStory;
+		this.assignedUser = assignedUser;
+		taskAttachments = new ArrayList<TaskAttachment>();
+	}
+	
+	public Task() {
+		taskAttachments = new ArrayList<TaskAttachment>();
+	}
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
@@ -25,11 +41,14 @@ public class Task {
 	@Column(columnDefinition = "TINYINT")
 	private Byte priority;
 
-	@ManyToOne(cascade = CascadeType.REMOVE)
+	@ManyToOne
 	private UserStory userStory;
-	
+
 	@ManyToOne
 	private User assignedUser;
+
+	@OneToMany(mappedBy = "task", cascade = {CascadeType.PERSIST,CascadeType.REMOVE})
+	private List<TaskAttachment> taskAttachments;
 
 	// Getters and Setters
 
@@ -63,6 +82,34 @@ public class Task {
 
 	public void setUserStory(UserStory userStory) {
 		this.userStory = userStory;
+	}
+
+	public Byte getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Byte priority) {
+		this.priority = priority;
+	}
+
+	public User getAssignedUser() {
+		return assignedUser;
+	}
+
+	public void setAssignedUser(User assignedUser) {
+		this.assignedUser = assignedUser;
+	}
+
+	public List<TaskAttachment> getTaskAttachments() {
+		return taskAttachments;
+	}
+
+	public void setTaskAttachments(List<TaskAttachment> taskAttachments) {
+		this.taskAttachments = taskAttachments;
+	}
+
+	public void addTaskAttachment(TaskAttachment taskAttachment) {
+		taskAttachments.add(taskAttachment);
 	}
 
 }
