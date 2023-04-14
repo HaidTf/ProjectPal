@@ -23,7 +23,7 @@ create table epic (
        id bigint not null,
         description varchar(255),
         name varchar(255),
-        user_id bigint,
+        owner_id bigint,
         primary key (id)
     ) ;
 
@@ -50,7 +50,7 @@ create table epic (
     ) ;
 
     
-    create table task_attachments (
+    create table task_attachment (
        id bigint not null,
         file_name varchar(255),
         task_id bigint,
@@ -58,12 +58,13 @@ create table epic (
     ) ;
 
     
-    create table user (
+    create table users (
        id bigint not null,
         email varchar(100),
         password varchar(100),
         role varchar(10),
         username varchar(100),
+        project_id bigint,
         primary key (id)
     ) ;
 
@@ -80,67 +81,88 @@ create table epic (
 
     --ALTERS:
     
-    alter table user 
-       add constraint UK-email unique (email);
+    alter table users 
+       add constraint UK_email unique (email);
 
     
-    alter table user 
-       add constraint UK-username unique (username);
+    alter table users
+       add constraint UK_username unique (username);
+       
+       alter table users
+       	add constraint FKu_project_id
+       	foreign key(project_id)
+       	references project(id);
 
     
     alter table epic 
-       add constraint FK-project-id
+       add constraint FKe_project_id
        foreign key (project_id) 
        references project (id);
 
     
     alter table project 
-       add constraint FK-users-id
-       foreign key (user_id) 
-       references user (id);
+       add constraint FKp_users_id
+       foreign key (owner_id) 
+       references users (id);
 
     
     alter table sprint 
-       add constraint FK-project-id
+       add constraint FKs_project_id
        foreign key (project_id) 
        references project (id);
 
     
     alter table task 
-       add constraint FK-users-id
-       foreign key (owner_id) 
-       references user (id);
+       add constraint FKt_users_id
+       foreign key (assigned_user_id) 
+       references users (id);
 
     
     alter table task 
-       add constraint FK-usersStory-id
+       add constraint FK_usersStory_id
        foreign key (user_story_id) 
        references user_story (id);
 
     
-    alter table task_attachments 
-       add constraint FK-task-id
+    alter table task_attachment 
+       add constraint FK_task_id
        foreign key (task_id) 
        references task (id);
 
     
     alter table user_story 
-       add constraint FK-epic-id
+       add constraint FK_epic_id
        foreign key (epic_id) 
        references epic (id);
        
        alter table user_story 
-       add constraint FK-sprint-id
+       add constraint FK_sprint_id
        foreign key (sprint_id) 
        references sprint(id);
        
        --TRIGGERS:
        
-	 CREATE TRIGGER delete_user_stories
+	/*  CREATE TRIGGER delete_user_stories
 			AFTER DELETE ON project
 			FOR EACH ROW
 			BEGIN
 			  DELETE FROM user_story WHERE epic_id IN (
 			    SELECT id FROM epic WHERE project_id = OLD.id
 			  );
-			END;
+			END;  */
+			
+/* DELIMITER //
+
+CREATE TRIGGER delete_user_stories
+    BEFORE DELETE ON epic
+    FOR EACH ROW
+    BEGIN
+        DELETE FROM user_story WHERE epic_id IN (
+            SELECT id FROM epic WHERE project_id = OLD.project_id
+        );
+    END//
+    
+    DELIMITER ; */
+    
+    
+    
