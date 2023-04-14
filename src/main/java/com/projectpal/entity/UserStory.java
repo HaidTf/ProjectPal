@@ -26,6 +26,8 @@ public class UserStory {
 		this.priority = priority;
 		this.epic = epic;
 		this.sprint = sprint;
+		tasks = new ArrayList<Task>();
+		
 	}
 
 	@Id

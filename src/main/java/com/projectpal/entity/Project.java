@@ -44,7 +44,8 @@ public class Project {
 	@JoinColumn(name = "owner_id")
 	private User user;
 	
-	@OneToMany(mappedBy = "project",cascade = CascadeType.REMOVE)
+	
+	@OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
 	private List<Epic> epics;
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)

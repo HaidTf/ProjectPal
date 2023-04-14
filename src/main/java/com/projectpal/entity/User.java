@@ -17,10 +17,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
+@Table(name = "users")
 @Entity
 public class User implements UserDetails {
 	
