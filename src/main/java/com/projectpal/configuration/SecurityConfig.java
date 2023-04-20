@@ -10,28 +10,30 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+
+import org.springframework.security.core.userdetails.UserDetailsService;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.projectpal.security.filter.JwtAuthenticationFilter;
-import com.projectpal.service.UserDetailsServ;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-	
+
 	@Autowired
-	public SecurityConfig(JwtAuthenticationFilter jwtFilter,UserDetailsServ userDetailsServ) {
+	public SecurityConfig(JwtAuthenticationFilter jwtFilter, UserDetailsService userDetailsService) {
 		this.jwtFilter = jwtFilter;
-		this.userDetailsServ = userDetailsServ;
-		
+		this.userDetailsService = userDetailsService;
+
 	}
 
 	private final JwtAuthenticationFilter jwtFilter;
-	
-	private UserDetailsServ userDetailsServ;
+
+	private final UserDetailsService userDetailsService;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,7 +47,8 @@ public class SecurityConfig {
 
 	}
 
-	//NOTE: UserDetailsService is implemented through com.projectpal.service.UserDetailsServ
+	// NOTE: UserDetailsService is implemented through
+	// com.projectpal.service.UserDetailsServ
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -55,7 +58,7 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
-		dao.setUserDetailsService(userDetailsServ);
+		dao.setUserDetailsService(userDetailsService);
 		dao.setPasswordEncoder(passwordEncoder());
 		return dao;
 	}
