@@ -1,17 +1,19 @@
 package com.projectpal.service;
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.projectpal.controller.requestobj.AuthenticationRequest;
+import com.projectpal.controller.requestobj.RegisterRequest;
+import com.projectpal.controller.responseobj.AuthenticationResponse;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.security.AuthenticationRequest;
-import com.projectpal.security.AuthenticationResponse;
-import com.projectpal.security.RegisterRequest;
 
 import lombok.RequiredArgsConstructor;
 
