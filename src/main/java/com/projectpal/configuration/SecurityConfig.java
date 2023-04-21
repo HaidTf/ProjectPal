@@ -38,7 +38,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-		http.csrf().disable().authorizeHttpRequests().requestMatchers("/api/auth/**").permitAll().anyRequest()
+		http.csrf().disable().authorizeHttpRequests().requestMatchers("/auth/**","/v3/api-docs/**","/swagger-ui/**").permitAll().anyRequest()
 				.authenticated().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -46,9 +46,6 @@ public class SecurityConfig {
 		return http.build();
 
 	}
-
-	// NOTE: UserDetailsService is implemented through
-	// com.projectpal.service.UserDetailsServ
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
