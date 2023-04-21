@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.service.JwtService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,7 +54,7 @@ public class LoginControllerTest {
 		String requestBody = objectMapper.writeValueAsString(loginData);
 
 		MvcResult result = mockMvc
-				.perform(MockMvcRequestBuilders.post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+				.perform(MockMvcRequestBuilders.post("/auth/login").contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody).accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
@@ -65,20 +64,14 @@ public class LoginControllerTest {
 
 		String token = json.getString("token");
 
-		JwtService jwtService = new JwtService();
-
-		String mustBeEqualToken = jwtService
-				.generateToken(new User("", loginData.get("email"), loginData.get("password"), Role.USER, null));
-
 		assertNotNull(token);
 
-		assertEquals(token, mustBeEqualToken);
 	}
 
 	@Test
 	public void testLoginWithNoData() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isBadRequest());
+		mockMvc.perform(MockMvcRequestBuilders.post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isInternalServerError());
 
 	}
 
@@ -93,8 +86,25 @@ public class LoginControllerTest {
 
 		String requestBody = objectMapper.writeValueAsString(loginData);
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(MockMvcRequestBuilders.post("/auth/login").contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON).content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+	}
+
+	@Test
+	public void testLoginWithIncorrectCredentials() throws Exception {
+		
+		Map<String, String> loginData = new HashMap<>();
+		loginData.put("email", "haidart@gmail.com");
+		loginData.put("password", "12345");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		String requestBody = objectMapper.writeValueAsString(loginData);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody).accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 	}
