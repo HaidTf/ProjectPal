@@ -5,27 +5,31 @@ import java.util.List;
 
 import org.springframework.lang.NonNull;
 
+import com.projectpal.entity.enums.Progress;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
-
 @Entity
 public class Epic {
 
-	public Epic () {
-		userStories= new ArrayList<UserStory>();
+	public Epic() {
+		userStories = new ArrayList<UserStory>();
 	}
-	
+
 	public Epic(String name, String description, Byte priority, Project project) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.project = project;
+		this.progress = Progress.TODO;
 		userStories = new ArrayList<UserStory>();
 	}
 
@@ -39,14 +43,18 @@ public class Epic {
 
 	@Column(columnDefinition = "TINYINT")
 	private Byte priority;
-	
+
+	@Enumerated(EnumType.STRING)
+	@NonNull
+	private Progress progress;
+
 	@ManyToOne
 	private Project project;
-	
-	@OneToMany(mappedBy="epic",cascade = CascadeType.REMOVE)
+
+	@OneToMany(mappedBy = "epic", cascade = CascadeType.REMOVE)
 	private List<UserStory> userStories;
-	
-	//Getters and Setters
+
+	// Getters and Setters
 
 	public List<UserStory> getUserStories() {
 		return userStories;
@@ -54,13 +62,13 @@ public class Epic {
 
 	public void setUserStories(List<UserStory> userStories) {
 		this.userStories = userStories;
-		
+
 	}
 
 	public void addUserStory(UserStory userStory) {
 		this.userStories.add(userStory);
 	}
-	
+
 	public Project getProject() {
 		return project;
 	}
@@ -99,6 +107,29 @@ public class Epic {
 
 	public void setPriority(Byte priority) {
 		this.priority = priority;
+	}
+
+	public Progress getProgress() {
+		return progress;
+	}
+
+	public void setProgress(Progress progress) {
+		this.progress = progress;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Epic other = (Epic) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 
 }

@@ -4,7 +4,11 @@ import java.time.LocalDate;
 
 import org.springframework.lang.NonNull;
 
+import com.projectpal.entity.enums.Progress;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -21,6 +25,7 @@ public class Sprint {
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;
+		this.progress = Progress.TODO;
 		this.project = project;
 	}
 
@@ -37,6 +42,10 @@ public class Sprint {
 	private LocalDate startDate;
 	@Temporal(TemporalType.DATE)
 	private LocalDate endDate;
+	
+	@Enumerated(EnumType.STRING)
+	@NonNull
+	private Progress progress;
 
 	@ManyToOne
 	private Project project;
@@ -89,6 +98,14 @@ public class Sprint {
 
 	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
+	}
+
+	public Progress getProgress() {
+		return progress;
+	}
+
+	public void setProgress(Progress progress) {
+		this.progress = progress;
 	}
 
 }

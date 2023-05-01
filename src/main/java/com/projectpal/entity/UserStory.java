@@ -5,9 +5,13 @@ import java.util.List;
 
 import org.springframework.lang.NonNull;
 
+import com.projectpal.entity.enums.Progress;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -24,6 +28,7 @@ public class UserStory {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
+		this.progress = Progress.TODO;
 		this.epic = epic;
 		this.sprint = sprint;
 		tasks = new ArrayList<Task>();
@@ -41,6 +46,10 @@ public class UserStory {
 
 	@Column(columnDefinition = "TINYINT")
 	private Byte priority;
+	
+	@Enumerated(EnumType.STRING)
+	@NonNull
+	private Progress progress;
 	
 	@ManyToOne
 	private Epic epic;
@@ -111,6 +120,14 @@ public class UserStory {
 	
 	public void addTask(Task task) {
 		tasks.add(task);
+	}
+
+	public Progress getProgress() {
+		return progress;
+	}
+
+	public void setProgress(Progress progress) {
+		this.progress = progress;
 	}
 
 	
