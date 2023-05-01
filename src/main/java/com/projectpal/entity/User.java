@@ -26,9 +26,9 @@ import lombok.NoArgsConstructor;
 @Entity
 public class User implements UserDetails {
 	
-	public User(String username, String email, String password, Role role,Project project) {
+	public User(String name, String email, String password, Role role,Project project) {
 		this.project = project;
-		this.name = username;
+		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.role = role;
@@ -90,7 +90,7 @@ public class User implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(new SimpleGrantedAuthority(Role.USER.name()));
+		return List.of(new SimpleGrantedAuthority(role.toString()));
 	}
 
 	@Override
