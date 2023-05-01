@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.persistence.Entity;
@@ -48,6 +49,7 @@ public class Sprint {
 	private Progress progress;
 
 	@ManyToOne
+	@JsonIgnore
 	private Project project;
 	
 	//Getters and Setters
