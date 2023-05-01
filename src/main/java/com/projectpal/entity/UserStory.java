@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.persistence.CascadeType;
@@ -52,12 +53,15 @@ public class UserStory {
 	private Progress progress;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Epic epic;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Sprint sprint;
 	
 	@OneToMany(mappedBy = "userStory",cascade = CascadeType.REMOVE)
+	@JsonIgnore
 	private List<Task> tasks;
 	
 	//Getters and Setters
