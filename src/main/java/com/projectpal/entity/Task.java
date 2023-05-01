@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.persistence.CascadeType;
@@ -51,6 +52,7 @@ public class Task {
 	private Progress progress;
 
 	@ManyToOne
+	@JsonIgnore
 	private UserStory userStory;
 
 	@ManyToOne
