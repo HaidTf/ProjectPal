@@ -2,6 +2,8 @@ package com.projectpal.entity;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -25,6 +27,7 @@ public class TaskAttachment {
 	private String fileName;
 
 	@ManyToOne
+	@JsonIgnore
 	private Task task;
 
 	// Getters and Setters
