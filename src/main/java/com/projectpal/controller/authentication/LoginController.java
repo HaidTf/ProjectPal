@@ -1,7 +1,6 @@
 package com.projectpal.controller.authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -13,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.controller.requestobj.AuthenticationRequest;
 import com.projectpal.controller.responseobj.AuthenticationResponse;
+import com.projectpal.exception.BadRequestException;
+import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
 
 @RestController
@@ -29,9 +30,11 @@ public class LoginController {
 	@ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleException(AuthenticationException ex) {
 		if (ex instanceof BadCredentialsException) {
-			return ResponseEntity.badRequest().body("incorrect email or password");
+			throw new BadRequestException("incorrect email or password");
 		}
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+		else {
+			throw new InternalServerErrorException("Unknown error occured");
+		}
     }
 	
 	
@@ -40,7 +43,7 @@ public class LoginController {
 		
 		if(request.getEmail() == null || request.getPassword() == null) {
 			
-			return ResponseEntity.badRequest().body(null);
+			throw new BadRequestException("null value for email or password");
 		}
 		return ResponseEntity.ok(authService.authenticate(request));
 	}

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectpal.controller.requestobj.RegisterRequest;
 import com.projectpal.controller.responseobj.AuthenticationResponse;
 import com.projectpal.controller.responseobj.exception.DataIntegrityExceptionResponse;
+import com.projectpal.exception.BadRequestException;
 import com.projectpal.service.AuthenticationService;
 
 @RestController
@@ -38,7 +39,7 @@ public class RegisterController {
 
 		if (request == null || request.getName() == null || request.getEmail() == null
 				|| request.getPassword() == null) {
-			return ResponseEntity.badRequest().body(null);
+			throw new BadRequestException("null value");
 		}
 
 		AuthenticationResponse response = authService.register(request);
