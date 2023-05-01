@@ -3,7 +3,10 @@ package com.projectpal.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.springframework.lang.NonNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,7 +29,7 @@ public class Project {
 	public Project(String name, String description, User user) {
 		this.name = name;
 		this.description = description;
-		this.user = user;
+		this.owner = user;
 		this.epics = new ArrayList<Epic>();
 		this.sprints = new ArrayList<Sprint>();
 	}
@@ -42,23 +45,26 @@ public class Project {
 	
 	@OneToOne
 	@JoinColumn(name = "owner_id")
-	private User user;
+	@JsonIgnore
+	private User owner;
 	
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
+	@JsonIgnore
 	private List<Epic> epics;
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
+	@JsonIgnore
 	private List<Sprint> sprints;
 	
 	//Getters and Setters
 
-	public User getUser() {
-		return user;
+	public User getOwner() {
+		return owner;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setOwner(User user) {
+		this.owner = user;
 	}
 
 	public String getName() {
