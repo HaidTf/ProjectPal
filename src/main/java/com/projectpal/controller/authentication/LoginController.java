@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.controller.requestobj.AuthenticationRequest;
-import com.projectpal.controller.responseobj.AuthenticationResponse;
+import com.projectpal.dto.request.AuthenticationRequest;
+import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
