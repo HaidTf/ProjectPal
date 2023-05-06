@@ -8,9 +8,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Role;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,6 +20,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
@@ -52,6 +54,7 @@ public class User implements UserDetails {
 	private String email;
 
 	@NonNull
+	@JsonIgnore
 	private String password;
 
 	@Enumerated(EnumType.STRING)
@@ -60,6 +63,10 @@ public class User implements UserDetails {
 	
 	@ManyToOne
 	private Project project;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+	@JsonIgnore
+	private List<Invitation> invitations;
 
 	// Getters and Setters
 
@@ -145,6 +152,18 @@ public class User implements UserDetails {
 
 	public void setProject(Project project) {
 		this.project = project;
+	}
+
+	public List<Invitation> getInvitations() {
+		return invitations;
+	}
+
+	public void setInvitations(List<Invitation> invitations) {
+		this.invitations = invitations;
+	}
+	
+	public void addInvitation(Invitation invite) {
+		this.invitations.add(invite);
 	}
 
 }
