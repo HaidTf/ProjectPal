@@ -1,4 +1,4 @@
-package com.projectpal.controller.requestobj;
+package com.projectpal.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
