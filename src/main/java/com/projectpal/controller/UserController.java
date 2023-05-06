@@ -43,7 +43,7 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 
-	@PatchMapping("/email")
+	@PatchMapping("/update/email")
 	@Transactional
 	public ResponseEntity<Void> updateEmail(@RequestBody String email) {
 		if (email == null)
@@ -54,7 +54,7 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/password")
+	@PatchMapping("/update/password")
 	@Transactional
 	public ResponseEntity<Void> updatePassword(@RequestBody String password) {
 		if (password == null)
@@ -64,15 +64,10 @@ public class UserController {
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
-
-	@DeleteMapping("/delete")
-	@Transactional
-	public ResponseEntity<Void> deleteUser() {
-		userRepo.delete(SecurityContextUtil.getUser());
-		return ResponseEntity.status(204).build();
-	}
 	
-	@PatchMapping("/addtoproject")
+	//TODO : Exit Project
+	
+	@PatchMapping("/update/addtoproject")
 	@Transactional
 	public ResponseEntity<Void> addUserToProject(@RequestParam String name){
 		
