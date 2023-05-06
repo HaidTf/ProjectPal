@@ -51,8 +51,8 @@ public class ProjectController {
 	@Transactional
 	public ResponseEntity<Void> createProject(@RequestBody Project project) {
 
-		if (project.getName() == null)
-			throw new BadRequestException("");
+		if (project == null || project.getName() == null)
+			throw new BadRequestException("the request body is null");
 
 		User user = SecurityContextUtil.getUser();
 
@@ -68,7 +68,7 @@ public class ProjectController {
 		return ResponseEntity.status(201).location(location).build();
 	}
 
-	@PatchMapping("/description")
+	@PatchMapping("/update/description")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestParam String description) {
 

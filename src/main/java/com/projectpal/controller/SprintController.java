@@ -60,7 +60,7 @@ public class SprintController {
 
 		ProjectUtil.onlyProjectOwnerAllowed();
 
-		if (sprint.getName() == null || sprint.getStartDate() == null || sprint.getEndDate() == null)
+		if (sprint == null || sprint.getName() == null || sprint.getStartDate() == null || sprint.getEndDate() == null)
 			throw new BadRequestException("sprint name or startdate or enddate is null");
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
@@ -76,7 +76,7 @@ public class SprintController {
 		return ResponseEntity.status(201).location(location).build();
 	}
 
-	@PatchMapping("/startdate/{id}")
+	@PatchMapping("/update/startdate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateStartDate(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @PathVariable long id) {
@@ -89,6 +89,9 @@ public class SprintController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
+		if(startDate == null)
+			throw new BadRequestException("request holding startDate is null");
+		
 		if (startDate.isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 		
@@ -99,7 +102,7 @@ public class SprintController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/enddate/{id}")
+	@PatchMapping("/update/enddate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateEndDate(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @PathVariable long id) {
@@ -112,6 +115,9 @@ public class SprintController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
+		if(endDate == null)
+			throw new BadRequestException("request holding endDate is null");
+		
 		if (endDate.isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
 		
@@ -122,9 +128,10 @@ public class SprintController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/description/{id}")
+	@PatchMapping("/update/description/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestParam String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
+		
 		ProjectUtil.onlyProjectOwnerAllowed();
 
 		Sprint sprint = sprintRepo.findById(id)
@@ -140,7 +147,7 @@ public class SprintController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/progress/{id}")
+	@PatchMapping("/update/progress/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
@@ -151,6 +158,9 @@ public class SprintController {
 
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
+		
+		if(progress == null)
+			throw new BadRequestException("request holding progress is null");
 
 		sprint.setProgress(progress);
 

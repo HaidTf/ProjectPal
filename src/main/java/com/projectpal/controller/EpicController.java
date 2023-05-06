@@ -55,8 +55,8 @@ public class EpicController {
 
 		ProjectUtil.onlyProjectOwnerAllowed();
 
-		if (epic.getName() == null || epic.getPriority() == null)
-			throw new BadRequestException("epic name or priority is null");
+		if (epic == null || epic.getName() == null || epic.getPriority() == null)
+			throw new BadRequestException("request body is null");
 
 		epic.setProject(ProjectUtil.getProjectNotNull());
 
@@ -69,9 +69,10 @@ public class EpicController {
 	}
 
 
-	@PatchMapping("/description/{id}")
+	@PatchMapping("/update/description/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestParam String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
+		
 		ProjectUtil.onlyProjectOwnerAllowed();
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
@@ -86,7 +87,7 @@ public class EpicController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/priority/{id}")
+	@PatchMapping("/update/priority/{id}")
 	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
 
@@ -108,9 +109,10 @@ public class EpicController {
 
 	}
 
-	@PatchMapping("/progress/{id}")
+	@PatchMapping("/update/progress/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+		
 		ProjectUtil.onlyProjectOwnerAllowed();
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
@@ -118,6 +120,9 @@ public class EpicController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
+		if(progress == null)
+			throw new BadRequestException("request is null");
+		
 		epic.setProgress(progress);
 
 		epicRepo.save(epic);
