@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.lang.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.persistence.CascadeType;
@@ -22,13 +23,14 @@ import jakarta.persistence.OneToMany;
 @Entity
 public class Task {
 
-	public Task(String name, String description, Byte priority, UserStory userStory, User assignedUser) {
+	public Task(String name, String description, Byte priority, UserStory userStory, User assignedUser,Project project) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
 		this.userStory = userStory;
 		this.assignedUser = assignedUser;
+		this.project = project;
 		taskAttachments = new ArrayList<TaskAttachment>();
 	}
 	
@@ -57,6 +59,9 @@ public class Task {
 
 	@ManyToOne
 	private User assignedUser;
+	
+	@ManyToOne
+	private Project project;
 
 	@OneToMany(mappedBy = "task", cascade = {CascadeType.PERSIST,CascadeType.REMOVE})
 	private List<TaskAttachment> taskAttachments;
@@ -129,6 +134,23 @@ public class Task {
 
 	public void setProgress(Progress progress) {
 		this.progress = progress;
+	}
+	@JsonProperty("progress")
+	private void setInitialProgress(Progress progress) {
+		if (progress == null)
+			this.progress = Progress.TODO;
+		else {
+			this.progress = progress;
+		}
+
+	}
+
+	public Project getProject() {
+		return project;
+	}
+
+	public void setProject(Project project) {
+		this.project = project;
 	}
 
 }
