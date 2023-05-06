@@ -4,7 +4,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 
 
 
@@ -22,9 +21,6 @@ public class SecurityContextUtil  {
 	}
 	public static String getPassword(){
 		return getUser().getPassword();
-	}
-	public static Role getRole() {
-		return getUser().getRole();
 	}
 	
 	
