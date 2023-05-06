@@ -1,6 +1,5 @@
 package com.projectpal.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -14,22 +13,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Project {
 
-	public Project() {
-		this.epics = new ArrayList<Epic>();
-		this.sprints = new ArrayList<Sprint>();
-
-	}
-
-	public Project(String name, String description, User user) {
+	public Project(String name, String description) {
 		this.name = name;
 		this.description = description;
-		this.owner = user;
-		this.epics = new ArrayList<Epic>();
-		this.sprints = new ArrayList<Sprint>();
 	}
 
 	@Id

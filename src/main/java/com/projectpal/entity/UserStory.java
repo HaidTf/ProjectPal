@@ -1,6 +1,5 @@
 package com.projectpal.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -18,23 +17,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.NoArgsConstructor;
 
 
 @Entity
+@NoArgsConstructor
 public class UserStory {
-	public UserStory() {
-		tasks = new ArrayList<Task>();
-	}
 	
-	public UserStory(String name, String description, Byte priority, Epic epic, Sprint sprint) {
+	public UserStory(String name, String description, Byte priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
-		this.epic = epic;
-		this.sprint = sprint;
-		tasks = new ArrayList<Task>();
-		
 	}
 
 	@Id

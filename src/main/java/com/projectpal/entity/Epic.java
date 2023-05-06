@@ -1,6 +1,5 @@
 package com.projectpal.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -18,21 +17,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Epic {
 
-	public Epic() {
-		userStories = new ArrayList<UserStory>();
-	}
-
-	public Epic(String name, String description, Byte priority, Project project) {
+	public Epic(String name, String description, Byte priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
-		this.project = project;
 		this.progress = Progress.TODO;
-		userStories = new ArrayList<UserStory>();
 	}
 
 	@Id

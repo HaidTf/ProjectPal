@@ -21,13 +21,12 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Sprint {
 
-	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate, Project project) {
+	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate) {
 		this.name = name;
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
-		this.project = project;
 	}
 
 	@Id

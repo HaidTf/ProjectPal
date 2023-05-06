@@ -14,9 +14,8 @@ import lombok.NoArgsConstructor;
 @Entity
 public class TaskAttachment {
 
-	public TaskAttachment(String fileName, Task task) {
+	public TaskAttachment(String fileName) {
 		this.fileName = fileName;
-		this.task = task;
 	}
 
 	@Id
