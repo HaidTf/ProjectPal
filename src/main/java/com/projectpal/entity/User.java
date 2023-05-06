@@ -1,7 +1,10 @@
 package com.projectpal.entity;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,16 +12,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.projectpal.entity.enums.Role;
 
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -29,13 +32,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @Entity
 public class User implements UserDetails {
-	
-	public User(String name, String email, String password, Role role,Project project) {
-		this.project = project;
+
+	public User(String name, String email, String password) {
 		this.name = name;
 		this.email = email;
 		this.password = password;
-		this.role = role;
 	}
 
 	@Transient
@@ -57,16 +58,16 @@ public class User implements UserDetails {
 	@JsonIgnore
 	private String password;
 
-	@Enumerated(EnumType.STRING)
-	@NonNull
-	private Role role;
-	
 	@ManyToOne
 	private Project project;
-	
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private List<Invitation> invitations;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+	private Set<Role> roles = new HashSet<>(5);
 
 	// Getters and Setters
 
@@ -89,61 +90,13 @@ public class User implements UserDetails {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getName() {
 		return name;
 	}
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(new SimpleGrantedAuthority(role.toString()));
-	}
-
-	@Override
-	public String getPassword() {
-		
-		return password;
-	}
-
-	@Override
-	public String getUsername() {
-		
-		return email;
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		
-		return true;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		
-		return true;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		
-		return true;
-	}
-
-	public Role getRole() {
-		return role;
-	}
-
-	public void setRole(Role role) {
-		this.role = role;
 	}
 
 	public Project getProject() {
@@ -161,9 +114,68 @@ public class User implements UserDetails {
 	public void setInvitations(List<Invitation> invitations) {
 		this.invitations = invitations;
 	}
-	
+
 	public void addInvitation(Invitation invite) {
 		this.invitations.add(invite);
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
+	public void addRole(Role role) {
+		this.roles.add(role);
+	}
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+
+		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+		for (Role role : this.getRoles()) {
+			authorities.add(new SimpleGrantedAuthority(role.getRole().toString()));
+		}
+
+		return authorities;
+	}
+
+	@Override
+	public String getPassword() {
+
+		return password;
+	}
+
+	@Override
+	public String getUsername() {
+
+		return email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+
+		return true;
 	}
 
 }
