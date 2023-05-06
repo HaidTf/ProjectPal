@@ -1,4 +1,4 @@
-package com.projectpal.controller.responseobj;
+package com.projectpal.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

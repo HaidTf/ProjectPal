@@ -1,4 +1,4 @@
-package com.projectpal.controller.responseobj.exception;
+package com.projectpal.dto.response;
 
 
 import org.hibernate.exception.ConstraintViolationException;
