@@ -12,7 +12,7 @@ import com.projectpal.entity.User;
 @Repository
 public interface TaskRepository extends JpaRepository<Task,Long>{
 
-	Optional<List<Task>> findAllByUser(User user);
+	Optional<List<Task>> findAllByAssignedUser(User assignedUser);
 	
 	Optional<List<Task>> findAllByUserStoryId(long id);
 	
