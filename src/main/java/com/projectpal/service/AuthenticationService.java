@@ -12,7 +12,6 @@ import com.projectpal.dto.request.AuthenticationRequest;
 import com.projectpal.dto.request.RegisterRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,9 +32,8 @@ public class AuthenticationService {
 	public AuthenticationResponse register(RegisterRequest req) {
 		
 		
-		User user = new User(req.getName(), req.getEmail(), passwordEncoder.encode(req.getPassword()), Role.USER,
-				null);
-		
+		User user = new User(req.getName(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
+				
 		repo.save(user);
 
 		String jwtToken = jwtService.generateToken(user);
