@@ -19,6 +19,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
+import com.projectpal.dto.request.UserStoryCreationRequest;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.enums.Progress;
@@ -82,11 +83,15 @@ public class UserStoryController {
 		return ResponseEntity.ok(userStories);
 	}
 
-	@PostMapping("/create/epic/{epicId}")
+	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createUserStory(@RequestBody UserStory userStory, @PathVariable long epicId) {
+	public ResponseEntity<Void> createUserStory(@RequestBody UserStoryCreationRequest request) {
 
 		ProjectUtil.onlyProjectOwnerAllowed();
+		
+		long epicId = request.getEpicId();
+		
+		UserStory userStory = request.getUserStory();
 		
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -106,7 +111,7 @@ public class UserStoryController {
 		return ResponseEntity.status(201).location(location).build();
 	}
 
-	@PatchMapping("/description/{id}")
+	@PatchMapping("/update/description/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestParam String description, @PathVariable long id) {
 		ProjectUtil.onlyProjectOwnerAllowed();
@@ -124,7 +129,7 @@ public class UserStoryController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/priority/{id}")
+	@PatchMapping("/update/priority/{id}")
 	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
 
@@ -147,7 +152,7 @@ public class UserStoryController {
 
 	}
 
-	@PatchMapping("/progress/{id}")
+	@PatchMapping("/update/progress/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 		ProjectUtil.onlyProjectOwnerAllowed();
