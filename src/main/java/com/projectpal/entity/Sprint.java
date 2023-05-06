@@ -20,20 +20,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 public class Sprint {
-	
+
 	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate, Project project) {
 		this.name = name;
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;
-		this.progress = Progress.TODO;
+		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
 		this.project = project;
 	}
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
-	
+
 	@NonNull
 	private String name;
 
@@ -43,7 +43,7 @@ public class Sprint {
 	private LocalDate startDate;
 	@Temporal(TemporalType.DATE)
 	private LocalDate endDate;
-	
+
 	@Enumerated(EnumType.STRING)
 	@NonNull
 	private Progress progress;
@@ -51,8 +51,8 @@ public class Sprint {
 	@ManyToOne
 	@JsonIgnore
 	private Project project;
-	
-	//Getters and Setters
+
+	// Getters and Setters
 
 	public long getId() {
 		return id;
@@ -92,6 +92,10 @@ public class Sprint {
 
 	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
+		if (startDate.isBefore(LocalDate.now()))
+			this.setProgress(Progress.INPROGRESS);
+		else
+			this.setProgress(Progress.TODO);
 	}
 
 	public LocalDate getEndDate() {
