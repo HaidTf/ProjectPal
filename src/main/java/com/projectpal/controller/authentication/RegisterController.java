@@ -14,6 +14,7 @@ import com.projectpal.dto.request.RegisterRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.dto.response.DataIntegrityExceptionResponse;
 import com.projectpal.exception.BadRequestException;
+import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
 
 @RestController
@@ -30,7 +31,9 @@ public class RegisterController {
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<DataIntegrityExceptionResponse> handleException(DataIntegrityViolationException ex) {
 		DataIntegrityExceptionResponse response = new DataIntegrityExceptionResponse(ex);
-		return ResponseEntity.status(response.isConstraintViolation() ? 409 : 500).body(response);
+		if(response.isConstraintViolation())
+			return ResponseEntity.status(409).body(response);
+		throw new InternalServerErrorException("unknown error occured during registration");
 	}
 
 	@PostMapping("")
