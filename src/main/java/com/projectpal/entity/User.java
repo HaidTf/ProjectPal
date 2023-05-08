@@ -2,26 +2,22 @@ package com.projectpal.entity;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.projectpal.entity.enums.Role;
 
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -65,9 +61,8 @@ public class User implements UserDetails {
 	@JsonIgnore
 	private List<Invitation> invitations;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-	private Set<Role> roles = new HashSet<>(5);
+	@Enumerated(EnumType.STRING)
+	private Role role;
 
 	// Getters and Setters
 
@@ -98,6 +93,14 @@ public class User implements UserDetails {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
 
 	public Project getProject() {
 		return project;
@@ -119,26 +122,13 @@ public class User implements UserDetails {
 		this.invitations.add(invite);
 	}
 
-	public Set<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
-
-	public void addRole(Role role) {
-		this.roles.add(role);
-	}
-
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-		for (Role role : this.getRoles()) {
-			authorities.add(new SimpleGrantedAuthority(role.getRole().toString()));
-		}
-
+		
+		authorities.add(new SimpleGrantedAuthority(role.toString()));
+		
 		return authorities;
 	}
 
@@ -177,5 +167,7 @@ public class User implements UserDetails {
 
 		return true;
 	}
+
+	
 
 }
