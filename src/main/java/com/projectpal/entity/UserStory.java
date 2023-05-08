@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.persistence.CascadeType;
@@ -24,12 +24,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserStory {
 	
+	@JsonCreator
 	public UserStory(String name, String description, Byte priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
 	}
+	@JsonCreator
+	public UserStory(String name, String description, Byte priority,Progress progress) {
+		this.name = name;
+		this.description = description;
+		this.priority = priority;
+		this.progress = progress;
+	}
+	
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
@@ -127,15 +136,6 @@ public class UserStory {
 
 	public void setProgress(Progress progress) {
 		this.progress = progress;
-	}
-	@JsonProperty("progress")
-	private void setInitialProgress(Progress progress) {
-		if (progress == null)
-			this.progress = Progress.TODO;
-		else {
-			this.progress = progress;
-		}
-
 	}
 	
 	

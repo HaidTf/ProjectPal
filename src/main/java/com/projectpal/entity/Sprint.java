@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
@@ -21,12 +22,21 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Sprint {
 
+	@JsonCreator
 	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate) {
 		this.name = name;
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
+	}
+	@JsonCreator
+	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate,Progress progress) {
+		this.name = name;
+		this.description = description;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.progress = progress;
 	}
 
 	@Id
