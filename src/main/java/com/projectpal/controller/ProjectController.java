@@ -4,6 +4,7 @@ import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,7 @@ public class ProjectController {
 		return ResponseEntity.ok(project);
 	}
 
+	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("/create")
 	@Transactional
 	public ResponseEntity<Void> createProject(@RequestBody Project project) {
@@ -68,11 +70,10 @@ public class ProjectController {
 		return ResponseEntity.status(201).location(location).build();
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/description")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestParam String description) {
-
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		Project project = ProjectUtil.getProjectNotNull();
 		
@@ -84,13 +85,12 @@ public class ProjectController {
 
 	}
 
+	@PreAuthorize("hasRole('USER_PROJECT_OWNER')")
 	@DeleteMapping("/delete")
 	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 
 		Project project = ProjectUtil.getProjectNotNull();
-			
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		projectRepo.delete(project);
 		

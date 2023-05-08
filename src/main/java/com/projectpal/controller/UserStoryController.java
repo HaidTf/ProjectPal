@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,9 +35,10 @@ import com.projectpal.utils.ProjectUtil;
 @RestController
 @RequestMapping("/userstory")
 public class UserStoryController {
-	
+
 	@Autowired
-	public UserStoryController(UserStoryRepository userStoryRepo,SprintRepository sprintRepo, EpicRepository epicRepo) {
+	public UserStoryController(UserStoryRepository userStoryRepo, SprintRepository sprintRepo,
+			EpicRepository epicRepo) {
 		this.userStoryRepo = userStoryRepo;
 		this.epicRepo = epicRepo;
 		this.sprintRepo = sprintRepo;
@@ -45,7 +47,7 @@ public class UserStoryController {
 	private final EpicRepository epicRepo;
 
 	private final UserStoryRepository userStoryRepo;
-	
+
 	private final SprintRepository sprintRepo;
 
 	@GetMapping("/list/epic/{epicId}")
@@ -83,16 +85,15 @@ public class UserStoryController {
 		return ResponseEntity.ok(userStories);
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
 	public ResponseEntity<Void> createUserStory(@RequestBody UserStoryCreationRequest request) {
 
-		ProjectUtil.onlyProjectOwnerAllowed();
-		
 		long epicId = request.getEpicId();
-		
+
 		UserStory userStory = request.getUserStory();
-		
+
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
@@ -111,10 +112,10 @@ public class UserStoryController {
 		return ResponseEntity.status(201).location(location).build();
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/description/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestParam String description, @PathVariable long id) {
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -129,11 +130,10 @@ public class UserStoryController {
 		return ResponseEntity.status(204).build();
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
-
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -152,10 +152,10 @@ public class UserStoryController {
 
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -163,6 +163,9 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
+		if (progress == null)
+			throw new BadRequestException("request holding progress is null");
+		
 		userStory.setProgress(progress);
 
 		userStoryRepo.save(userStory);
@@ -170,11 +173,10 @@ public class UserStoryController {
 		return ResponseEntity.status(204).build();
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/delete/{id}")
 	@Transactional
 	public ResponseEntity<Void> deleteUserStory(@PathVariable long id) {
-
-		ProjectUtil.onlyProjectOwnerAllowed();
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));

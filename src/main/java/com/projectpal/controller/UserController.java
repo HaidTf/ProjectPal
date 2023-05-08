@@ -2,9 +2,9 @@ package com.projectpal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +43,7 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 
+	@PreAuthorize("!(hasRole('ADMIN'))")
 	@PatchMapping("/update/email")
 	@Transactional
 	public ResponseEntity<Void> updateEmail(@RequestBody String email) {
@@ -54,6 +55,7 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
+	@PreAuthorize("!(hasRole('ADMIN'))")
 	@PatchMapping("/update/password")
 	@Transactional
 	public ResponseEntity<Void> updatePassword(@RequestBody String password) {
@@ -70,9 +72,7 @@ public class UserController {
 	@PatchMapping("/update/addtoproject")
 	@Transactional
 	public ResponseEntity<Void> addUserToProject(@RequestParam String name){
-		
-		ProjectUtil.onlyProjectOwnerAllowed();
-		
+
 		if (name == null)
 			throw new BadRequestException("the name you typed is null");
 		
