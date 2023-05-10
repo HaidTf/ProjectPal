@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -14,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -24,6 +27,7 @@ public class Project {
 	public Project(String name, String description) {
 		this.name = name;
 		this.description = description;
+		this.lastAccessedDate = LocalDate.now();
 	}
 
 	@Id
@@ -34,6 +38,10 @@ public class Project {
 	private String name;
 
 	private String description;
+	
+	@Temporal(TemporalType.DATE)
+	@JsonIgnore
+	private LocalDate lastAccessedDate;
 
 	@OneToOne
 	@JoinColumn(name = "owner_id")
@@ -136,6 +144,14 @@ public class Project {
 
 	public void addAnnouncement(Announcement announcement) {
 		this.announcements.add(announcement);
+	}
+
+	public LocalDate getLastAccessedDate() {
+		return lastAccessedDate;
+	}
+
+	public void setLastAccessedDate(LocalDate lastAccessedDate) {
+		this.lastAccessedDate = lastAccessedDate;
 	}
 
 }
