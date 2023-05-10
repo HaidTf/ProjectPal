@@ -57,7 +57,7 @@ public class User implements UserDetails {
 	@ManyToOne
 	private Project project;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "invitedUser", cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private List<Invitation> invitations;
 
