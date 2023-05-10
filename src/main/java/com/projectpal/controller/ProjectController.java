@@ -1,6 +1,7 @@
 package com.projectpal.controller;
 
 import java.net.URI;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,8 @@ public class ProjectController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
+		project.setLastAccessedDate(LocalDate.now());
+		
 		return ResponseEntity.ok(project);
 	}
 
