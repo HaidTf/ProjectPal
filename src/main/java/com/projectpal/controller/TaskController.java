@@ -151,7 +151,7 @@ public class TaskController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
