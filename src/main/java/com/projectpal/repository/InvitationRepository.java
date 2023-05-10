@@ -1,5 +1,6 @@
 package com.projectpal.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,5 +17,7 @@ public interface InvitationRepository extends JpaRepository<Invitation,Long> {
 	Optional<List<Invitation>> findAllByInvitedUser(User invitedUser);
 
 	Optional<List<Invitation>> findAllByProject(Project project);
+
+	void deleteByIssueDateBefore(LocalDate xDateAgo);
 	
 }
