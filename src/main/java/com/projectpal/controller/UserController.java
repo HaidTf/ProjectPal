@@ -1,5 +1,7 @@
 package com.projectpal.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,15 +11,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
+import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
+import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ConflictException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.repository.InvitationRepository;
+import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 @RestController
@@ -25,16 +28,21 @@ import com.projectpal.utils.SecurityContextUtil;
 public class UserController {
 
 	@Autowired
-	public UserController(UserRepository userRepo, PasswordEncoder encoder) {
+	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo,
+			InvitationRepository invitationRepo) {
 		this.encoder = encoder;
 		this.userRepo = userRepo;
+		this.taskRepo = taskRepo;
+		this.invitationRepo = invitationRepo;
 	}
 
 	private final PasswordEncoder encoder;
 
 	private final UserRepository userRepo;
-	
-	
+
+	private final TaskRepository taskRepo;
+
+	private final InvitationRepository invitationRepo;
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
@@ -66,28 +74,30 @@ public class UserController {
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
-	
-	//TODO : Exit Project
-	
-	@PatchMapping("/update/addtoproject")
-	@Transactional
-	public ResponseEntity<Void> addUserToProject(@RequestParam String name){
 
-		if (name == null)
-			throw new BadRequestException("the name you typed is null");
-		
-		User toAddUser = userRepo.findUserByName(name).orElseThrow(()-> new ResourceNotFoundException("the User you requested is not found"));
-		
-		if (toAddUser.getProject() != null)
-			throw new ConflictException("User is already in a project");
-		
-		toAddUser.setProject(ProjectUtil.getProjectNotNull());
-		
-		userRepo.save(toAddUser);
-		
+	@PatchMapping("/update/project/exit")
+	@Transactional
+	public ResponseEntity<Void> exitProject() {
+
+		User user = SecurityContextUtil.getUser();
+
+		if (user.getProject() != null) {
+			user.setProject(null); 
+			user.setRole(Role.ROLE_USER);
+			userRepo.save(user);
+		}
+
+		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(null);
+
+		for (Task task : tasks) {
+			if (task.getAssignedUser() != null) {
+				task.setAssignedUser(null);
+				taskRepo.save(task);
+			}
+		}
+
 		return ResponseEntity.status(204).build();
-		
-		
+
 	}
 
 }
