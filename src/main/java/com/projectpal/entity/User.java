@@ -33,6 +33,7 @@ public class User implements UserDetails {
 		this.name = name;
 		this.email = email;
 		this.password = password;
+		this.role = Role.ROLE_USER;
 	}
 
 	@Transient
