@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.ArrayList;
 
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @DataJpaTest
@@ -20,8 +21,7 @@ public class SprintTest {
 
 	@Test
 	public void testCreate() {
-		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10),
-				null);
+		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10));
 
 		em.persist(sprint);
 		em.flush();
@@ -32,8 +32,7 @@ public class SprintTest {
 
 	@Test
 	public void testRead() {
-		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10),
-				null);
+		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10));
 
 		em.persist(sprint);
 		em.flush();
@@ -44,8 +43,7 @@ public class SprintTest {
 
 	@Test
 	public void testUpdate() {
-		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10),
-				null);
+		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10));
 
 		em.persist(sprint);
 		em.flush();
@@ -64,8 +62,7 @@ public class SprintTest {
 
 	@Test
 	public void testDelete() {
-		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10),
-				null);
+		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10));
 
 		em.persist(sprint);
 		em.flush();
@@ -78,21 +75,21 @@ public class SprintTest {
 
 	@Test
 	public void testCascadeRemoveIfProjectIsDeleted() {
-		Project project = new Project("Projectpal", "Description", null);
+		Project project = new Project("Projectpal", "Description");
 		em.persist(project);
 
-		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10),
-				null);
+		Sprint sprint = new Sprint("sprint1", "description", LocalDate.of(2023, 11, 2), LocalDate.of(2023, 11, 10));
 		em.persist(sprint);
-		
+
+		project.setSprints(new ArrayList<Sprint>());
 		project.addSprint(sprint);
 		em.flush();
-		
+
 		em.remove(project);
 		em.flush();
-		
+
 		Sprint mustBeDeletedSprint = em.find(Sprint.class, sprint.getId());
 		assertNull(mustBeDeletedSprint);
-		
+
 	}
 }
