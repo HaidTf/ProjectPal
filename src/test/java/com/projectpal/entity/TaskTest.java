@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.ArrayList;
+
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @DataJpaTest
 public class TaskTest {
@@ -16,7 +18,7 @@ public class TaskTest {
 
 	@Test
 	public void testCreate() {
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
 		em.persist(task);
 		em.flush();
 
@@ -25,7 +27,7 @@ public class TaskTest {
 
 	@Test
 	public void testRead() {
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
 		em.persist(task);
 		em.flush();
 		
@@ -35,7 +37,7 @@ public class TaskTest {
 
 	@Test
 	public void testUpdate() {
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
 		em.persist(task);
 		em.flush();
 		
@@ -50,7 +52,7 @@ public class TaskTest {
 
 	@Test
 	public void testDelete() {
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
 		em.persist(task);
 		em.flush();
 		
@@ -62,10 +64,12 @@ public class TaskTest {
 	
 	@Test
 	public void testCascadeRemoveIfUserStoryIsDeleted() {
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
 		em.persist(task);
 		
-		UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+		UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
+		
+		userStory.setTasks(new ArrayList<Task>());
 		userStory.addTask(task);
 		em.persist(userStory);
 		em.flush();
