@@ -19,7 +19,7 @@ public class ProjectTest {
 
     @Test
     public void testCreate() {
-        Project project = new Project("Projectpal", "Description", null);
+        Project project = new Project("Projectpal", "Description");
         em.persist(project);
         em.flush();
 
@@ -28,7 +28,7 @@ public class ProjectTest {
 
     @Test
     public void testRead() {
-        Project project = new Project("Projectpal", "Description", null);
+        Project project = new Project("Projectpal", "Description");
         em.persist(project);
         em.flush();
 
@@ -40,7 +40,7 @@ public class ProjectTest {
     
     @Test
     public void testUpdate() {
-    	Project project = new Project("Projectpal", "Description", null);
+    	Project project = new Project("Projectpal", "Description");
         em.persist(project);
         em.flush();
         
@@ -61,7 +61,7 @@ public class ProjectTest {
     
     @Test
     public void testDelete() {
-    	Project project = new Project("Projectpal", "Description", null);
+    	Project project = new Project("Projectpal", "Description");
         em.persist(project);
         em.flush();
         
