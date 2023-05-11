@@ -20,7 +20,8 @@ public class UserTest {
 
 	@Test
 	public void testCreate() {
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER,null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
+		user.setRole(Role.ROLE_USER);
 		em.persist(user);
 		em.flush();
 
@@ -29,7 +30,8 @@ public class UserTest {
 
 	@Test
 	public void testRead() {
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER,null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
+		user.setRole(Role.ROLE_USER);
 		em.persist(user);
 		em.flush();
 
@@ -41,14 +43,16 @@ public class UserTest {
 
 	@Test
 	public void testUpdate() {
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER,null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
+		user.setRole(Role.ROLE_USER);
 		em.persist(user);
 		em.flush();
 
 		User foundUser = em.find(User.class, user.getId());
 		assertNotNull(foundUser);
 		
-		Project project = new Project("Projectpal", "Description", foundUser);
+		Project project = new Project("Projectpal", "Description");
+		project.setOwner(foundUser);
 		em.persist(project);
 		
 		foundUser.setProject(project);
@@ -62,7 +66,8 @@ public class UserTest {
 
 	@Test
 	public void testDelete() {
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER,null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
+		user.setRole(Role.ROLE_USER);
 		em.persist(user);
 		em.flush();
 
