@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import org.springframework.security.access.AccessDeniedException;
+
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
@@ -16,6 +18,11 @@ public class ExceptionHandlerController {
     public ResponseEntity<String> handleException(Exception ex) {
         return ResponseEntity.status(500).body(ex.getMessage());
     }
+	
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex){
+		return ResponseEntity.status(403).body(ex.getMessage());
+	}
 	
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex){
