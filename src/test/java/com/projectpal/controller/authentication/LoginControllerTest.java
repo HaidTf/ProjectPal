@@ -46,8 +46,11 @@ public class LoginControllerTest {
 		loginData.put("email", "haidar@gmail.com");
 		loginData.put("password", "12345");
 
-		repo.save(
-				new User("haidar", loginData.get("email"), encoder.encode(loginData.get("password")), Role.USER, null));
+		User user = new User("haidar", loginData.get("email"), encoder.encode(loginData.get("password")));
+
+		user.setRole(Role.ROLE_USER);
+
+		repo.save(user);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
@@ -94,7 +97,7 @@ public class LoginControllerTest {
 
 	@Test
 	public void testLoginWithIncorrectCredentials() throws Exception {
-		
+
 		Map<String, String> loginData = new HashMap<>();
 		loginData.put("email", "haidart@gmail.com");
 		loginData.put("password", "12345");
@@ -105,7 +108,7 @@ public class LoginControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/auth/login").contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody).accept(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isBadRequest());
+				.andExpect(MockMvcResultMatchers.status().isForbidden());
 
 	}
 }

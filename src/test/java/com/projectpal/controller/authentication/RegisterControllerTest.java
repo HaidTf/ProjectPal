@@ -29,7 +29,7 @@ public class RegisterControllerTest {
 	public void testRegisterWithFullData() throws Exception {
 
 		Map<String, String> registerData = new HashMap<>();
-		registerData.put("name", "haidar12");
+		registerData.put("name", "haidar12"); 
 		registerData.put("email", "haidar12@gmail.com");
 		registerData.put("password", "12345");
 
