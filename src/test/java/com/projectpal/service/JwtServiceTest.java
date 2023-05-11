@@ -7,14 +7,13 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 
 public class JwtServiceTest {
 
 	@Test
 	public void testGenerateToken() {
 
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER, null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
 
 		JwtService jwtService = new JwtService();
 
@@ -27,8 +26,8 @@ public class JwtServiceTest {
 	
 	@Test
 	public void testIsTokenValid() {
-		User user = new User("haid", "haidar@gmail.com", "1234", Role.USER, null);
-		User user2 = new User("haidar", "haidartf@gmail.com", "123456", Role.USER, null);
+		User user = new User("haid", "haidar@gmail.com", "1234");
+		User user2 = new User("haidar", "haidartf@gmail.com", "123456");
 		
 		JwtService jwtService = new JwtService();
 
@@ -49,7 +48,7 @@ public class JwtServiceTest {
 	
 	@Test
 	public void testExtractAnyClaim() {
-		User user = new User("haidar", "haidar@gmail.com", "1234", Role.USER, null);
+		User user = new User("haidar", "haidar@gmail.com", "1234");
 		
 		JwtService jwtService = new JwtService();
 
