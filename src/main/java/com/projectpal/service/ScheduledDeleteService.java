@@ -42,7 +42,7 @@ public class ScheduledDeleteService {
 	 @Scheduled(cron = "0 0 0 1 * *")
 	    public void deleteExpiredProjects() {
 	        LocalDate threeMonthAgo = LocalDate.now().minusWeeks(12);
-	        projectRepo.deleteByIssueDateBefore(threeMonthAgo);
+	        projectRepo.deleteByLastAccessedDateBefore(threeMonthAgo);
 	    }
 	 
 }
