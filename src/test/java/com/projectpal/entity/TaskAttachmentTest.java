@@ -9,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.ArrayList;
+
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @DataJpaTest
 public class TaskAttachmentTest {
@@ -17,7 +19,7 @@ public class TaskAttachmentTest {
 
 	@Test
 	public void testCreate() {
-		TaskAttachment attachment = new TaskAttachment("img.png", null);
+		TaskAttachment attachment = new TaskAttachment("img.png");
 
 		em.persist(attachment);
 		em.flush();
@@ -27,7 +29,7 @@ public class TaskAttachmentTest {
 
 	@Test
 	public void testRead() {
-		TaskAttachment attachment = new TaskAttachment("img.png", null);
+		TaskAttachment attachment = new TaskAttachment("img.png");
 
 		em.persist(attachment);
 		em.flush();
@@ -38,7 +40,7 @@ public class TaskAttachmentTest {
 
 	@Test
 	public void testUpdate() {
-		TaskAttachment attachment = new TaskAttachment("img.png", null);
+		TaskAttachment attachment = new TaskAttachment("img.png");
 
 		em.persist(attachment);
 		em.flush();
@@ -54,7 +56,7 @@ public class TaskAttachmentTest {
 
 	@Test
 	public void testDelete() {
-		TaskAttachment attachment = new TaskAttachment("img.png", null);
+		TaskAttachment attachment = new TaskAttachment("img.png");
 
 		em.persist(attachment);
 		em.flush();
@@ -68,10 +70,12 @@ public class TaskAttachmentTest {
 	
 	@Test
 	public void testCascadeRemoveIfTaskIsDeleted() {
-		TaskAttachment attachment = new TaskAttachment("img.png", null);
+		TaskAttachment attachment = new TaskAttachment("img.png");
 		em.persist(attachment);
 		
-		Task task = new Task("implement testing", "test business logic", (byte) 5, null, null);
+		Task task = new Task("implement testing", "test business logic", (byte) 5);
+		
+		task.setTaskAttachments(new ArrayList<TaskAttachment>());
 		task.addTaskAttachment(attachment);
 		em.persist(task);
 		
