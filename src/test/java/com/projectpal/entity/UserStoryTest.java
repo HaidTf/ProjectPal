@@ -1,6 +1,7 @@
 package com.projectpal.entity;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
 
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ public class UserStoryTest {
 	@Test
 	public void testCreate() {
 
-		UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+		UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
 
 		em.persist(userStory);
 		em.flush();
@@ -30,7 +31,7 @@ public class UserStoryTest {
 
 	@Test
 	public void testRead() {
-		UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+		UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
 
 		em.persist(userStory);
 		em.flush();
@@ -40,7 +41,7 @@ public class UserStoryTest {
 
 	@Test
 	public void testUpdate() {
-		UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+		UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
 
 		em.persist(userStory);
 		em.flush();
@@ -58,7 +59,7 @@ public class UserStoryTest {
 
 	@Test
 	public void testDelete() {
-		UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+		UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
 
 		em.persist(userStory);
 		em.flush();
@@ -71,10 +72,11 @@ public class UserStoryTest {
 	
 	@Test
 	public void testCascadeRemoveIfEpicIsDeleted() {
-	Epic epic = new Epic("epic1", "description", (byte) 5, null);
+	Epic epic = new Epic("epic1", "description", (byte) 5);
 	
-	UserStory userStory = new UserStory("userstory1", "description", (byte) 5, null, null);
+	UserStory userStory = new UserStory("userstory1", "description", (byte) 5);
 	
+	epic.setUserStories(new ArrayList<UserStory>());
 	epic.addUserStory(userStory);
 	
 	em.persist(userStory);
