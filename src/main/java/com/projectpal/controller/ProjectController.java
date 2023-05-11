@@ -65,7 +65,9 @@ public class ProjectController {
 
 		User user = SecurityContextUtil.getUser();
 
+		user.setRole(Role.ROLE_USER_PROJECT_OWNER);
 		user.setProject(project);
+		
 		project.setOwner(user);
 
 		projectRepo.save(project);
