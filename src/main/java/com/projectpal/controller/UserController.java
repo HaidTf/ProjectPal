@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
-import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.utils.SecurityContextUtil;
@@ -28,12 +26,10 @@ import com.projectpal.utils.SecurityContextUtil;
 public class UserController {
 
 	@Autowired
-	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo,
-			InvitationRepository invitationRepo) {
+	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo) {
 		this.encoder = encoder;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
-		this.invitationRepo = invitationRepo;
 	}
 
 	private final PasswordEncoder encoder;
@@ -41,8 +37,6 @@ public class UserController {
 	private final UserRepository userRepo;
 
 	private final TaskRepository taskRepo;
-
-	private final InvitationRepository invitationRepo;
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
@@ -82,7 +76,7 @@ public class UserController {
 		User user = SecurityContextUtil.getUser();
 
 		if (user.getProject() != null) {
-			user.setProject(null); 
+			user.setProject(null);
 			user.setRole(Role.ROLE_USER);
 			userRepo.save(user);
 		}
