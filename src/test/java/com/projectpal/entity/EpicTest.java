@@ -9,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.ArrayList;
+
 
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @DataJpaTest
@@ -20,7 +22,7 @@ public class EpicTest {
 	@Test
 	public void testCreate() {
 		
-		Epic epic = new Epic("epic1", "description", (byte) 5, null);
+		Epic epic = new Epic("epic1", "description", (byte) 5);
 
 		em.persist(epic);
 		em.flush();
@@ -32,7 +34,7 @@ public class EpicTest {
 	@Test
 	public void testRead() {
 
-		Epic epic = new Epic("epic1", "description", (byte) 5, null);
+		Epic epic = new Epic("epic1", "description", (byte) 5);
 
 		em.persist(epic);
 		em.flush();
@@ -45,7 +47,7 @@ public class EpicTest {
 	@Test
 	public void testUpdate() {
 		
-		Epic epic = new Epic("epic1", "description", (byte) 5, null);
+		Epic epic = new Epic("epic1", "description", (byte) 5);
 
 		em.persist(epic);
 		em.flush();
@@ -66,7 +68,7 @@ public class EpicTest {
 	@Test
 	public void testDelete() {
 
-		Epic epic = new Epic("epic1", "description", (byte) 5, null);
+		Epic epic = new Epic("epic1", "description", (byte) 5);
 
 		em.persist(epic);
 		em.flush();
@@ -80,12 +82,13 @@ public class EpicTest {
 	
 	@Test
 	public void testCascadeRemoveIfProjectIsDeleted() {
-		Project project = new Project("Projectpal", "Description", null);
+		Project project = new Project("Projectpal", "Description");
 		em.persist(project);
 		
-		Epic epic = new Epic("epic1", "description", (byte) 5, null);
+		Epic epic = new Epic("epic1", "description", (byte) 5);
 		em.persist(epic);
 		
+		project.setEpics(new ArrayList<Epic>());
 		project.addEpic(epic);
 		em.flush();
 		
