@@ -12,7 +12,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 import com.projectpal.service.JwtService;
 
 
@@ -34,13 +33,13 @@ public class JwtAuthenticationFilterTest {
     @Test
     public void testWithValidJwt() throws Exception {
         
-    	User user = new User("haid", "haidar@gmail.com", "1234", Role.USER,null);
+    	User user = new User("haid", "haidar@gmail.com", "1234");
        
        String jwt = jwtService.generateToken(user);
        
        Mockito.when(userDetailsService.loadUserByUsername(user.getUsername())).thenReturn(user);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/test")
+        mockMvc.perform(MockMvcRequestBuilders.get("/test")
                 .header("Authorization", "Bearer " + jwt))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
@@ -48,13 +47,13 @@ public class JwtAuthenticationFilterTest {
     public void testWithInValidJwt() throws Exception {
         
     	
-    	User user2 = new User("anonymous", "haidartf@gmail.com", "123456", Role.USER,null);
+    	User user2 = new User("anonymous", "haidartf@gmail.com", "123456");
        
        String jwt = jwtService.generateToken(user2);
        
        Mockito.when(userDetailsService.loadUserByUsername(user2.getUsername())).thenReturn(null);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/test")
+        mockMvc.perform(MockMvcRequestBuilders.get("/test")
         		.header("Authorization", "Bearer " + jwt))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
@@ -63,7 +62,7 @@ public class JwtAuthenticationFilterTest {
     public void testWithNoHeader() throws Exception {
 
     	
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/test"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/test"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 }
