@@ -10,6 +10,6 @@ import com.projectpal.entity.Project;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project,Long>{
 
-	void deleteByIssueDateBefore(LocalDate xDateAgo);
+	void deleteByLastAccessedDateBefore(LocalDate xDateAgo);
 
 }
