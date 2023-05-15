@@ -10,11 +10,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.NoArgsConstructor;
+
 
 @Entity
-@NoArgsConstructor
 public class Announcement {
+
+	public Announcement() {
+		this.issueDate = LocalDate.now();
+	}
 
 	@JsonCreator
 	public Announcement(String title, String description) {
@@ -36,6 +39,14 @@ public class Announcement {
 	
 	@ManyToOne
 	private Project project;
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public String getTitle() {
 		return title;
