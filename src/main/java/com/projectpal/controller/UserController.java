@@ -17,6 +17,7 @@ import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
+import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.utils.SecurityContextUtil;
@@ -26,10 +27,12 @@ import com.projectpal.utils.SecurityContextUtil;
 public class UserController {
 
 	@Autowired
-	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo) {
+	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo,
+			ProjectRepository projectRepo) {
 		this.encoder = encoder;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
+		this.projectRepo = projectRepo;
 	}
 
 	private final PasswordEncoder encoder;
@@ -37,6 +40,8 @@ public class UserController {
 	private final UserRepository userRepo;
 
 	private final TaskRepository taskRepo;
+
+	private final ProjectRepository projectRepo;
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
@@ -69,25 +74,43 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/update/project/exit")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
 
 		User user = SecurityContextUtil.getUser();
 
-		if (user.getProject() != null) {
-			user.setProject(null);
-			user.setRole(Role.ROLE_USER);
-			userRepo.save(user);
+		if (user.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
+
+			List<User> projectUsers = userRepo.findAllByProject(user.getProject()).orElse(null);
+
+			if (projectUsers != null) {
+
+				for (User projectUser : projectUsers) {
+
+					if (projectUser.getRole() == Role.ROLE_USER_PROJECT_OPERATOR) {
+						projectUser.setRole(Role.ROLE_USER_PROJECT_OWNER);
+						userRepo.save(projectUser);
+						break;
+					}
+				}
+
+			} else
+				projectRepo.delete(user.getProject());
 		}
+
+		user.setProject(null);
+		user.setRole(Role.ROLE_USER);
+		userRepo.save(user);
 
 		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(null);
 
 		for (Task task : tasks) {
-			if (task.getAssignedUser() != null) {
-				task.setAssignedUser(null);
-				taskRepo.save(task);
-			}
+
+			task.setAssignedUser(null);
+			taskRepo.save(task);
+
 		}
 
 		return ResponseEntity.status(204).build();
