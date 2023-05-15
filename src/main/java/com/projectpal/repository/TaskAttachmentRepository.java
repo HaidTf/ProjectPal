@@ -15,4 +15,8 @@ public interface TaskAttachmentRepository extends JpaRepository<TaskAttachment,L
 
 	Optional<List<TaskAttachment>> findAllByTask(Task task);
 
+	Optional<TaskAttachment> findTaskAttachmentByFileName(String fileName);
+
+	Optional<TaskAttachment> findTaskAttachmentByFileNameAndTaskId(String fileName, long taskId);
+
 }
