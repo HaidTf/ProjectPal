@@ -87,7 +87,7 @@ public class InvitationController {
 		Invitation invitation = invitationRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("invitation not found"));
 
-		if (invitation.getUser().getId() != SecurityContextUtil.getUser().getId())
+		if (invitation.getInvitedUser().getId() != SecurityContextUtil.getUser().getId())
 			throw new ForbiddenException("you are not allowed to modify other user's invitations");
 		
 		 User user = SecurityContextUtil.getUser();
@@ -109,7 +109,7 @@ public class InvitationController {
 		Invitation invitation = invitationRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("invitation not found"));
 
-		if (invitation.getUser().getId() != SecurityContextUtil.getUser().getId())
+		if (invitation.getInvitedUser().getId() != SecurityContextUtil.getUser().getId())
 			throw new ForbiddenException("you are not allowed to modify other user's invitations");
 
 		invitationRepo.delete(invitation);
