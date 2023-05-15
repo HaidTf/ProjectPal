@@ -8,12 +8,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.NoArgsConstructor;
+
 
 @Entity
-@NoArgsConstructor
 public class Invitation {
 
+	public Invitation() {
+		this.issueDate = LocalDate.now();
+	}
+	
 	public Invitation(User invitedUser, Project project) {
 		this.invitedUser = invitedUser;
 		this.project = project;
@@ -33,14 +36,22 @@ public class Invitation {
 	@ManyToOne
 	private Project project;
 
-	public User getUser() {
+	public User getInvitedUser() {
 		return invitedUser;
 	}
 
-	public void setUser(User user) {
+	public void setInvitedUser(User user) {
 		this.invitedUser = user;
 	}
 
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+	
 	public Project getProject() {
 		return project;
 	}
