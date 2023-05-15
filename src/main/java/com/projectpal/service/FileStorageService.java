@@ -65,5 +65,26 @@ public class FileStorageService {
 			throw new BadRequestException("invalid file path");
 		}
 	}
+	public void deleteFile(String fileName,long parentId) {
+
+		try {
+			String parentDirectoryPath = storageLocation + "/" + parentId;
+			
+			Path filePath = Path.of(parentDirectoryPath, fileName);
+			
+			Resource resource = new UrlResource(filePath.toUri());
+			
+			if (resource.exists()) {
+				Files.delete(filePath);
+			} else {
+				throw new ResourceNotFoundException("file not found");
+			}
+		} catch (MalformedURLException ex) {
+			throw new BadRequestException("invalid file path");
+		} catch (IOException ex) {
+	        throw new InternalServerErrorException("Error deleting file");
+	    }
+		
+	}
 
 }
