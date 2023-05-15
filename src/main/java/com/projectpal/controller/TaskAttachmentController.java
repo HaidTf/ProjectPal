@@ -116,7 +116,7 @@ public class TaskAttachmentController {
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 		
-		TaskAttachment attachment = attachmentRepo.findTaskAttachmentByFileName(fileName).orElseThrow(() -> new ResourceNotFoundException("no taskAttachment with this name is found"));;
+		TaskAttachment attachment = attachmentRepo.findTaskAttachmentByFileNameAndTaskId(fileName,taskId).orElseThrow(() -> new ResourceNotFoundException("no taskAttachment with this name is found"));;
 		
 		if(attachment.getTask().getId()!=task.getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
