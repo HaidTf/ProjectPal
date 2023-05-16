@@ -96,6 +96,9 @@ public class EpicController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
 
+		if(priority == null)
+			throw new BadRequestException("priority is null");
+		
 		if (priority < 0 || priority > 255)
 			throw new BadRequestException("value is too large or too small");
 

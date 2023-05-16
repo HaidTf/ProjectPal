@@ -141,6 +141,9 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
+		if(priority == null)
+			throw new BadRequestException("priority is null");
+		
 		if (priority < 0 || priority > 255)
 			throw new BadRequestException("value is too large or too small");
 
