@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,24 +33,47 @@ import com.projectpal.utils.ProjectUtil;
 @RestController
 @RequestMapping("/epic")
 public class EpicController {
+
 	@Autowired
-	public EpicController(EpicRepository epicRepo) {
+	public EpicController(EpicRepository epicRepo, RedisCacheManager redis) {
 		this.epicRepo = epicRepo;
+		this.redis = redis;
 	}
 
 	private final EpicRepository epicRepo;
 
-	@GetMapping("/list")
-	public ResponseEntity<List<Epic>> getEpicList() {
-		
+	private final RedisCacheManager redis;
+
+	private List<Epic> getCachedEpicList() {
+
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Epic> epics = epicRepo.findAllByProject(project)
-				.orElseThrow(() -> new ResourceNotFoundException("no epics found"));
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+		} catch (Exception ex) {
+			epics = null;
+		}
+		if (epics == null) {
+
+			epics = epicRepo.findAllByProject(project)
+					.orElseThrow(() -> new ResourceNotFoundException("no epics found"));
+
+			redis.getCache("epicListCache").put(project.getId(), epics);
+		}
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
-		return ResponseEntity.ok(epics);
+		return epics;
+	}
+
+	@GetMapping("/list")
+	public ResponseEntity<List<Epic>> getEpicList() {
+
+		return ResponseEntity.ok(getCachedEpicList());
+
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
@@ -59,10 +84,28 @@ public class EpicController {
 		if (epic == null || epic.getName() == null || epic.getPriority() == null)
 			throw new BadRequestException("request body is null");
 
-		epic.setProject(ProjectUtil.getProjectNotNull());
+		Project project = ProjectUtil.getProjectNotNull();
+
+		epic.setProject(project);
 
 		epicRepo.save(epic);
 
+		// Redis Cache Update:
+
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+			if (epics != null) {
+				epics.add(epic);
+				redis.getCache("epicListCache").put(project.getId(), epics);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
+		
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epic").build();
 		URI location = uriComponents.toUri();
 
@@ -76,16 +119,40 @@ public class EpicController {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
-		
+
 		epic.setDescription(description);
-		
+
 		epicRepo.save(epic);
+
+		// Redis Cache Update:
+
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+			if (epics != null) {
+				for (Epic epic1 : epics) {
+					if (epic1.getId() == id) {
+						epic.setDescription(description);
+						break;
+					}
+				}
+
+				redis.getCache("epicListCache").put(project.getId(), epics);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 		
 		return ResponseEntity.status(204).build();
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
@@ -93,12 +160,14 @@ public class EpicController {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
 
-		if(priority == null)
+		if (priority == null)
 			throw new BadRequestException("priority is null");
-		
+
 		if (priority < 0 || priority > 255)
 			throw new BadRequestException("value is too large or too small");
 
@@ -106,10 +175,32 @@ public class EpicController {
 
 		epicRepo.save(epic);
 
+		// Redis Cache Update:
+
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+			if (epics != null) {
+				for (Epic epic1 : epics) {
+					if (epic1.getId() == id) {
+						epic.setPriority(priority);
+						break;
+					}
+				}
+
+				redis.getCache("epicListCache").put(project.getId(), epics);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
+		
 		return ResponseEntity.status(204).build();
 
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
@@ -117,19 +208,43 @@ public class EpicController {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		if(progress == null)
+		if (progress == null)
 			throw new BadRequestException("request is null");
-		
+
 		epic.setProgress(progress);
 
 		epicRepo.save(epic);
 
+		// Redis Cache Update:
+
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+			if (epics != null) {
+				for (Epic epic1 : epics) {
+					if (epic1.getId() == id) {
+						epic.setProgress(progress);
+						break;
+					}
+				}
+
+				redis.getCache("epicListCache").put(project.getId(), epics);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
+		
 		return ResponseEntity.status(204).build();
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/delete/{id}")
 	@Transactional
@@ -137,11 +252,35 @@ public class EpicController {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
 		epicRepo.delete(epic);
 
+		// Redis Cache Update:
+
+		List<Epic> epics;
+
+		try {
+			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
+
+			if (epics != null) {
+				for (Epic epic1 : epics) {
+					if (epic1.getId() == id) {
+						epics.remove(epic1);
+						break;
+					}
+				}
+
+				redis.getCache("epicListCache").put(project.getId(), epics);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
+		
 		return ResponseEntity.status(204).build();
 	}
 }
