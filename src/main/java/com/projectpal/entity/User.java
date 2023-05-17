@@ -37,7 +37,7 @@ public class User implements UserDetails {
 	}
 
 	@Transient
-	private static final long serialVersionUID = 1234L;
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
