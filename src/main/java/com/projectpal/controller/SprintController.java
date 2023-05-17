@@ -304,7 +304,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/delete/{id}")
 	@Transactional
-	public ResponseEntity<Void> deletesprint(@PathVariable long id) {
+	public ResponseEntity<Void> deleteSprint(@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
