@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,24 +36,45 @@ import com.projectpal.utils.ProjectUtil;
 public class SprintController {
 
 	@Autowired
-	public SprintController(SprintRepository sprintRepo) {
-
+	public SprintController(SprintRepository sprintRepo, RedisCacheManager redis) {
+		this.redis = redis;
 		this.sprintRepo = sprintRepo;
 	}
 
 	private final SprintRepository sprintRepo;
 
-	@GetMapping("/list")
-	public ResponseEntity<List<Sprint>> getsprintList() {
+	private final RedisCacheManager redis;
 
+	private List<Sprint> getCachedSprintList() {
+		
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Sprint> sprints = sprintRepo.findAllByProject(project)
-				.orElseThrow(() -> new ResourceNotFoundException("no sprints found"));
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+		} catch (Exception ex) {
+			sprints = null;
+		}
+		if (sprints == null) {
+
+			sprints = sprintRepo.findAllByProject(project)
+					.orElseThrow(() -> new ResourceNotFoundException("no sprints found"));
+
+			redis.getCache("sprintListCache").put(project.getId(), sprints);
+		}
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
-		return ResponseEntity.ok(sprints);
+		return sprints;
+	}
+
+	@GetMapping("/list")
+	public ResponseEntity<List<Sprint>> getsprintList() {
+
+		return ResponseEntity.ok(getCachedSprintList());
+
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
@@ -66,9 +88,27 @@ public class SprintController {
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		sprint.setProject(ProjectUtil.getProjectNotNull());
+		Project project = ProjectUtil.getProjectNotNull();
+
+		sprint.setProject(project);
 
 		sprintRepo.save(sprint);
+
+		// Redis Cache Update:
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				sprints.add(sprint);
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/sprint").build();
 		URI location = uriComponents.toUri();
@@ -85,7 +125,9 @@ public class SprintController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
 		if (startDate == null)
@@ -97,6 +139,28 @@ public class SprintController {
 		sprint.setStartDate(startDate);
 
 		sprintRepo.save(sprint);
+
+		// Redis Cache Update:
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				for (Sprint sprint1 : sprints) {
+					if (sprint1.getId() == id) {
+						sprint.setStartDate(startDate);
+						break;
+					}
+				}
+
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
@@ -110,7 +174,9 @@ public class SprintController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
 		if (endDate == null)
@@ -123,6 +189,28 @@ public class SprintController {
 
 		sprintRepo.save(sprint);
 
+		// Redis Cache Update:
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				for (Sprint sprint1 : sprints) {
+					if (sprint1.getId() == id) {
+						sprint.setEndDate(endDate);
+						break;
+					}
+				}
+
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
+
 		return ResponseEntity.status(204).build();
 	}
 
@@ -134,12 +222,36 @@ public class SprintController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
 		sprint.setDescription(description);
 
 		sprintRepo.save(sprint);
+
+		// Redis Cache Update:
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				for (Sprint sprint1 : sprints) {
+					if (sprint1.getId() == id) {
+						sprint.setDescription(description);
+						break;
+					}
+				}
+
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
@@ -152,7 +264,9 @@ public class SprintController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
 		if (progress == null)
@@ -161,6 +275,28 @@ public class SprintController {
 		sprint.setProgress(progress);
 
 		sprintRepo.save(sprint);
+
+		// Redis Cache Update:
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				for (Sprint sprint1 : sprints) {
+					if (sprint1.getId() == id) {
+						sprint.setProgress(progress);
+						break;
+					}
+				}
+
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
@@ -173,10 +309,32 @@ public class SprintController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		Project project = ProjectUtil.getProjectNotNull();
+
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
 		sprintRepo.delete(sprint);
+
+		List<Sprint> sprints;
+
+		try {
+			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
+
+			if (sprints != null) {
+				for (Sprint sprint1 : sprints) {
+					if (sprint1.getId() == id) {
+						sprints.remove(sprint1);
+						break;
+					}
+				}
+
+				redis.getCache("sprintListCache").put(project.getId(), sprints);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintListCache").evictIfPresent(project.getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
