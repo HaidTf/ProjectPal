@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.entity.UserStory;
 import com.projectpal.dto.request.UserStoryCreationRequest;
 import com.projectpal.entity.Epic;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
@@ -37,11 +39,12 @@ import com.projectpal.utils.ProjectUtil;
 public class UserStoryController {
 
 	@Autowired
-	public UserStoryController(UserStoryRepository userStoryRepo, SprintRepository sprintRepo,
-			EpicRepository epicRepo) {
+	public UserStoryController(UserStoryRepository userStoryRepo, SprintRepository sprintRepo, EpicRepository epicRepo,
+			RedisCacheManager redis) {
 		this.userStoryRepo = userStoryRepo;
 		this.epicRepo = epicRepo;
 		this.sprintRepo = sprintRepo;
+		this.redis = redis;
 	}
 
 	private final EpicRepository epicRepo;
@@ -49,6 +52,56 @@ public class UserStoryController {
 	private final UserStoryRepository userStoryRepo;
 
 	private final SprintRepository sprintRepo;
+
+	private final RedisCacheManager redis;
+
+	private List<UserStory> getCachedEpicUserStoryList(Epic epic) {
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(epic.getId(), List.class);
+
+		} catch (Exception ex) {
+			userStories = null;
+		}
+		if (userStories == null) {
+
+			userStories = userStoryRepo.findAllByEpic(epic)
+					.orElseThrow(() -> new ResourceNotFoundException("no userStories found"));
+
+			redis.getCache("epicUserStoryListCache").put(epic.getId(), userStories);
+		}
+
+		userStories
+				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
+
+		return userStories;
+	}
+
+	private List<UserStory> getCachedSprintUserStoryList(Sprint sprint) {
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("sprintUserStoryListCache").get(sprint.getId(), List.class);
+
+		} catch (Exception ex) {
+			userStories = null;
+		}
+		if (userStories == null) {
+
+			userStories = userStoryRepo.findAllBySprint(sprint)
+					.orElseThrow(() -> new ResourceNotFoundException("no userStories found"));
+
+			redis.getCache("sprintUserStoryListCache").put(sprint.getId(), userStories);
+		}
+
+		userStories
+				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
+
+		return userStories;
+	}
 
 	@GetMapping("/list/epic/{epicId}")
 	public ResponseEntity<List<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
@@ -58,13 +111,7 @@ public class UserStoryController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = userStoryRepo.findAllByEpic(epic)
-				.orElseThrow(() -> new ResourceNotFoundException("no userStories found"));
-
-		userStories
-				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
-
-		return ResponseEntity.ok(userStories);
+		return ResponseEntity.ok(getCachedEpicUserStoryList(epic));
 	}
 
 	@GetMapping("/list/sprint/{sprintId}")
@@ -76,13 +123,7 @@ public class UserStoryController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = userStoryRepo.findAllBySprint(sprint)
-				.orElseThrow(() -> new ResourceNotFoundException("no userStories found"));
-
-		userStories
-				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
-
-		return ResponseEntity.ok(userStories);
+		return ResponseEntity.ok(getCachedSprintUserStoryList(sprint));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
@@ -106,10 +147,68 @@ public class UserStoryController {
 
 		userStoryRepo.save(userStory);
 
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(epic.getId(), List.class);
+
+			if (userStories != null) {
+				userStories.add(userStory);
+				redis.getCache("epicUserStoryListCache").put(epic.getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicUserStiryListCache").evictIfPresent(epic.getId());
+		}
+		// Redis Cache Update End:
+
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstory").build();
 		URI location = uriComponents.toUri();
 
 		return ResponseEntity.status(201).location(location).build();
+	}
+
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
+	@PatchMapping("/update/addtosprint/{sprintId}/{userStoryId}")
+	@Transactional
+	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		Sprint sprint = sprintRepo.findById(sprintId)
+				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+
+		if (sprint.getProject().getId() != project.getId())
+			throw new ForbiddenException("you are not allowed access to other projects");
+
+		UserStory userStory = userStoryRepo.findById(userStoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
+
+		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+			throw new ForbiddenException("you are not allowed access to other projects");
+
+		userStory.setSprint(sprint);
+
+		userStoryRepo.save(userStory);
+
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("sprintUserStoryListCache").get(sprint.getId(), List.class);
+
+			if (userStories != null) {
+				userStories.add(userStory);
+				redis.getCache("sprintUserStoryListCache").put(sprint.getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("sprintUserStoryListCache").evictIfPresent(sprint.getId());
+		}
+		// Redis Cache Update End:
+
+		return ResponseEntity.status(204).build();
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
@@ -127,6 +226,28 @@ public class UserStoryController {
 
 		userStoryRepo.save(userStory);
 
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(userStory.getEpic().getId(), List.class);
+
+			if (userStories != null) {
+				for (UserStory userStory1 : userStories) {
+					if (userStory1.getId() == id) {
+						userStory1.setDescription(description);
+						break;
+					}
+				}
+
+				redis.getCache("epicUserStoryListCache").put(userStory.getEpic().getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicUserStoryListCache").evictIfPresent(userStory.getEpic().getId());
+		}
+		// Redis Cache Update End:
+
 		return ResponseEntity.status(204).build();
 	}
 
@@ -141,15 +262,37 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		if(priority == null)
+		if (priority == null)
 			throw new BadRequestException("priority is null");
-		
+
 		if (priority < 0 || priority > 255)
 			throw new BadRequestException("value is too large or too small");
 
 		userStory.setPriority(priority);
 
 		userStoryRepo.save(userStory);
+
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(userStory.getEpic().getId(), List.class);
+
+			if (userStories != null) {
+				for (UserStory userStory1 : userStories) {
+					if (userStory1.getId() == id) {
+						userStory1.setPriority(priority);
+						break;
+					}
+				}
+
+				redis.getCache("epicUserStoryListCache").put(userStory.getEpic().getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicUserStoryListCache").evictIfPresent(userStory.getEpic().getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 
@@ -168,10 +311,32 @@ public class UserStoryController {
 
 		if (progress == null)
 			throw new BadRequestException("request holding progress is null");
-		
+
 		userStory.setProgress(progress);
 
 		userStoryRepo.save(userStory);
+
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(userStory.getEpic().getId(), List.class);
+
+			if (userStories != null) {
+				for (UserStory userStory1 : userStories) {
+					if (userStory1.getId() == id) {
+						userStory1.setProgress(progress);
+						break;
+					}
+				}
+
+				redis.getCache("epicUserStoryListCache").put(userStory.getEpic().getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicUserStoryListCache").evictIfPresent(userStory.getEpic().getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
@@ -188,6 +353,28 @@ public class UserStoryController {
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryRepo.delete(userStory);
+
+		// Redis Cache Update:
+
+		List<UserStory> userStories;
+
+		try {
+			userStories = redis.getCache("epicUserStoryListCache").get(userStory.getEpic().getId(), List.class);
+
+			if (userStories != null) {
+				for (UserStory userStory1 : userStories) {
+					if (userStory1.getId() == id) {
+						userStories.remove(userStory1);
+						break;
+					}
+				}
+
+				redis.getCache("epicUserStoryListCache").put(userStory.getEpic().getId(), userStories);
+			}
+		} catch (Exception ex) {
+			redis.getCache("epicUserStoryListCache").evictIfPresent(userStory.getEpic().getId());
+		}
+		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
 	}
