@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -17,11 +18,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-public class Epic {
+public class Epic implements Serializable {
 
 	@JsonCreator
 	public Epic(String name, String description, Byte priority) {
@@ -31,13 +33,16 @@ public class Epic {
 		this.progress = Progress.TODO;
 	}
 	
-	@JsonCreator
+	
 	public Epic(String name, String description, Byte priority,Progress progress) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = progress;
 	}
+	
+	@Transient
+	private static final long serialVersionUID = 3L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
@@ -52,7 +57,7 @@ public class Epic {
 
 	@Enumerated(EnumType.STRING)
 	@NonNull
-	private Progress progress;
+	private transient Progress progress;
 
 	@ManyToOne
 	@JsonIgnore

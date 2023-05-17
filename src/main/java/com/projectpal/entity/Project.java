@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,11 +18,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-public class Project {
+public class Project implements Serializable {
 
 	@JsonCreator
 	public Project(String name, String description) {
@@ -29,6 +31,9 @@ public class Project {
 		this.description = description;
 		this.lastAccessedDate = LocalDate.now();
 	}
+	
+	@Transient
+	private static final long serialVersionUID = 2L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")

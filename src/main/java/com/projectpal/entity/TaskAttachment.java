@@ -1,5 +1,7 @@
 package com.projectpal.entity;
 
+import java.io.Serializable;
+
 import org.springframework.lang.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,15 +10,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Entity
-public class TaskAttachment {
+public class TaskAttachment implements Serializable {
 
 	public TaskAttachment(String fileName) {
 		this.fileName = fileName;
 	}
+	
+	@Transient
+	private static final long serialVersionUID = 7L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")

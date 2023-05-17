@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -17,12 +18,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 
 @Entity
 @NoArgsConstructor
-public class UserStory {
+public class UserStory implements Serializable {
 	
 	@JsonCreator
 	public UserStory(String name, String description, Byte priority) {
@@ -31,7 +33,7 @@ public class UserStory {
 		this.priority = priority;
 		this.progress = Progress.TODO;
 	}
-	@JsonCreator
+	 
 	public UserStory(String name, String description, Byte priority,Progress progress) {
 		this.name = name;
 		this.description = description;
@@ -39,6 +41,8 @@ public class UserStory {
 		this.progress = progress;
 	}
 	
+	@Transient
+	private static final long serialVersionUID = 5L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")

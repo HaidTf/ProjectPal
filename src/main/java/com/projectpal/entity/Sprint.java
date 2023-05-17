@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import org.springframework.lang.NonNull;
@@ -16,11 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Entity
-public class Sprint {
+public class Sprint implements Serializable {
 
 	@JsonCreator
 	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate) {
@@ -30,7 +32,7 @@ public class Sprint {
 		this.endDate = endDate;
 		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
 	}
-	@JsonCreator
+	 
 	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate,Progress progress) {
 		this.name = name;
 		this.description = description;
@@ -38,6 +40,9 @@ public class Sprint {
 		this.endDate = endDate;
 		this.progress = progress;
 	}
+	
+	@Transient
+	private static final long serialVersionUID = 4L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
