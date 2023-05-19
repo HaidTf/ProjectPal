@@ -50,7 +50,7 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 
-	@PreAuthorize("!(hasRole('ADMIN'))")
+	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/email")
 	@Transactional
 	public ResponseEntity<Void> updateEmail(@RequestBody String email) {
@@ -62,7 +62,7 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PreAuthorize("!(hasRole('ADMIN'))")
+	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/password")
 	@Transactional
 	public ResponseEntity<Void> updatePassword(@RequestBody String password) {
