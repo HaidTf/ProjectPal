@@ -18,9 +18,9 @@ public class UserDetailsServiceConfig {
 	}
 
 	private final UserRepository userRepo;
-	
-	@Bean
-	public UserDetailsService userDetailsService() {
+
+    @Bean
+    UserDetailsService userDetailsService() {
 
 		
 		
