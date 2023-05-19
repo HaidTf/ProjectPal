@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -38,11 +39,18 @@ public class SecurityConfig {
 	private final UserDetailsService userDetailsService;
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-		http.csrf().disable().authorizeHttpRequests().requestMatchers("/auth/**","/v3/api-docs/**","/swagger-ui/**").permitAll().anyRequest()
-				.authenticated().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.authenticationProvider(authenticationProvider())
+		http.csrf().disable()
+		.headers((headers) -> headers.
+				httpStrictTransportSecurity().disable() // will enable in production
+				.xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+				.contentSecurityPolicy("default-src 'self'"))
+				.authorizeHttpRequests().requestMatchers("/auth/**").permitAll()
+				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin").hasAnyRole("ADMIN", "SUPER_ADMIN")
+				.anyRequest().authenticated()
+				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				.and().authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
@@ -50,12 +58,12 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public PasswordEncoder passwordEncoder() {
+	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
-	public AuthenticationProvider authenticationProvider() {
+	AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
 		dao.setUserDetailsService(userDetailsService);
 		dao.setPasswordEncoder(passwordEncoder());
@@ -63,7 +71,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 
