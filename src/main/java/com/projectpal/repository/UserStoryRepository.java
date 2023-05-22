@@ -15,5 +15,9 @@ public interface UserStoryRepository extends JpaRepository<UserStory,Long>{
 	Optional<List<UserStory>> findAllByEpic(Epic epic);
 	
 	Optional<List<UserStory>> findAllBySprint(Sprint sprint);
+
+	Optional<List<UserStory>> findAllByEpicId(Long id);
+	
+	Optional<List<UserStory>> findAllBySprintId(Long id);
 	
 }
