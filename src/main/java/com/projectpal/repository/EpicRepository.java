@@ -13,4 +13,6 @@ import com.projectpal.entity.Project;
 public interface EpicRepository extends JpaRepository<Epic, Long> {
 
 	Optional<List<Epic>> findAllByProject(Project project);
+	
+	Optional<List<Epic>> findAllByProjectId(Long projectId);
 }
