@@ -58,6 +58,8 @@ public class ProjectController {
 
 		project.setLastAccessedDate(LocalDate.now());
 
+		projectRepo.save(project);
+		
 		return ResponseEntity.ok(project);
 	}
 
