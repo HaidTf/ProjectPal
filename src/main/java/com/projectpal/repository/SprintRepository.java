@@ -12,5 +12,7 @@ import com.projectpal.entity.Sprint;
 public interface SprintRepository extends JpaRepository<Sprint,Long>{
 
 	Optional<List<Sprint>> findAllByProject(Project project);
+
+	Optional<List<Sprint>> findAllByProjectId(Long id);
 	
 }
