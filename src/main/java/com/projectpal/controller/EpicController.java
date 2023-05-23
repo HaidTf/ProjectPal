@@ -4,8 +4,6 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +26,7 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
+import com.projectpal.service.CacheService;
 import com.projectpal.utils.ProjectUtil;
 
 @RestController
@@ -35,44 +34,25 @@ import com.projectpal.utils.ProjectUtil;
 public class EpicController {
 
 	@Autowired
-	public EpicController(EpicRepository epicRepo, RedisCacheManager redis) {
+	public EpicController(EpicRepository epicRepo, CacheService cacheService) {
 		this.epicRepo = epicRepo;
-		this.redis = redis;
+		this.cacheService = cacheService;
 	}
 
 	private final EpicRepository epicRepo;
 
-	private final RedisCacheManager redis;
-
-	private List<Epic> getCachedEpicList() {
-
-		Project project = ProjectUtil.getProjectNotNull();
-
-		List<Epic> epics;
-
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-		} catch (Exception ex) {
-			epics = null;
-		}
-		if (epics == null) {
-
-			epics = epicRepo.findAllByProject(project)
-					.orElseThrow(() -> new ResourceNotFoundException("no epics found"));
-
-			redis.getCache("epicListCache").put(project.getId(), epics);
-		}
-
-		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
-
-		return epics;
-	}
+	private final CacheService cacheService;
 
 	@GetMapping("/list")
 	public ResponseEntity<List<Epic>> getEpicList() {
 
-		return ResponseEntity.ok(getCachedEpicList());
+		Project project = ProjectUtil.getProjectNotNull();
+
+		List<Epic> epics = cacheService.getCachedEpicList(project);
+
+		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
+
+		return ResponseEntity.ok(epics);
 
 	}
 
@@ -92,20 +72,10 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		List<Epic> epics;
+		cacheService.addObjectToCache(CacheService.epicListCache, project.getId(), epic);
 
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-			if (epics != null) {
-				epics.add(epic);
-				redis.getCache("epicListCache").put(project.getId(), epics);
-			}
-		} catch (Exception ex) {
-			redis.getCache("epicListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
-		
+
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epic").build();
 		URI location = uriComponents.toUri();
 
@@ -130,26 +100,13 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		List<Epic> epics;
+		cacheService.updateEpicProperty(epic, ep -> {
+			ep.setDescription(description);
+			return null;
+		});
 
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-			if (epics != null) {
-				for (Epic epic1 : epics) {
-					if (epic1.getId() == id) {
-						epic.setDescription(description);
-						break;
-					}
-				}
-
-				redis.getCache("epicListCache").put(project.getId(), epics);
-			}
-		} catch (Exception ex) {
-			redis.getCache("epicListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
-		
+
 		return ResponseEntity.status(204).build();
 	}
 
@@ -177,26 +134,13 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		List<Epic> epics;
+		cacheService.updateEpicProperty(epic, ep -> {
+			ep.setPriority(priority);
+			return null;
+		});
 
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-			if (epics != null) {
-				for (Epic epic1 : epics) {
-					if (epic1.getId() == id) {
-						epic.setPriority(priority);
-						break;
-					}
-				}
-
-				redis.getCache("epicListCache").put(project.getId(), epics);
-			}
-		} catch (Exception ex) {
-			redis.getCache("epicListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
-		
+
 		return ResponseEntity.status(204).build();
 
 	}
@@ -222,26 +166,13 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		List<Epic> epics;
+		cacheService.updateEpicProperty(epic, ep -> {
+			ep.setProgress(progress);
+			return null;
+		});
 
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-			if (epics != null) {
-				for (Epic epic1 : epics) {
-					if (epic1.getId() == id) {
-						epic.setProgress(progress);
-						break;
-					}
-				}
-
-				redis.getCache("epicListCache").put(project.getId(), epics);
-			}
-		} catch (Exception ex) {
-			redis.getCache("epicListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
-		
+
 		return ResponseEntity.status(204).build();
 	}
 
@@ -261,26 +192,10 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		List<Epic> epics;
+		cacheService.deleteObjectFromCache(CacheService.epicListCache, project.getId(), epic, Epic::getId);
 
-		try {
-			epics = redis.getCache("epicListCache").get(project.getId(), List.class);
-
-			if (epics != null) {
-				for (Epic epic1 : epics) {
-					if (epic1.getId() == id) {
-						epics.remove(epic1);
-						break;
-					}
-				}
-
-				redis.getCache("epicListCache").put(project.getId(), epics);
-			}
-		} catch (Exception ex) {
-			redis.getCache("epicListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
-		
+
 		return ResponseEntity.status(204).build();
 	}
 }
