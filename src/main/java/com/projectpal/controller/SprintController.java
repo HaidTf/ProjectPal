@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +28,8 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
+import com.projectpal.service.CacheService;
+import com.projectpal.service.CacheServiceSprintImpl;
 import com.projectpal.utils.ProjectUtil;
 
 @RestController
@@ -36,44 +37,30 @@ import com.projectpal.utils.ProjectUtil;
 public class SprintController {
 
 	@Autowired
-	public SprintController(SprintRepository sprintRepo, RedisCacheManager redis) {
-		this.redis = redis;
+	public SprintController(SprintRepository sprintRepo, CacheService cacheService,CacheServiceSprintImpl cacheServiceSprintImpl) {
+		this.cacheService = cacheService;
 		this.sprintRepo = sprintRepo;
+		this.cacheServiceSprintImpl = cacheServiceSprintImpl;
+				
 	}
 
 	private final SprintRepository sprintRepo;
 
-	private final RedisCacheManager redis;
+	private final CacheService cacheService;
+	
+	private final CacheServiceSprintImpl cacheServiceSprintImpl;
 
-	private List<Sprint> getCachedSprintList() {
-		
+	@GetMapping("/list")
+	@Transactional
+	public ResponseEntity<List<Sprint>> getsprintList() {
+
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Sprint> sprints;
-
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-		} catch (Exception ex) {
-			sprints = null;
-		}
-		if (sprints == null) {
-
-			sprints = sprintRepo.findAllByProject(project)
-					.orElseThrow(() -> new ResourceNotFoundException("no sprints found"));
-
-			redis.getCache("sprintListCache").put(project.getId(), sprints);
-		}
+		List<Sprint> sprints = cacheServiceSprintImpl.getCachedSprintList(project);
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
-		return sprints;
-	}
-
-	@GetMapping("/list")
-	public ResponseEntity<List<Sprint>> getsprintList() {
-
-		return ResponseEntity.ok(getCachedSprintList());
+		return ResponseEntity.ok(sprints);
 
 	}
 
@@ -96,18 +83,8 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		List<Sprint> sprints;
+		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				sprints.add(sprint);
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/sprint").build();
@@ -142,24 +119,11 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		List<Sprint> sprints;
+		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
+			spr.setStartDate(startDate);
+			return null;
+		});
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				for (Sprint sprint1 : sprints) {
-					if (sprint1.getId() == id) {
-						sprint.setStartDate(startDate);
-						break;
-					}
-				}
-
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
@@ -191,24 +155,11 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		List<Sprint> sprints;
+		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
+			spr.setEndDate(endDate);
+			return null;
+		});
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				for (Sprint sprint1 : sprints) {
-					if (sprint1.getId() == id) {
-						sprint.setEndDate(endDate);
-						break;
-					}
-				}
-
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
@@ -233,24 +184,11 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		List<Sprint> sprints;
+		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
+			spr.setDescription(description);
+			return null;
+		});
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				for (Sprint sprint1 : sprints) {
-					if (sprint1.getId() == id) {
-						sprint.setDescription(description);
-						break;
-					}
-				}
-
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
@@ -278,24 +216,11 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		List<Sprint> sprints;
+		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
+			spr.setProgress(progress);
+			return null;
+		});
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				for (Sprint sprint1 : sprints) {
-					if (sprint1.getId() == id) {
-						sprint.setProgress(progress);
-						break;
-					}
-				}
-
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
@@ -316,24 +241,10 @@ public class SprintController {
 
 		sprintRepo.delete(sprint);
 
-		List<Sprint> sprints;
+		// Redis Cache Update:
 
-		try {
-			sprints = redis.getCache("sprintListCache").get(project.getId(), List.class);
-
-			if (sprints != null) {
-				for (Sprint sprint1 : sprints) {
-					if (sprint1.getId() == id) {
-						sprints.remove(sprint1);
-						break;
-					}
-				}
-
-				redis.getCache("sprintListCache").put(project.getId(), sprints);
-			}
-		} catch (Exception ex) {
-			redis.getCache("sprintListCache").evictIfPresent(project.getId());
-		}
+		cacheServiceSprintImpl.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
+		
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();
