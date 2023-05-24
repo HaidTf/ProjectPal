@@ -27,6 +27,7 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.service.CacheService;
+import com.projectpal.service.CacheServiceEpicImpl;
 import com.projectpal.utils.ProjectUtil;
 
 @RestController
@@ -34,21 +35,25 @@ import com.projectpal.utils.ProjectUtil;
 public class EpicController {
 
 	@Autowired
-	public EpicController(EpicRepository epicRepo, CacheService cacheService) {
+	public EpicController(EpicRepository epicRepo, CacheServiceEpicImpl cacheServiceEpicImpl,CacheService cacheService) {
 		this.epicRepo = epicRepo;
+		this.cacheServiceEpicImpl = cacheServiceEpicImpl;
 		this.cacheService = cacheService;
 	}
 
 	private final EpicRepository epicRepo;
 
+	private final CacheServiceEpicImpl cacheServiceEpicImpl;
+	
 	private final CacheService cacheService;
 
 	@GetMapping("/list")
+	@Transactional
 	public ResponseEntity<List<Epic>> getEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Epic> epics = cacheService.getCachedEpicList(project);
+		List<Epic> epics = cacheServiceEpicImpl.getCachedEpicList(project);
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
@@ -72,7 +77,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.addObjectToCache(CacheService.epicListCache, project.getId(), epic);
+		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -100,7 +105,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.updateEpicProperty(epic, ep -> {
+		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
 			ep.setDescription(description);
 			return null;
 		});
@@ -134,7 +139,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.updateEpicProperty(epic, ep -> {
+		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
 			ep.setPriority(priority);
 			return null;
 		});
@@ -166,7 +171,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.updateEpicProperty(epic, ep -> {
+		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
 			ep.setProgress(progress);
 			return null;
 		});
@@ -188,14 +193,14 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		epicRepo.delete(epic);
-
 		// Redis Cache Update:
 
-		cacheService.deleteObjectFromCache(CacheService.epicListCache, project.getId(), epic, Epic::getId);
+		cacheServiceEpicImpl.DeleteEpicFromCacheAndCascadeDeleteChildren(epic);
 
 		// Redis Cache Update End:
-
+		
+		epicRepo.delete(epic);
+		
 		return ResponseEntity.status(204).build();
 	}
 }
