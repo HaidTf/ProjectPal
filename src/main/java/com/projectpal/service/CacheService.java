@@ -10,14 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
 
-import com.projectpal.entity.Epic;
-import com.projectpal.entity.Project;
-import com.projectpal.entity.Sprint;
-import com.projectpal.entity.UserStory;
 import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.EpicRepository;
-import com.projectpal.repository.SprintRepository;
-import com.projectpal.repository.UserStoryRepository;
 
 import jakarta.annotation.PostConstruct;
 
@@ -25,11 +18,7 @@ import jakarta.annotation.PostConstruct;
 public class CacheService {
 
 	@Autowired
-	public CacheService(EpicRepository epicRepo, SprintRepository sprintRepo, UserStoryRepository userStoryRepo,
-			RedisCacheManager redis) {
-		this.epicRepo = epicRepo;
-		this.sprintRepo = sprintRepo;
-		this.userStoryRepo = userStoryRepo;
+	public CacheService(RedisCacheManager redis) {
 		this.redis = redis;
 	}
 
@@ -37,26 +26,12 @@ public class CacheService {
 	private void clearCache() {
 		try {
 			redis.getCacheNames().forEach(cacheName -> redis.getCache(cacheName).clear());
-		} catch(Exception ex) {
-			
+		} catch (Exception ex) {
+
 		}
 	}
-	
+
 	private final RedisCacheManager redis;
-
-	private final EpicRepository epicRepo;
-
-	private final SprintRepository sprintRepo;
-
-	private final UserStoryRepository userStoryRepo;
-
-	public static final String epicListCache = "epicListCache";
-
-	public static final String sprintListCache = "sprintListCache";
-
-	public static final String epicUserStoryListCache = "epicUserStoryListCache";
-
-	public static final String sprintUserStoryListCache = "sprintUserStoryListCache";
 
 	// Generic Get Cached Objects Method
 
@@ -95,38 +70,6 @@ public class CacheService {
 		}
 
 		return objects;
-	}
-	
-	// Generic Add Object To Cache Method
-
-	// #Method Parameters:
-	// name of cache
-	// cache key
-	// Object T : to be added object
-
-	// Method Explanation:
-	// 1) Tries to get cache using cache name (cacheName) and cache key (cacheKey)
-	// 2) If an exception is thrown then the cache is evicted
-	// 3) If List is Found and not empty then object T is added to it
-	// 4) List is put into cache to overwrite the invalid cache
-
-	public <T> void addObjectToCache(String cacheName, Long cacheKey, T object) {
-
-		List<T> objects;
-
-		try {
-			objects = redis.getCache(cacheName).get(cacheKey, List.class);
-
-			if (objects != null) {
-				objects.add(object);
-				redis.getCache(cacheName).put(cacheKey, objects);
-			}
-		} catch (Exception ex) {
-			Cache cache = redis.getCache(cacheName);
-			if (cache != null)
-				cache.evictIfPresent(cacheKey);
-
-		}
 	}
 
 	// Generic Update Property Method
@@ -213,65 +156,12 @@ public class CacheService {
 		}
 	}
 
+	// Evict List From Cache Method:
+
 	public void evictListFromCache(String cacheName, Long cacheKey) {
 		Cache cache = redis.getCache(cacheName);
 		if (cache != null)
 			cache.evictIfPresent(cacheKey);
-	}
-
-	// getCachedObjects() and updateObjectPropertyInCache() methods are given
-	// distinct
-	// implementations due to their complexity
-
-	// Epic
-
-	public List<Epic> getCachedEpicList(Project project) {
-
-		return this.getCachedObjects(epicListCache, project.getId(), epicRepo,
-				repo -> repo.findAllByProjectId(project.getId()));
-	}
-
-	public void updateEpicProperty(Epic epic, Function<Epic, Void> updateEpicProperty) {
-
-		this.updateObjectPropertyInCache(epicListCache, epic.getProject().getId(), epic, Epic::getId,
-				updateEpicProperty);
-	}
-
-	// Sprint
-
-	public List<Sprint> getCachedSprintList(Project project) {
-
-		return this.getCachedObjects(sprintListCache, project.getId(), sprintRepo,
-				repo -> repo.findAllByProjectId(project.getId()));
-	}
-
-	public void updateSprintProperty(Sprint sprint, Function<Sprint, Void> updateSprintProperty) {
-
-		this.updateObjectPropertyInCache(sprintListCache, sprint.getProject().getId(), sprint, Sprint::getId,
-				updateSprintProperty);
-	}
-
-	// UserStory
-
-	public List<UserStory> getCachedEpicUserStoryList(Epic epic) {
-
-		return this.getCachedObjects(epicUserStoryListCache, epic.getId(), userStoryRepo,
-				repo -> repo.findAllByEpicId(epic.getId()));
-	}
-
-	public List<UserStory> getCachedSprintUserStoryList(Sprint sprint) {
-
-		return this.getCachedObjects(sprintUserStoryListCache, sprint.getId(), userStoryRepo,
-				repo -> repo.findAllBySprintId(sprint.getId()));
-	}
-
-	public void updateUserStoryProperty(UserStory userStory, Function<UserStory, Void> updateUserStoryProperty) {
-
-		this.updateObjectPropertyInCache(epicUserStoryListCache, userStory.getEpic().getId(), userStory,
-				UserStory::getId, updateUserStoryProperty);
-
-		this.updateObjectPropertyInCache(sprintUserStoryListCache, userStory.getSprint().getId(), userStory,
-				UserStory::getId, updateUserStoryProperty);
 	}
 
 }
