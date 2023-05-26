@@ -35,6 +35,9 @@ import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceUserStoryImpl;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/userstory")
 public class UserStoryController {
@@ -98,7 +101,7 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createUserStory(@RequestBody UserStoryCreationRequest request) {
+	public ResponseEntity<Void> createUserStory(@Valid @RequestBody UserStoryCreationRequest request) {
 
 		long epicId = request.getEpicId();
 
@@ -109,16 +112,13 @@ public class UserStoryController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		if (userStory.getName() == null || userStory.getPriority() == null)
-			throw new BadRequestException("userStory name or priority is null");
-
 		userStory.setEpic(epic);
 
 		userStoryRepo.save(userStory);
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId());
+		cacheService.addObjectToCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId(), userStory);
 
 		// Redis Cache Update End:
 
@@ -153,7 +153,7 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId());
+		cacheService.addObjectToCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId(), userStory);
 
 		// Redis Cache Update End:
 
@@ -190,7 +190,7 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(@Valid @NotNull @RequestParam Byte priority, @PathVariable long id) {
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -198,10 +198,7 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		if (priority == null)
-			throw new BadRequestException("priority is null");
-
-		if (priority < 0 || priority > 255)
+		if (priority < 0 || priority > 250)
 			throw new BadRequestException("value is too large or too small");
 
 		userStory.setPriority(priority);
@@ -224,7 +221,7 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
