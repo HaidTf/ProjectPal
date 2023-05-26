@@ -3,8 +3,6 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.util.List;
 
-import org.springframework.lang.NonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
@@ -19,6 +17,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 
 
@@ -27,14 +28,14 @@ import lombok.NoArgsConstructor;
 public class UserStory implements Serializable {
 	
 	@JsonCreator
-	public UserStory(String name, String description, Byte priority) {
+	public UserStory(String name, String description, int priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
 	}
 	 
-	public UserStory(String name, String description, Byte priority,Progress progress) {
+	public UserStory(String name, String description, int priority,Progress progress) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
@@ -48,16 +49,18 @@ public class UserStory implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 	
-	@NonNull
+	@NotNull
 	private String name;
 
 	private String description;
 
 	@Column(columnDefinition = "TINYINT")
-	private Byte priority;
+	@Min(0)
+	@Max(250)
+	@NotNull
+	private int priority;
 	
 	@Enumerated(EnumType.STRING)
-	@NonNull
 	private Progress progress;
 	
 	@ManyToOne
@@ -106,11 +109,11 @@ public class UserStory implements Serializable {
 		this.description = description;
 	}
 
-	public Byte getPriority() {
+	public int getPriority() {
 		return priority;
 	}
 
-	public void setPriority(Byte priority) {
+	public void setPriority(int priority) {
 		this.priority = priority;
 	}
 

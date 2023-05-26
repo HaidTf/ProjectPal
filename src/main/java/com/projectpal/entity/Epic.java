@@ -3,8 +3,6 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.util.List;
 
-import org.springframework.lang.NonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
@@ -19,6 +17,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -26,38 +27,40 @@ import lombok.NoArgsConstructor;
 public class Epic implements Serializable {
 
 	@JsonCreator
-	public Epic(String name, String description, Byte priority) {
+	public Epic(String name, String description, int priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
 	}
-	
-	
-	public Epic(String name, String description, Byte priority,Progress progress) {
+
+	public Epic(String name, String description, int priority, Progress progress) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = progress;
 	}
-	
+
 	@Transient
 	private static final long serialVersionUID = 3L;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
-	@NonNull
+
+	@NotNull
 	private String name;
 
 	private String description;
 
 	@Column(columnDefinition = "TINYINT")
-	private Byte priority;
+	@Min(0)
+	@Max(250)
+	@NotNull
+	private int priority;
 
 	@Enumerated(EnumType.STRING)
-	@NonNull
-	private transient Progress progress;
+	private Progress progress;
 
 	@ManyToOne
 	@JsonIgnore
@@ -114,11 +117,11 @@ public class Epic implements Serializable {
 		this.description = description;
 	}
 
-	public Byte getPriority() {
+	public int getPriority() {
 		return priority;
 	}
 
-	public void setPriority(Byte priority) {
+	public void setPriority(int priority) {
 		this.priority = priority;
 	}
 
