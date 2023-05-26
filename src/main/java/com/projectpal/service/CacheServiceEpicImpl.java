@@ -41,7 +41,7 @@ public class CacheServiceEpicImpl {
 				Epic::getId, updateEpicProperty);
 	}
 
-	public void DeleteEpicFromCacheAndCascadeDeleteChildren(Epic epic) {
+	public void deleteEpicFromCacheAndCascadeDeleteChildren(Epic epic) {
 
 		cacheService.deleteObjectFromCache(epicListCache, epic.getProject().getId(), epic, Epic::getId);
 
