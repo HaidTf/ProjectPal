@@ -71,6 +71,39 @@ public class CacheService {
 
 		return objects;
 	}
+	
+	
+	// Generic Add Object To Cache Method
+
+	// #Method Parameters:
+	// name of cache
+	// cache key
+	// Object T : to be added object
+
+	// Method Explanation:
+	// 1) Tries to get cache using cache name (cacheName) and cache key (cacheKey)
+	// 2) If an exception is thrown then the cache is evicted
+	// 3) If List is Found and not empty then object T is added to it
+	// 4) List is put into cache to overwrite the invalid cache
+
+	public <T> void addObjectToCache(String cacheName, Long cacheKey, T object) {
+
+		List<T> objects;
+
+		try {
+			objects = redis.getCache(cacheName).get(cacheKey, List.class);
+
+			if (objects != null && !objects.isEmpty()) {
+				objects.add(object);
+				redis.getCache(cacheName).put(cacheKey, objects);
+			}
+		} catch (Exception ex) {
+			Cache cache = redis.getCache(cacheName);
+			if (cache != null)
+				cache.evictIfPresent(cacheKey);
+
+		}
+	}
 
 	// Generic Update Property Method
 
