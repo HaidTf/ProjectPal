@@ -54,7 +54,7 @@ public class Epic implements Serializable {
 	private String description;
 
 	@Column(columnDefinition = "TINYINT")
-	@Min(0)
+	@Min(1)
 	@Max(250)
 	@NotNull
 	private int priority;
