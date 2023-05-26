@@ -3,6 +3,7 @@ package com.projectpal.entity;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotNull;
 
 
 @Entity
@@ -30,6 +32,7 @@ public class Announcement {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 	
+	@NotNull
 	private String title;
 	
 	private String description;
@@ -38,6 +41,7 @@ public class Announcement {
 	private LocalDate issueDate;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Project project;
 
 	public long getId() {
