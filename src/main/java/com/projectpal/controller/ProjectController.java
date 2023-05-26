@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,19 +29,23 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.service.CacheService;
+import com.projectpal.service.CacheServiceProjectAddOn;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/project")
 public class ProjectController {
 
 	@Autowired
-	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo) {
-
+	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo,CacheService cacheService,CacheServiceProjectAddOn cacheServiceProjectAddOn) {
 		this.projectRepo = projectRepo;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
+		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
 	}
 
 	private final ProjectRepository projectRepo;
@@ -50,6 +53,8 @@ public class ProjectController {
 	private final UserRepository userRepo;
 
 	private final TaskRepository taskRepo;
+	
+	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
 
 	@GetMapping("")
 	public ResponseEntity<Project> getProject() {
@@ -59,17 +64,14 @@ public class ProjectController {
 		project.setLastAccessedDate(LocalDate.now());
 
 		projectRepo.save(project);
-		
+
 		return ResponseEntity.ok(project);
 	}
 
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createProject(@RequestBody Project project) {
-
-		if (project == null || project.getName() == null)
-			throw new BadRequestException("the request body is null");
+	public ResponseEntity<Void> createProject(@Valid @RequestBody Project project) {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -90,7 +92,7 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestParam String description) {
+	public ResponseEntity<Void> updateDescription(@RequestBody String description) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -102,7 +104,7 @@ public class ProjectController {
 
 	}
 
-	@PreAuthorize("hasRole('USER_PROJECT_OWNER')")
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@PatchMapping("/update/setoperator/{name}")
 	@Transactional
 	public ResponseEntity<Void> setProjectOperator(@PathVariable String name) {
@@ -155,7 +157,7 @@ public class ProjectController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PreAuthorize("hasRole('USER_PROJECT_OWNER')")
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@DeleteMapping("/delete")
 	@Transactional
 	public ResponseEntity<Void> deleteProject() {
@@ -163,17 +165,20 @@ public class ProjectController {
 		Project project = ProjectUtil.getProjectNotNull();
 
 		List<User> projectUsers = userRepo.findAllByProject(project).orElse(null);
-
+		
+		cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
+		
+		projectRepo.delete(project);
+		
 		if (projectUsers != null) {
 
 			for (User projectUser : projectUsers) {
 				projectUser.setRole(Role.ROLE_USER);
 			}
-			
+
 		}
-		
+
 		SecurityContextUtil.getUser().setRole(Role.ROLE_USER);
-		projectRepo.delete(project);
 
 		return ResponseEntity.status(204).build();
 
