@@ -2,6 +2,9 @@ package com.projectpal.dto.request;
 
 import com.projectpal.entity.UserStory;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 public class UserStoryCreationRequest {
 
 	public UserStoryCreationRequest(UserStory userStory, Long epicId) {
@@ -9,8 +12,10 @@ public class UserStoryCreationRequest {
 		this.epicId = epicId;
 	}
 
+	@Valid
 	private UserStory userStory;
 	
+	@NotNull
 	private Long epicId;
 
 	public UserStory getUserStory() {
