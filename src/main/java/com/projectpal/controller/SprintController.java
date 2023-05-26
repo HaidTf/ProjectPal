@@ -32,22 +32,26 @@ import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceSprintImpl;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/sprint")
 public class SprintController {
 
 	@Autowired
-	public SprintController(SprintRepository sprintRepo, CacheService cacheService,CacheServiceSprintImpl cacheServiceSprintImpl) {
+	public SprintController(SprintRepository sprintRepo, CacheService cacheService,
+			CacheServiceSprintImpl cacheServiceSprintImpl) {
 		this.cacheService = cacheService;
 		this.sprintRepo = sprintRepo;
 		this.cacheServiceSprintImpl = cacheServiceSprintImpl;
-				
+
 	}
 
 	private final SprintRepository sprintRepo;
 
 	private final CacheService cacheService;
-	
+
 	private final CacheServiceSprintImpl cacheServiceSprintImpl;
 
 	@GetMapping("/list")
@@ -67,7 +71,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createsprint(@RequestBody Sprint sprint) {
+	public ResponseEntity<Void> createsprint(@Valid @RequestBody Sprint sprint) {
 
 		if (sprint == null || sprint.getName() == null || sprint.getStartDate() == null || sprint.getEndDate() == null)
 			throw new BadRequestException("sprint name or startdate or enddate is null");
@@ -83,7 +87,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.addObjectToCache(CacheServiceSprintImpl.sprintListCache, project.getId(), sprint);
 
 		// Redis Cache Update End:
 
@@ -97,7 +101,8 @@ public class SprintController {
 	@PatchMapping("/update/startdate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateStartDate(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @PathVariable long id) {
+			@Valid @NotNull @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -106,9 +111,6 @@ public class SprintController {
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
-
-		if (startDate == null)
-			throw new BadRequestException("request holding startDate is null");
 
 		if (startDate.isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -119,10 +121,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
-			spr.setStartDate(startDate);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -133,7 +132,8 @@ public class SprintController {
 	@PatchMapping("/update/enddate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateEndDate(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @PathVariable long id) {
+			@Valid @NotNull @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -142,9 +142,6 @@ public class SprintController {
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
-
-		if (endDate == null)
-			throw new BadRequestException("request holding endDate is null");
 
 		if (endDate.isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -155,10 +152,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
-			spr.setEndDate(endDate);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -184,10 +178,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
-			spr.setDescription(description);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -197,7 +188,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -207,19 +198,13 @@ public class SprintController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
-		if (progress == null)
-			throw new BadRequestException("request holding progress is null");
-
 		sprint.setProgress(progress);
 
 		sprintRepo.save(sprint);
 
 		// Redis Cache Update:
 
-		cacheServiceSprintImpl.updateSprintProperty(sprint, spr -> {
-			spr.setProgress(progress);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -244,7 +229,7 @@ public class SprintController {
 		// Redis Cache Update:
 
 		cacheServiceSprintImpl.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
-		
+
 		// Redis Cache Update End:
 
 		return ResponseEntity.status(204).build();

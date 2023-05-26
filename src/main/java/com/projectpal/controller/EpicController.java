@@ -30,12 +30,16 @@ import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceEpicImpl;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/epic")
 public class EpicController {
 
 	@Autowired
-	public EpicController(EpicRepository epicRepo, CacheServiceEpicImpl cacheServiceEpicImpl,CacheService cacheService) {
+	public EpicController(EpicRepository epicRepo, CacheServiceEpicImpl cacheServiceEpicImpl,
+			CacheService cacheService) {
 		this.epicRepo = epicRepo;
 		this.cacheServiceEpicImpl = cacheServiceEpicImpl;
 		this.cacheService = cacheService;
@@ -44,7 +48,7 @@ public class EpicController {
 	private final EpicRepository epicRepo;
 
 	private final CacheServiceEpicImpl cacheServiceEpicImpl;
-	
+
 	private final CacheService cacheService;
 
 	@GetMapping("/list")
@@ -55,7 +59,7 @@ public class EpicController {
 
 		List<Epic> epics = cacheServiceEpicImpl.getCachedEpicList(project);
 
-		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
+		epics.sort((epic1,epic2)->Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
 		return ResponseEntity.ok(epics);
 
@@ -64,20 +68,17 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createEpic(@RequestBody Epic epic) {
-
-		if (epic == null || epic.getName() == null || epic.getPriority() == null)
-			throw new BadRequestException("request body is null");
+	public ResponseEntity<Void> createEpic(@Valid @RequestBody Epic epic) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		epic.setProject(project);
 
-		epicRepo.save(epic);
+		epicRepo.save(epic); 
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
+		cacheService.addObjectToCache(CacheServiceEpicImpl.epicListCache, project.getId(), epic);
 
 		// Redis Cache Update End:
 
@@ -105,10 +106,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
-			ep.setDescription(description);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -118,7 +116,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(@Valid @NotNull @RequestParam Byte priority, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -127,10 +125,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
 
-		if (priority == null)
-			throw new BadRequestException("priority is null");
-
-		if (priority < 0 || priority > 255)
+		if (priority < 0 || priority > 250)
 			throw new BadRequestException("value is too large or too small");
 
 		epic.setPriority(priority);
@@ -139,10 +134,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
-			ep.setPriority(priority);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -153,7 +145,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -162,19 +154,13 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		if (progress == null)
-			throw new BadRequestException("request is null");
-
 		epic.setProgress(progress);
 
 		epicRepo.save(epic);
 
 		// Redis Cache Update:
 
-		cacheServiceEpicImpl.updateEpicProperty(epic, ep -> {
-			ep.setProgress(progress);
-			return null;
-		});
+		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -195,12 +181,12 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheServiceEpicImpl.DeleteEpicFromCacheAndCascadeDeleteChildren(epic);
+		cacheServiceEpicImpl.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
 
 		// Redis Cache Update End:
-		
+
 		epicRepo.delete(epic);
-		
+
 		return ResponseEntity.status(204).build();
 	}
 }
