@@ -3,14 +3,12 @@ package com.projectpal.entity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Role;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -44,14 +43,18 @@ public class User implements UserDetails {
 	private long id;
 
 	@Column(unique = true)
-	@NonNull
+	@NotNull
 	private String name;
 
 	@Column(unique = true)
-	@NonNull
+	@NotNull
 	private String email;
 
-	@NonNull
+	@Enumerated(EnumType.STRING)
+	@NotNull
+	private Role role;
+
+	@NotNull
 	@JsonIgnore
 	private String password;
 
@@ -61,9 +64,6 @@ public class User implements UserDetails {
 	@OneToMany(mappedBy = "invitedUser", cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private List<Invitation> invitations;
-
-	@Enumerated(EnumType.STRING)
-	private Role role;
 
 	// Getters and Setters
 
@@ -94,7 +94,7 @@ public class User implements UserDetails {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+
 	public Role getRole() {
 		return role;
 	}
@@ -127,9 +127,9 @@ public class User implements UserDetails {
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-		
+
 		authorities.add(new SimpleGrantedAuthority(role.toString()));
-		
+
 		return authorities;
 	}
 
@@ -168,7 +168,5 @@ public class User implements UserDetails {
 
 		return true;
 	}
-
-	
 
 }

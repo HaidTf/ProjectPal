@@ -3,8 +3,6 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-import org.springframework.lang.NonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
@@ -18,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -48,18 +47,20 @@ public class Sprint implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
-	@NonNull
+	@NotNull
 	private String name;
 
 	private String description;
 
 	@Temporal(TemporalType.DATE)
+	@NotNull
 	private LocalDate startDate;
+	
 	@Temporal(TemporalType.DATE)
+	@NotNull
 	private LocalDate endDate;
 
 	@Enumerated(EnumType.STRING)
-	@NonNull
 	private Progress progress;
 
 	@ManyToOne
