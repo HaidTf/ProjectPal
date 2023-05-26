@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectpal.dto.request.RegisterRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.dto.response.DataIntegrityExceptionResponse;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth/register")
@@ -38,12 +39,7 @@ public class RegisterController {
 
 	@PostMapping("")
 	@Transactional
-	public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
-
-		if (request == null || request.getName() == null || request.getEmail() == null
-				|| request.getPassword() == null) {
-			throw new BadRequestException("null value");
-		}
+	public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
 
 		AuthenticationResponse response = authService.register(request);
 

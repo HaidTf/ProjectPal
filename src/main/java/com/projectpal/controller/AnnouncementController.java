@@ -19,11 +19,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.utils.ProjectUtil;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/announcement")
@@ -52,10 +53,7 @@ public class AnnouncementController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createAnnouncement(@RequestBody Announcement announcement){
-		
-		if(announcement==null||announcement.getTitle()==null||announcement.getDescription()==null) 
-			throw new BadRequestException("request is or contains null values");
+	public ResponseEntity<Void> createAnnouncement(@Valid @RequestBody Announcement announcement){
 		
 		announcement.setProject(ProjectUtil.getProjectNotNull());
 		

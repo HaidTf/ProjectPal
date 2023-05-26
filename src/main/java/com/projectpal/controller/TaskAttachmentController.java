@@ -27,6 +27,9 @@ import com.projectpal.repository.TaskRepository;
 import com.projectpal.service.FileStorageService;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/attachment")
 public class TaskAttachmentController {
@@ -50,7 +53,7 @@ public class TaskAttachmentController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/upload")
 	@Transactional
-	public ResponseEntity<Void> uploadFile(@RequestParam MultipartFile file, @RequestParam long taskId) {
+	public ResponseEntity<Void> uploadFile(@Valid @NotNull @RequestParam MultipartFile file, @RequestParam long taskId) {
 
 		if (file.isEmpty())
 			throw new BadRequestException("no file uploaded");

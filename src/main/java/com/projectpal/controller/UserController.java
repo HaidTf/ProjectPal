@@ -20,7 +20,11 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.service.CacheServiceProjectAddOn;
 import com.projectpal.utils.SecurityContextUtil;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/user")
@@ -28,11 +32,12 @@ public class UserController {
 
 	@Autowired
 	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo,
-			ProjectRepository projectRepo) {
+			ProjectRepository projectRepo, CacheServiceProjectAddOn cacheServiceProjectAddOn) {
 		this.encoder = encoder;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
 		this.projectRepo = projectRepo;
+		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
 	}
 
 	private final PasswordEncoder encoder;
@@ -42,6 +47,8 @@ public class UserController {
 	private final TaskRepository taskRepo;
 
 	private final ProjectRepository projectRepo;
+
+	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
@@ -53,9 +60,8 @@ public class UserController {
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/email")
 	@Transactional
-	public ResponseEntity<Void> updateEmail(@RequestBody String email) {
-		if (email == null)
-			throw new BadRequestException("email is null");
+	public ResponseEntity<Void> updateEmail(@Valid @NotNull @RequestBody String email) {
+
 		User user = SecurityContextUtil.getUser();
 		user.setEmail(email);
 		userRepo.save(user);
@@ -65,16 +71,15 @@ public class UserController {
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/password")
 	@Transactional
-	public ResponseEntity<Void> updatePassword(@RequestBody String password) {
-		if (password == null)
-			throw new BadRequestException("password is null");
+	public ResponseEntity<Void> updatePassword(@Valid @NotNull @RequestBody String password) {
+
 		User user = SecurityContextUtil.getUser();
 		user.setPassword(encoder.encode(password));
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
 
-	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR','ADMIN')")
 	@PatchMapping("/update/project/exit")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
@@ -97,7 +102,8 @@ public class UserController {
 				}
 
 			} else
-				projectRepo.delete(user.getProject());
+				cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(user.getProject());
+			projectRepo.delete(user.getProject());
 		}
 
 		user.setProject(null);

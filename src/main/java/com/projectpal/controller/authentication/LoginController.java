@@ -16,6 +16,8 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth/login")
 public class LoginController {
@@ -39,12 +41,8 @@ public class LoginController {
 	
 	
 	@PostMapping("")
-	public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+	public ResponseEntity<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticationRequest request) {
 		
-		if(request.getEmail() == null || request.getPassword() == null) {
-			
-			throw new BadRequestException("null value for email or password");
-		}
 		return ResponseEntity.ok(authService.authenticate(request));
 	}
 }

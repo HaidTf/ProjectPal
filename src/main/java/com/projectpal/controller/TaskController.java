@@ -33,6 +33,10 @@ import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/task")
 public class TaskController {
@@ -88,11 +92,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createTask(@RequestBody TaskCreationRequest request) {
-
-		if (request == null || request.getUserStoryId() == null || request.getTask() == null
-				|| request.getTask().getName() == null || request.getTask().getPriority() == null)
-			throw new BadRequestException("request is missing all or some of its values");
+	public ResponseEntity<Void> createTask(@Valid @RequestBody TaskCreationRequest request) {
 
 		UserStory userStory = userStoryRepo.findById(request.getUserStoryId())
 				.orElseThrow(() -> new ResourceNotFoundException("no parent userStory with the given id is found"));
@@ -154,7 +154,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
 
 		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
@@ -172,25 +172,29 @@ public class TaskController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/assigneduser/{id}")
+	@PatchMapping("/update/assigneduser/{taskId}")
 	@Transactional
-	public ResponseEntity<Void> updateAssignedUser(@RequestParam String name, @PathVariable long id) {
+	public ResponseEntity<Void> updateAssignedUser(@Nullable @RequestParam String name, @PathVariable long taskId) {
 
-		User user = userRepo.findUserByName(name).orElse(null);
-
-		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
+		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
-		if (user == null) {
+		if (name == null) {
 			task.setAssignedUser(null);
+			taskRepo.save(task);
 			return ResponseEntity.status(204).build();
 		}
+
+		User user = userRepo.findUserByName(name).orElseThrow(()->new ResourceNotFoundException("user with specified id not found"));
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to assign tasks to users not in your project");
 
+		task.setAssignedUser(user);
+		taskRepo.save(task);
+		
 		return ResponseEntity.status(204).build();
 	}
 
