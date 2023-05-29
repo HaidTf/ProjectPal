@@ -1,0 +1,39 @@
+
+spring:
+  datasource:
+    password: root
+    url: jdbc:mysql://localhost:3306/projectpal
+    username: root
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+      
+    open-in-view: false
+    
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        
+  sql:
+    init:
+      mode: always
+      
+      
+springdoc:
+  pathsToMatch: /**
+
+logging:
+  level:
+    org:
+      hibernate: INFO
+      springframework:
+        security: DEBUG
+        
+server:
+  servlet:
+    context-path: /api
+    
+file:
+  upload-dir: /users/haidar/desktop/test-dir
