@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
