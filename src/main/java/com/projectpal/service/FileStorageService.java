@@ -17,6 +17,8 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.exception.ResourceNotFoundException;
 
+//This class is not suitable for production and is implemented just for the sake of reducing the complexity resulted by the integration with third party storage services
+
 @Service
 public class FileStorageService {
 
@@ -44,18 +46,18 @@ public class FileStorageService {
 		} catch (IOException ex) {
 			throw new InternalServerErrorException("could not store file");
 		}
-		
+
 	}
 
-	public Resource loadFile(String fileName,long parentId) {
+	public Resource loadFile(String fileName, long parentId) {
 
 		try {
 			String parentDirectoryPath = storageLocation + "/" + parentId;
-			
+
 			Path filePath = Path.of(parentDirectoryPath, fileName);
-			
+
 			Resource resource = new UrlResource(filePath.toUri());
-			
+
 			if (resource.exists()) {
 				return resource;
 			} else {
@@ -65,15 +67,16 @@ public class FileStorageService {
 			throw new BadRequestException("invalid file path");
 		}
 	}
-	public void deleteFile(String fileName,long parentId) {
+
+	public void deleteFile(String fileName, long parentId) {
 
 		try {
 			String parentDirectoryPath = storageLocation + "/" + parentId;
-			
+
 			Path filePath = Path.of(parentDirectoryPath, fileName);
-			
+
 			Resource resource = new UrlResource(filePath.toUri());
-			
+
 			if (resource.exists()) {
 				Files.delete(filePath);
 			} else {
@@ -82,9 +85,9 @@ public class FileStorageService {
 		} catch (MalformedURLException ex) {
 			throw new BadRequestException("invalid file path");
 		} catch (IOException ex) {
-	        throw new InternalServerErrorException("Error deleting file");
-	    }
-		
+			throw new InternalServerErrorException("Error deleting file");
+		}
+
 	}
 
 }

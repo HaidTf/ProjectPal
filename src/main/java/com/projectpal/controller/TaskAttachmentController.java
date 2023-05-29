@@ -30,6 +30,8 @@ import com.projectpal.utils.ProjectUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+//This class is not suitable for production and is implemented just for the sake of reducing the complexity resulted by the integration with third party storage services
+
 @RestController
 @RequestMapping("/attachment")
 public class TaskAttachmentController {
