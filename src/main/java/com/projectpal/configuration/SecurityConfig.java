@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.projectpal.security.CustomAuthenticationEntryPoint;
 import com.projectpal.security.filter.JwtAuthenticationFilter;
 
 @Configuration
@@ -28,9 +29,11 @@ import com.projectpal.security.filter.JwtAuthenticationFilter;
 public class SecurityConfig {
 
 	@Autowired
-	public SecurityConfig(JwtAuthenticationFilter jwtFilter, UserDetailsService userDetailsService) {
+	public SecurityConfig(JwtAuthenticationFilter jwtFilter, UserDetailsService userDetailsService,
+			CustomAuthenticationEntryPoint authenticationEntryPoint) {
 		this.jwtFilter = jwtFilter;
 		this.userDetailsService = userDetailsService;
+		this.authenticationEntryPoint = authenticationEntryPoint;
 
 	}
 
@@ -38,20 +41,21 @@ public class SecurityConfig {
 
 	private final UserDetailsService userDetailsService;
 
+	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-		http.csrf().disable()
-		.headers((headers) -> headers.
-				httpStrictTransportSecurity().disable() // will enable in production
+		http.csrf().disable().headers((headers) -> headers.httpStrictTransportSecurity().disable() // will enable in
+																									// production
 				.xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
-				.contentSecurityPolicy("default-src 'self'"))
-				.authorizeHttpRequests().requestMatchers("/auth/**").permitAll()
-				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin").hasAnyRole("ADMIN", "SUPER_ADMIN")
-				.anyRequest().authenticated()
-				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authenticationProvider(authenticationProvider())
-				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				.contentSecurityPolicy("default-src 'self'")).authorizeHttpRequests().requestMatchers("/auth/**")
+				.permitAll().requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin")
+				.hasAnyRole("ADMIN", "SUPER_ADMIN").anyRequest().authenticated().and().sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.authenticationProvider(authenticationProvider())
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).exceptionHandling()
+				.authenticationEntryPoint(authenticationEntryPoint);
 
 		return http.build();
 
