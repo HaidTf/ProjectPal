@@ -13,6 +13,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
+import com.projectpal.dto.response.ExceptionResponse;
+import com.projectpal.dto.response.ValidationExceptionResponse;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
@@ -22,23 +24,23 @@ public class GlobalExceptionHandler {
 
 	// Default Exception Object
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleException(Exception ex) {
+	public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
 		ex.printStackTrace(System.out);
-		return ResponseEntity.status(500).body(ex.getMessage());
+		return ResponseEntity.status(500).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised when null request is received into a @RequestBody annotated method
 	// parameter
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-		return ResponseEntity.status(400).body(ex.getMessage());
+	public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised when a bean validation error occurs due to @Valid annotation
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<List<String>> handleValidationException(MethodArgumentNotValidException ex) {
+	public ResponseEntity<ValidationExceptionResponse> handleValidationException(MethodArgumentNotValidException ex) {
 
 		BindingResult result = ex.getBindingResult();
 
@@ -49,35 +51,35 @@ public class GlobalExceptionHandler {
 		for (ObjectError err : errors)
 			stringErrors.add(err.getCodes()[0] + " " + err.getDefaultMessage());
 
-		return ResponseEntity.status(400).body(stringErrors);
+		return ResponseEntity.status(400).body(new ValidationExceptionResponse(stringErrors));
 	}
 
 	// Raised when @PreAuthorize annotation denies access
 
 	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
-		return ResponseEntity.status(403).body(ex.getMessage());
+	public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException ex) {
+		return ResponseEntity.status(403).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised Explicitly
 
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
-		return ResponseEntity.status(404).body(ex.getMessage());
+	public ResponseEntity<ExceptionResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+		return ResponseEntity.status(404).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised Explicitly
 
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<String> handleBadRequestException(BadRequestException ex) {
-		return ResponseEntity.status(400).body(ex.getMessage());
+	public ResponseEntity<ExceptionResponse> handleBadRequestException(BadRequestException ex) {
+		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised Explicitly
 
 	@ExceptionHandler(ForbiddenException.class)
-	public ResponseEntity<String> handleForbiddenException(ForbiddenException ex) {
-		return ResponseEntity.status(403).body(ex.getMessage());
+	public ResponseEntity<ExceptionResponse> handleForbiddenException(ForbiddenException ex) {
+		return ResponseEntity.status(403).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 }
