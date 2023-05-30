@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.unit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,8 +7,9 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 
 import com.projectpal.entity.User;
+import com.projectpal.service.JwtService;
 
-public class JwtServiceTest {
+public class JwtServiceUTest {
 
 	@Test
 	public void testGenerateToken() {
