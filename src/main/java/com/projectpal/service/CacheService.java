@@ -61,18 +61,21 @@ public class CacheService {
 		} catch (Exception ex) {
 			objects = null;
 		}
+
 		if (objects == null || objects.isEmpty()) {
 
 			objects = findAllByParentId.apply(repository)
 					.orElseThrow(() -> new ResourceNotFoundException("no entities found"));
 
-			redis.getCache(cacheName).put(cacheKey, objects);
+			try {
+				redis.getCache(cacheName).put(cacheKey, objects);
+			} catch (Exception ex) {
+			}
 		}
 
 		return objects;
 	}
-	
-	
+
 	// Generic Add Object To Cache Method
 
 	// #Method Parameters:
@@ -97,90 +100,7 @@ public class CacheService {
 				objects.add(object);
 				redis.getCache(cacheName).put(cacheKey, objects);
 			}
-		} catch (Exception ex) {
-			Cache cache = redis.getCache(cacheName);
-			if (cache != null)
-				cache.evictIfPresent(cacheKey);
 
-		}
-	}
-
-	// Generic Update Property Method
-
-	// #Method Parameters:
-	// name of cache
-	// cache key
-	// Object T : to be updated object
-	// Function to be applied on object T to get its id
-	// Function to be applied on object T to update its property, e.g: (user)->
-	// user.setName("..")
-
-	// Method Explanation:
-	// 1) Tries to get cache using cache name (cacheName) and cache key (cacheKey)
-	// 2) If an exception is thrown then the cache is evicted
-	// 3) If List is Found and not empty then it is searched for the ToBeUpdated
-	// Object T
-	// 4) Object T property is updated using Function
-	// 5) List is put into cache to overwrite the invalid cache
-
-	public <T> void updateObjectPropertyInCache(String cacheName, Long cacheKey, T object,
-			Function<T, Long> getObjectId, Function<T, Void> updateTProperty) {
-
-		List<T> objects;
-
-		try {
-			objects = redis.getCache(cacheName).get(cacheKey, List.class);
-
-			if (objects != null && !objects.isEmpty()) {
-				for (T object2 : objects) {
-					if (getObjectId.apply(object2) == getObjectId.apply(object)) {
-						updateTProperty.apply(object2);
-						break;
-					}
-				}
-
-				redis.getCache(cacheName).put(cacheKey, objects);
-			}
-		} catch (Exception ex) {
-			Cache cache = redis.getCache(cacheName);
-			if (cache != null)
-				cache.evictIfPresent(cacheKey);
-		}
-	}
-
-	// Generic Delete Object From Cache Method
-
-	// #Method Parameters:
-	// name of cache
-	// cache key
-	// Object T : to be Deleted object
-	// Function to be applied on object T to get its id
-
-	// Method Explanation:
-	// 1) Tries to get cache using cache name (cacheName) and cache key (cacheKey)
-	// 2) If an exception is thrown then the cache is evicted
-	// 3) If List is Found and not empty then it is searched for the ToBeDeleted
-	// Object T
-	// 4) Object T is removed from list
-	// 5) List is put into cache to overwrite the invalid cache
-
-	public <T> void deleteObjectFromCache(String cacheName, Long cacheKey, T object, Function<T, Long> getObjectId) {
-
-		List<T> objects;
-
-		try {
-			objects = redis.getCache(cacheName).get(cacheKey, List.class);
-
-			if (objects != null && !objects.isEmpty()) {
-				for (T object2 : objects) {
-					if (getObjectId.apply(object2) == getObjectId.apply(object)) {
-						objects.remove(object2);
-						break;
-					}
-				}
-
-				redis.getCache(cacheName).put(cacheKey, objects);
-			}
 		} catch (Exception ex) {
 			Cache cache = redis.getCache(cacheName);
 			if (cache != null)
