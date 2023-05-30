@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,15 +34,9 @@ public class CacheServiceEpicImpl {
 				repo -> repo.findAllByProjectId(project.getId()));
 	}
 
-	public void updateEpicProperty(Epic epic, Function<Epic, Void> updateEpicProperty) {
-
-		cacheService.updateObjectPropertyInCache(epicListCache, epic.getProject().getId(), epic,
-				Epic::getId, updateEpicProperty);
-	}
-
 	public void deleteEpicFromCacheAndCascadeDeleteChildren(Epic epic) {
 
-		cacheService.deleteObjectFromCache(epicListCache, epic.getProject().getId(), epic, Epic::getId);
+		cacheService.evictListFromCache(epicListCache, epic.getProject().getId());
 
 		// Removal of UserStory entities from all cache due to cascadeRemove of
 		// userStories
@@ -52,8 +45,8 @@ public class CacheServiceEpicImpl {
 		List<UserStory> userStories = cacheServiceUserStoryImpl.getCachedEpicUserStoryList(epic);
 
 		for (UserStory userStory : userStories)
-			cacheService.deleteObjectFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId(),
-					userStory, UserStory::getId);
+			cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId());
+					
 
 		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId());
 	}

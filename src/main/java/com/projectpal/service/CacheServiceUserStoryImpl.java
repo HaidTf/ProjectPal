@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,12 +39,4 @@ public class CacheServiceUserStoryImpl {
 				repo -> repo.findAllBySprintId(sprint.getId()));
 	}
 
-	public void updateUserStoryProperty(UserStory userStory, Function<UserStory, Void> updateUserStoryProperty) {
-
-		cacheService.updateObjectPropertyInCache(epicUserStoryListCache, userStory.getEpic().getId(), userStory,
-				UserStory::getId, updateUserStoryProperty);
-
-		cacheService.updateObjectPropertyInCache(sprintUserStoryListCache, userStory.getSprint().getId(), userStory,
-				UserStory::getId, updateUserStoryProperty);
-	}
 }

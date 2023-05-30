@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,15 +30,9 @@ public class CacheServiceSprintImpl {
 				repo -> repo.findAllByProjectId(project.getId()));
 	}
 
-	public void updateSprintProperty(Sprint sprint, Function<Sprint, Void> updateSprintProperty) {
-
-		cacheService.updateObjectPropertyInCache(sprintListCache, sprint.getProject().getId(), sprint, Sprint::getId,
-				updateSprintProperty);
-	}
-
 	public void deleteSprintFromCacheAndCascadeDeleteChildren(Sprint sprint) {
 		
-		cacheService.deleteObjectFromCache(sprintListCache, sprint.getProject().getId(), sprint, Sprint::getId);
+		cacheService.evictListFromCache(sprintListCache, sprint.getProject().getId());
 		
 		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId());
 
