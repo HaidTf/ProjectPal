@@ -126,9 +126,9 @@ public class DeleteEntitiesAdminController {
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("entity with requested Id not Found"));
 		
-		cacheService.deleteObjectFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId(), userStory, UserStory::getId);
+		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
 		
-		cacheService.deleteObjectFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId(), userStory, UserStory::getId);
+		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId());
 		
 		userStoryRepo.deleteById(id);
 
