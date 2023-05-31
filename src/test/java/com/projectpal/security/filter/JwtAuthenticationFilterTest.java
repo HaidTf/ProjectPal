@@ -39,7 +39,7 @@ public class JwtAuthenticationFilterTest {
        
        Mockito.when(userDetailsService.loadUserByUsername(user.getUsername())).thenReturn(user);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/test")
+        mockMvc.perform(MockMvcRequestBuilders.get("/user")
                 .header("Authorization", "Bearer " + jwt))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
@@ -53,7 +53,7 @@ public class JwtAuthenticationFilterTest {
        
        Mockito.when(userDetailsService.loadUserByUsername(user2.getUsername())).thenReturn(null);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/test")
+        mockMvc.perform(MockMvcRequestBuilders.get("/user")
         		.header("Authorization", "Bearer " + jwt))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
@@ -62,7 +62,7 @@ public class JwtAuthenticationFilterTest {
     public void testWithNoHeader() throws Exception {
 
     	
-        mockMvc.perform(MockMvcRequestBuilders.get("/test"))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
+        mockMvc.perform(MockMvcRequestBuilders.get("/user"))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 }
