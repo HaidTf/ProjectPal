@@ -141,7 +141,9 @@ public class ProjectController {
 			throw new BadRequestException("you cant remove yourself from the project through here");
 
 		user.setProject(null);
-
+		
+		user.setRole(Role.ROLE_USER);
+		
 		userRepo.save(user);
 
 		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(null);
