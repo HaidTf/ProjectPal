@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projectpal.dto.request.StringHolderRequest;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
@@ -23,7 +24,6 @@ import com.projectpal.service.CacheServiceProjectAddOn;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/user")
@@ -58,22 +58,20 @@ public class UserController {
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/email")
-	@Transactional
-	public ResponseEntity<Void> updateEmail(@Valid @NotNull @RequestBody String email) {
+	public ResponseEntity<Void> updateEmail(@Valid @RequestBody StringHolderRequest emailHolder) {
 
 		User user = SecurityContextUtil.getUser();
-		user.setEmail(email);
+		user.setEmail(emailHolder.getString());
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/password")
-	@Transactional
-	public ResponseEntity<Void> updatePassword(@Valid @NotNull @RequestBody String password) {
+	public ResponseEntity<Void> updatePassword(@Valid @RequestBody StringHolderRequest passwordHolder) {
 
 		User user = SecurityContextUtil.getUser();
-		user.setPassword(encoder.encode(password));
+		user.setPassword(encoder.encode(passwordHolder.getString()));
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
