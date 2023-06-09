@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.request.TaskCreationRequest;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.TaskRepository;
@@ -35,7 +35,6 @@ import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/task")
@@ -54,10 +53,7 @@ public class TaskController {
 	private final UserStoryRepository userStoryRepo;
 
 	@GetMapping("/list/userstory/{userStoryId}")
-	public ResponseEntity<List<Task>> getUserStoryTaskList(@PathVariable Long userStoryId) {
-
-		if (userStoryId == null)
-			throw new BadRequestException("path variable userStoryId is null");
+	public ResponseEntity<List<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
 
 		List<Task> tasks = taskRepo.findAllByUserStoryId(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("no tasks related to this user story are found"));
@@ -71,10 +67,7 @@ public class TaskController {
 	}
 
 	@GetMapping("/list/user/{userId}")
-	public ResponseEntity<List<Task>> getUserTaskList(@PathVariable Long userId) {
-
-		if (userId == null)
-			throw new BadRequestException("path variable userId is null");
+	public ResponseEntity<List<Task>> getUserTaskList(@PathVariable long userId) {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -116,7 +109,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/description/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestParam String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
 
 		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
@@ -133,17 +126,14 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(@RequestParam Byte priority, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder, @PathVariable long id) {
 
 		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
-		if (priority < 0 || priority > 255)
-			throw new BadRequestException("value is too large or too small");
-
-		task.setPriority(priority);
+		task.setPriority(priorityHolder.getPriority());
 
 		taskRepo.save(task);
 
@@ -154,15 +144,12 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
 		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
-
-		if (progress == null)
-			throw new BadRequestException("request holding progress is null");
 
 		task.setProgress(progress);
 
@@ -174,7 +161,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/assigneduser/{taskId}")
 	@Transactional
-	public ResponseEntity<Void> updateAssignedUser(@Nullable @RequestParam String name, @PathVariable long taskId) {
+	public ResponseEntity<Void> updateAssignedUser(/*Request Parameter*/ @Nullable String name, @PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
