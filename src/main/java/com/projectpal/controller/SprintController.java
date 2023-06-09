@@ -54,7 +54,6 @@ public class SprintController {
 	private final CacheServiceSprintImpl cacheServiceSprintImpl;
 
 	@GetMapping("/list")
-	@Transactional
 	public ResponseEntity<List<Sprint>> getsprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
