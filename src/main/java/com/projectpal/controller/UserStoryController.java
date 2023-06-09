@@ -20,12 +20,12 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
+import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.request.UserStoryCreationRequest;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
@@ -36,7 +36,6 @@ import com.projectpal.service.CacheServiceUserStoryImpl;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/userstory")
@@ -190,7 +189,7 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(@Valid @NotNull @RequestParam Byte priority, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder, @PathVariable long id) {
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -198,10 +197,7 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		if (priority < 0 || priority > 250)
-			throw new BadRequestException("value is too large or too small");
-
-		userStory.setPriority(priority);
+		userStory.setPriority(priorityHolder.getPriority());
 
 		userStoryRepo.save(userStory);
 
@@ -221,16 +217,13 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
-
-		if (progress == null)
-			throw new BadRequestException("request holding progress is null");
 
 		userStory.setProgress(progress);
 
