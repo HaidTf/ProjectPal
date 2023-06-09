@@ -91,7 +91,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/description")
-	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody String description) {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -176,11 +175,15 @@ public class ProjectController {
 
 			for (User projectUser : projectUsers) {
 				projectUser.setRole(Role.ROLE_USER);
+				userRepo.save(projectUser);
 			}
 
 		}
 
-		SecurityContextUtil.getUser().setRole(Role.ROLE_USER);
+		User owner = SecurityContextUtil.getUser();
+		owner.setRole(Role.ROLE_USER);
+		userRepo.save(owner);
+
 
 		return ResponseEntity.status(204).build();
 
