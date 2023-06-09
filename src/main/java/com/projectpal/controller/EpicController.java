@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
@@ -31,7 +31,6 @@ import com.projectpal.service.CacheServiceEpicImpl;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/epic")
@@ -59,7 +58,7 @@ public class EpicController {
 
 		List<Epic> epics = cacheServiceEpicImpl.getCachedEpicList(project);
 
-		epics.sort((epic1,epic2)->Integer.compare(epic1.getPriority(), epic2.getPriority()));
+		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
 		return ResponseEntity.ok(epics);
 
@@ -74,7 +73,7 @@ public class EpicController {
 
 		epic.setProject(project);
 
-		epicRepo.save(epic); 
+		epicRepo.save(epic);
 
 		// Redis Cache Update:
 
@@ -115,8 +114,8 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
-	@Transactional
-	public ResponseEntity<Void> updatePriority(@Valid @NotNull @RequestParam Byte priority, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
+			@PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -125,10 +124,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
 
-		if (priority < 0 || priority > 250)
-			throw new BadRequestException("value is too large or too small");
-
-		epic.setPriority(priority);
+		epic.setPriority(priorityHolder.getPriority());
 
 		epicRepo.save(epic);
 
@@ -145,7 +141,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
