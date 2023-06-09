@@ -23,12 +23,13 @@ public class CacheService {
 	}
 
 	@PostConstruct
-	private void clearCache() {
+	private void clearCacheAndSetTransactionAware() {
 		try {
 			redis.getCacheNames().forEach(cacheName -> redis.getCache(cacheName).clear());
 		} catch (Exception ex) {
 
 		}
+		redis.setTransactionAware(true);
 	}
 
 	private final RedisCacheManager redis;
