@@ -52,7 +52,6 @@ public class AnnouncementController {
 	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
-	@Transactional
 	public ResponseEntity<Void> createAnnouncement(@Valid @RequestBody Announcement announcement){
 		
 		announcement.setProject(ProjectUtil.getProjectNotNull());
