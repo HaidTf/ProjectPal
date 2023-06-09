@@ -51,7 +51,6 @@ public class EpicController {
 	private final CacheService cacheService;
 
 	@GetMapping("/list")
-	@Transactional
 	public ResponseEntity<List<Epic>> getEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -114,6 +113,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/priority/{id}")
+	@Transactional
 	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
 			@PathVariable long id) {
 
