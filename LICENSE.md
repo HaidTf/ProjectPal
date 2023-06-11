@@ -1,0 +1,1 @@
+All Rights Reserved. This code is the property of "Haidar Al-Toufaily". No part of this code may be used, modified, or distributed without explicit permission from the copyright holder.
