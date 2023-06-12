@@ -63,6 +63,8 @@ public class Task implements Serializable {
 	
 	@Enumerated(EnumType.STRING)
 	private Progress progress;
+	
+	private String report;
 
 	@ManyToOne
 	@JsonIgnore
@@ -119,6 +121,14 @@ public class Task implements Serializable {
 
 	public void setPriority(int priority) {
 		this.priority = priority;
+	}
+
+	public String getReport() {
+		return report;
+	}
+
+	public void setReport(String report) {
+		this.report = report;
 	}
 
 	public User getAssignedUser() {
