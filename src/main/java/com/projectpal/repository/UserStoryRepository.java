@@ -20,4 +20,8 @@ public interface UserStoryRepository extends JpaRepository<UserStory,Long>{
 	
 	Optional<List<UserStory>> findAllBySprintId(Long id);
 	
+	int countByEpicId(Long projectId);
+	
+	int countBySprintId(Long sprintId);
+	
 }
