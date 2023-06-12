@@ -27,9 +27,6 @@ import com.projectpal.repository.TaskRepository;
 import com.projectpal.service.FileStorageService;
 import com.projectpal.utils.ProjectUtil;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
 //This class is not suitable for production and is implemented just for the sake of reducing the complexity resulted by the integration with third party storage services
 
 @RestController
@@ -55,7 +52,7 @@ public class TaskAttachmentController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/upload")
 	@Transactional
-	public ResponseEntity<Void> uploadFile(@Valid @NotNull @RequestParam MultipartFile file, @RequestParam long taskId) {
+	public ResponseEntity<Void> uploadFile(@RequestParam MultipartFile file, @RequestParam long taskId) {
 
 		if (file.isEmpty())
 			throw new BadRequestException("no file uploaded");
@@ -110,27 +107,29 @@ public class TaskAttachmentController {
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
 				.body(resource);
 	}
-	
+
 	@DeleteMapping("/delete/{taskId}/{fileName}")
 	@Transactional
-	public ResponseEntity<Void> deleteFile(@PathVariable long taskId , @PathVariable String fileName){
-		
+	public ResponseEntity<Void> deleteFile(@PathVariable long taskId, @PathVariable String fileName) {
+
 		Task task = taskRepo.findById(taskId)
 				.orElseThrow(() -> new ResourceNotFoundException("no task with this id is found"));
 
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
-		
-		TaskAttachment attachment = attachmentRepo.findTaskAttachmentByFileNameAndTaskId(fileName,taskId).orElseThrow(() -> new ResourceNotFoundException("no taskAttachment with this name is found"));;
-		
-		if(attachment.getTask().getId()!=task.getId())
+
+		TaskAttachment attachment = attachmentRepo.findTaskAttachmentByFileNameAndTaskId(fileName, taskId)
+				.orElseThrow(() -> new ResourceNotFoundException("no taskAttachment with this name is found"));
+		;
+
+		if (attachment.getTask().getId() != task.getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
-		
+
 		attachmentRepo.delete(attachment);
-		
+
 		fileStorageService.deleteFile(fileName, taskId);
-		
+
 		return ResponseEntity.status(204).build();
 	}
-	
+
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.BindException;
 
 import com.projectpal.dto.response.ExceptionResponse;
 import com.projectpal.dto.response.ValidationExceptionResponse;
@@ -39,8 +41,8 @@ public class GlobalExceptionHandler {
 
 	// Raised when a bean validation error occurs due to @Valid annotation
 
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ValidationExceptionResponse> handleValidationException(MethodArgumentNotValidException ex) {
+	@ExceptionHandler({ MethodArgumentNotValidException.class, BindException.class })
+	public ResponseEntity<ValidationExceptionResponse> handleValidationException(BindException ex) {
 
 		BindingResult result = ex.getBindingResult();
 
@@ -52,6 +54,13 @@ public class GlobalExceptionHandler {
 			stringErrors.add(err.getCodes()[0] + " " + err.getDefaultMessage());
 
 		return ResponseEntity.status(400).body(new ValidationExceptionResponse(stringErrors));
+	}
+
+	//Raised by @RequestParam when request parameter is missing or null
+	
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<ExceptionResponse> handleException(MissingServletRequestParameterException ex) {
+		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised when @PreAuthorize annotation denies access

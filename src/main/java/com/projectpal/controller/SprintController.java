@@ -33,7 +33,6 @@ import com.projectpal.service.CacheServiceSprintImpl;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/sprint")
@@ -55,7 +54,6 @@ public class SprintController {
 	private final CacheServiceSprintImpl cacheServiceSprintImpl;
 
 	@GetMapping("/list")
-	@Transactional
 	public ResponseEntity<List<Sprint>> getsprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -72,9 +70,6 @@ public class SprintController {
 	@PostMapping("/create")
 	@Transactional
 	public ResponseEntity<Void> createsprint(@Valid @RequestBody Sprint sprint) {
-
-		if (sprint == null || sprint.getName() == null || sprint.getStartDate() == null || sprint.getEndDate() == null)
-			throw new BadRequestException("sprint name or startdate or enddate is null");
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -101,8 +96,7 @@ public class SprintController {
 	@PatchMapping("/update/startdate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateStartDate(
-			@Valid @NotNull @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-			@PathVariable long id) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -132,8 +126,7 @@ public class SprintController {
 	@PatchMapping("/update/enddate/{id}")
 	@Transactional
 	public ResponseEntity<Void> updateEndDate(
-			@Valid @NotNull @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-			@PathVariable long id) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -188,7 +181,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/update/progress/{id}")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@Valid @NotNull @RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
