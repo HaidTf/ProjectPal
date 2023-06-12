@@ -1,6 +1,7 @@
 package com.projectpal.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -98,24 +99,27 @@ public class UserController {
 					}
 				}
 
-			} else
+			} else {
 				cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(user.getProject());
-			projectRepo.delete(user.getProject());
+				projectRepo.delete(user.getProject());
+			}
 		}
 
 		user.setProject(null);
 		user.setRole(Role.ROLE_USER);
 		userRepo.save(user);
 
-		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(null);
+		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
 
-		for (Task task : tasks) {
+		if (tasks.isPresent()) {
 
-			task.setAssignedUser(null);
-			taskRepo.save(task);
+			for (Task task : tasks.get()) {
 
+				task.setAssignedUser(null);
+				taskRepo.save(task);
+
+			}
 		}
-
 		return ResponseEntity.status(204).build();
 
 	}
