@@ -15,4 +15,6 @@ public interface SprintRepository extends JpaRepository<Sprint,Long>{
 
 	Optional<List<Sprint>> findAllByProjectId(Long id);
 	
+	int countByProjectId(Long projectId);
+	
 }
