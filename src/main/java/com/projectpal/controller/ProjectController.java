@@ -112,12 +112,34 @@ public class ProjectController {
 				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("the user must be in the project to be set as project operator");
+			throw new ForbiddenException("the user must be in the project");
 
 		if (SecurityContextUtil.getUser().getName() == name)
 			throw new BadRequestException("you cant set yourself as a project operator");
 
 		user.setRole(Role.ROLE_USER_PROJECT_OPERATOR);
+
+		userRepo.save(user);
+
+		return ResponseEntity.status(204).build();
+
+	}
+	
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
+	@PatchMapping("/update/demoteoperator/{name}")
+	@Transactional
+	public ResponseEntity<Void> demoteProjectOperator(@PathVariable String name) {
+
+		User user = userRepo.findUserByName(name)
+				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
+
+		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+			throw new ForbiddenException("the user must be in the project");
+
+		if (SecurityContextUtil.getUser().getName() == name)
+			throw new BadRequestException("you cant remove yourself from project operation");
+
+		user.setRole(Role.ROLE_USER_PROJECT_PARTICIPATOR);
 
 		userRepo.save(user);
 
