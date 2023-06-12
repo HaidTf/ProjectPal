@@ -30,6 +30,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceSprintImpl;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -75,6 +76,8 @@ public class SprintController {
 			throw new BadRequestException("End date is before Start date");
 
 		Project project = ProjectUtil.getProjectNotNull();
+		
+		MaxAllowedUtil.checkMaxAllowedOfSprint(sprintRepo.countByProjectId(project.getId()));
 
 		sprint.setProject(project);
 

@@ -28,6 +28,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceEpicImpl;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -70,6 +71,8 @@ public class EpicController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
+		MaxAllowedUtil.checkMaxAllowedOfEpic(epicRepo.countByProjectId(project.getId()));
+		
 		epic.setProject(project);
 
 		epicRepo.save(epic);

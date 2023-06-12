@@ -33,6 +33,7 @@ import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceUserStoryImpl;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -111,6 +112,8 @@ public class UserStoryController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
+		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countByEpicId(epicId));
+		
 		userStory.setEpic(epic);
 
 		userStoryRepo.save(userStory);
@@ -146,6 +149,8 @@ public class UserStoryController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
+		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countBySprintId(sprintId));
+		
 		userStory.setSprint(sprint);
 
 		userStoryRepo.save(userStory);
