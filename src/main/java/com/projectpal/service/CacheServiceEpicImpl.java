@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.repository.EpicRepository;
 
 @Service
@@ -28,10 +29,10 @@ public class CacheServiceEpicImpl {
 	
 	public static final String epicListCache = "epicListCache";
 
-	public List<Epic> getCachedEpicList(Project project) {
+	public List<Epic> getNotDoneEpicListFromCacheOrDatabase(Project project) {
 
-		return cacheService.getCachedObjects(epicListCache, project.getId(), epicRepo,
-				repo -> repo.findAllByProjectId(project.getId()));
+		return cacheService.getObjectsFromCacheOrDatabase(epicListCache, project.getId(), epicRepo,
+				repo -> repo.findAllByProjectIdAndProgressNot(project.getId(),Progress.DONE));
 	}
 
 	public void deleteEpicFromCacheAndCascadeDeleteChildren(Epic epic) {
@@ -42,7 +43,7 @@ public class CacheServiceEpicImpl {
 		// userStories
 		// from database when epic parent is deleted
 
-		List<UserStory> userStories = cacheServiceUserStoryImpl.getCachedEpicUserStoryList(epic);
+		List<UserStory> userStories = cacheServiceUserStoryImpl.getEpicUserStoryListFromCacheOrDatabase(epic);
 
 		for (UserStory userStory : userStories)
 			cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId());
