@@ -30,8 +30,8 @@ public class CacheServiceProjectAddOn {
 
 	public void DeleteEntitiesInCacheOnProjectDeletion(Project project) {
 
-		List<Epic> epics = cacheServiceEpicImpl.getCachedEpicList(project);
-		List<Sprint> sprints = cacheServiceSprintImpl.getCachedSprintList(project);
+		List<Epic> epics = cacheServiceEpicImpl.getNotDoneEpicListFromCacheOrDatabase(project);
+		List<Sprint> sprints = cacheServiceSprintImpl.getNotDoneSprintListFromCacheOrDatabase(project);
 
 		for (Epic epic : epics)
 			cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId());
