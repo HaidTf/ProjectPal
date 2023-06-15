@@ -57,7 +57,7 @@ public class CacheServiceUTest {
 
 		// Test
 
-		List<Epic> epics = cacheService.getCachedObjects(cacheName, cacheKey, epicRepo,
+		List<Epic> epics = cacheService.getObjectsFromCacheOrDatabase(cacheName, cacheKey, epicRepo,
 				repo -> repo.findAllByProjectId(projectId));
 
 		assertEquals(epics, toBeReturnedList);
@@ -81,7 +81,7 @@ public class CacheServiceUTest {
 
 		// Test
 
-		List<Epic> epics = cacheService.getCachedObjects(cacheName, cacheKey, epicRepo,
+		List<Epic> epics = cacheService.getObjectsFromCacheOrDatabase(cacheName, cacheKey, epicRepo,
 				repo -> repo.findAllByProjectId(projectId));
 
 		assertEquals(epics, toBeReturnedList);
@@ -105,7 +105,7 @@ public class CacheServiceUTest {
 
 		// Test
 
-		List<Epic> epics = cacheService.getCachedObjects(cacheName, cacheKey, epicRepo,
+		List<Epic> epics = cacheService.getObjectsFromCacheOrDatabase(cacheName, cacheKey, epicRepo,
 				repo -> repo.findAllByProjectId(projectId));
 
 		assertEquals(epics, toBeReturnedList);
