@@ -72,7 +72,7 @@ public class UserStoryController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = cacheServiceUserStoryImpl.getCachedEpicUserStoryList(epic);
+		List<UserStory> userStories = cacheServiceUserStoryImpl.getEpicUserStoryListFromCacheOrDatabase(epic);
 
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
@@ -90,7 +90,7 @@ public class UserStoryController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = cacheServiceUserStoryImpl.getCachedSprintUserStoryList(sprint);
+		List<UserStory> userStories = cacheServiceUserStoryImpl.getSprintUserStoryListFromCacheOrDatabase(sprint);
 
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
