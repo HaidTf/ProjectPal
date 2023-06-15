@@ -1,6 +1,7 @@
 package com.projectpal.service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -52,7 +53,7 @@ public class CacheService {
 	// put into cache
 	// 4) List is returned
 
-	public <T, R extends JpaRepository<T, Long>> List<T> getCachedObjects(String cacheName, Long cacheKey, R repository,
+	public <T, R extends JpaRepository<T, Long>> List<T> getObjectsFromCacheOrDatabase(String cacheName, Long cacheKey, R repository,
 			Function<R, Optional<List<T>>> findAllByParentId) {
 		List<T> objects;
 
@@ -65,8 +66,8 @@ public class CacheService {
 
 		if (objects == null || objects.isEmpty()) {
 
-			objects = findAllByParentId.apply(repository)
-					.orElseThrow(() -> new ResourceNotFoundException("no entities found"));
+			objects = findAllByParentId.apply(repository).orElse(new ArrayList<T>(0));
+					
 
 			try {
 				redis.getCache(cacheName).put(cacheKey, objects);
