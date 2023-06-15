@@ -69,8 +69,10 @@ public class TaskController {
 		return ResponseEntity.ok(tasks);
 	}
 
+	//Get All tasks
+	
 	@GetMapping("/list/user/all")
-	public ResponseEntity<List<Task>> getUserTaskList() {
+	public ResponseEntity<List<Task>> getUserTasksList() {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -82,6 +84,8 @@ public class TaskController {
 		return ResponseEntity.ok(tasks);
 	}
 
+	//Get NotDone tasks
+	
 	@GetMapping("/list/user")
 	public ResponseEntity<List<Task>> getUserTaskTodoOrInProgressList() {
 
