@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.repository.SprintRepository;
 
 @Service
@@ -24,10 +25,10 @@ public class CacheServiceSprintImpl {
 
 	public static final String sprintListCache = "sprintListCache";
 
-	public List<Sprint> getCachedSprintList(Project project) {
+	public List<Sprint> getNotDoneSprintListFromCacheOrDatabase(Project project) {
 
-		return cacheService.getCachedObjects(sprintListCache, project.getId(), sprintRepo,
-				repo -> repo.findAllByProjectId(project.getId()));
+		return cacheService.getObjectsFromCacheOrDatabase(sprintListCache, project.getId(), sprintRepo,
+				repo -> repo.findAllByProjectIdAndProgressNot(project.getId(),Progress.DONE));
 	}
 
 	public void deleteSprintFromCacheAndCascadeDeleteChildren(Sprint sprint) {
