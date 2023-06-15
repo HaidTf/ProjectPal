@@ -27,15 +27,15 @@ public class CacheServiceUserStoryImpl {
 
 	public static final String sprintUserStoryListCache = "sprintUserStoryListCache";
 
-	public List<UserStory> getCachedEpicUserStoryList(Epic epic) {
+	public List<UserStory> getEpicUserStoryListFromCacheOrDatabase(Epic epic) {
 
-		return cacheService.getCachedObjects(epicUserStoryListCache, epic.getId(), userStoryRepo,
+		return cacheService.getObjectsFromCacheOrDatabase(epicUserStoryListCache, epic.getId(), userStoryRepo,
 				repo -> repo.findAllByEpicId(epic.getId()));
 	}
 
-	public List<UserStory> getCachedSprintUserStoryList(Sprint sprint) {
+	public List<UserStory> getSprintUserStoryListFromCacheOrDatabase(Sprint sprint) {
 
-		return cacheService.getCachedObjects(sprintUserStoryListCache, sprint.getId(), userStoryRepo,
+		return cacheService.getObjectsFromCacheOrDatabase(sprintUserStoryListCache, sprint.getId(), userStoryRepo,
 				repo -> repo.findAllBySprintId(sprint.getId()));
 	}
 
