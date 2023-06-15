@@ -3,6 +3,7 @@ package com.projectpal.controller;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -54,12 +55,29 @@ public class SprintController {
 
 	private final CacheServiceSprintImpl cacheServiceSprintImpl;
 
-	@GetMapping("/list")
-	public ResponseEntity<List<Sprint>> getsprintList() {
+	//Get NotDone sprints
+	
+	@GetMapping("/list/notdone")
+	public ResponseEntity<List<Sprint>> getNotDoneSprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Sprint> sprints = cacheServiceSprintImpl.getCachedSprintList(project);
+		List<Sprint> sprints = cacheServiceSprintImpl.getNotDoneSprintListFromCacheOrDatabase(project);
+
+		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
+
+		return ResponseEntity.ok(sprints);
+
+	}
+	
+	//Get all sprints
+	
+	@GetMapping("/list/all")
+	public ResponseEntity<List<Sprint>> getAllSprintList() {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		List<Sprint> sprints = sprintRepo.findAllByProject(project).orElse(new ArrayList<Sprint>(0));
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
@@ -70,7 +88,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/create")
 	@Transactional
-	public ResponseEntity<Void> createsprint(@Valid @RequestBody Sprint sprint) {
+	public ResponseEntity<Void> createSprint(@Valid @RequestBody Sprint sprint) {
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
