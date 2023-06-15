@@ -60,7 +60,7 @@ public class CacheServiceTest {
 
 		// 1st method call
 
-		List<Epic> epics = cacheService.getCachedObjects("epicListCache", project.getId(), epicRepo,
+		List<Epic> epics = cacheService.getObjectsFromCacheOrDatabase("epicListCache", project.getId(), epicRepo,
 				repo -> repo.findAllByProjectId(project.getId()));
 
 		assertEquals(2, epics.size());
@@ -69,7 +69,7 @@ public class CacheServiceTest {
 
 		// 2nd method call
 
-		epics = cacheService.getCachedObjects("epicListCache", project.getId(), epicRepo,
+		epics = cacheService.getObjectsFromCacheOrDatabase("epicListCache", project.getId(), epicRepo,
 				repo -> repo.findAllByProjectId(project.getId()));
 
 		assertEquals(2, epics.size());
@@ -100,7 +100,7 @@ public class CacheServiceTest {
 
 		// Cache population:
 
-		cacheService.getCachedObjects("epicListCache", project.getId(), epicRepo,
+		cacheService.getObjectsFromCacheOrDatabase("epicListCache", project.getId(), epicRepo,
 				repo -> repo.findAllByProjectId(project.getId()));
 
 		// method call after cache population
