@@ -2,6 +2,7 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,12 +52,29 @@ public class EpicController {
 
 	private final CacheService cacheService;
 
-	@GetMapping("/list")
-	public ResponseEntity<List<Epic>> getEpicList() {
+	//Get NotDone epics
+	
+	@GetMapping("/list/notdone")
+	public ResponseEntity<List<Epic>> getNotDoneEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Epic> epics = cacheServiceEpicImpl.getCachedEpicList(project);
+		List<Epic> epics = cacheServiceEpicImpl.getNotDoneEpicListFromCacheOrDatabase(project);
+
+		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
+
+		return ResponseEntity.ok(epics);
+
+	}
+	
+	//Get all epics
+	
+	@GetMapping("/list/all")
+	public ResponseEntity<List<Epic>> getAllEpicList() {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		List<Epic> epics = epicRepo.findAllByProject(project).orElse(new ArrayList<Epic>(0));
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
