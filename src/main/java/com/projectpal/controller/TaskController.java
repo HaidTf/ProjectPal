@@ -2,6 +2,7 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -58,41 +59,43 @@ public class TaskController {
 	@GetMapping("/list/userstory/{userStoryId}")
 	public ResponseEntity<List<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
 
-		List<Task> tasks = taskRepo.findAllByUserStoryId(userStoryId)
-				.orElseThrow(() -> new ResourceNotFoundException("no tasks related to this user story are found"));
+		UserStory userStory = userStoryRepo.findById(userStoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
-		if (tasks.get(0).getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
+		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+			throw new ForbiddenException("you are not allowed access to other projects");
+		
+		List<Task> tasks = taskRepo.findAllByUserStoryId(userStoryId)
+				.orElse(new ArrayList<Task>(0));
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
 		return ResponseEntity.ok(tasks);
 	}
 
-	//Get All tasks
-	
+	// Get All tasks
+
 	@GetMapping("/list/user/all")
 	public ResponseEntity<List<Task>> getUserTasksList() {
 
 		User user = SecurityContextUtil.getUser();
 
-		List<Task> tasks = taskRepo.findAllByAssignedUser(user)
-				.orElseThrow(() -> new ResourceNotFoundException("no tasks related to this user are found"));
+		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(new ArrayList<Task>(0));
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
 		return ResponseEntity.ok(tasks);
 	}
 
-	//Get NotDone tasks
-	
+	// Get NotDone tasks
+
 	@GetMapping("/list/user")
 	public ResponseEntity<List<Task>> getUserTaskTodoOrInProgressList() {
 
 		User user = SecurityContextUtil.getUser();
 
-		List<Task> tasks = taskRepo.findAllByAssignedUserAndProgressNot(user, Progress.DONE).orElseThrow(
-				() -> new ResourceNotFoundException("no todo or inprogress tasks related to this user are found"));
+		List<Task> tasks = taskRepo.findAllByAssignedUserAndProgressNot(user, Progress.DONE)
+				.orElse(new ArrayList<Task>(0));
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
