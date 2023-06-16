@@ -2,6 +2,7 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class InvitationController {
 		Project project = ProjectUtil.getProjectNotNull();
 
 		List<Invitation> invitations = invitationRepo.findAllByProject(project)
-				.orElseThrow(() -> new ResourceNotFoundException("no invitations found"));
+				.orElse(new ArrayList<Invitation>(0));
 
 		invitations.sort((inv1, inv2) -> inv1.getIssueDate().compareTo(inv2.getIssueDate()));
 
