@@ -23,10 +23,10 @@ import com.projectpal.repository.TaskAttachmentRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceEpicImpl;
+import com.projectpal.service.CacheServiceEpicAddOn;
 import com.projectpal.service.CacheServiceProjectAddOn;
-import com.projectpal.service.CacheServiceSprintImpl;
-import com.projectpal.service.CacheServiceUserStoryImpl;
+import com.projectpal.service.CacheServiceSprintAddOn;
+import com.projectpal.service.CacheServiceUserStoryAddOn;
 
 @RestController
 @RequestMapping("/admin/entities/delete")
@@ -36,8 +36,8 @@ public class DeleteEntitiesAdminController {
 	public DeleteEntitiesAdminController(ProjectRepository projectRepo, EpicRepository epicRepo,
 			SprintRepository sprintRepo, UserStoryRepository userStoryRepo, TaskRepository taskRepo,
 			TaskAttachmentRepository taskAttachmentRepo, InvitationRepository invitationRepo,
-			AnnouncementRepository announcementRepo, CacheServiceEpicImpl cacheServiceEpicImpl,
-			CacheServiceSprintImpl cacheServiceSprintImpl, CacheService cacheService,
+			AnnouncementRepository announcementRepo, CacheServiceEpicAddOn cacheServiceEpicAddOn,
+			CacheServiceSprintAddOn cacheServiceSprintAddOn, CacheService cacheService,
 			CacheServiceProjectAddOn cacheServiceProjectAddOn) {
 		this.projectRepo = projectRepo;
 		this.epicRepo = epicRepo;
@@ -47,8 +47,8 @@ public class DeleteEntitiesAdminController {
 		this.taskAttachmentRepo = taskAttachmentRepo;
 		this.invitationRepo = invitationRepo;
 		this.announcementRepo = announcementRepo;
-		this.cacheServiceEpicImpl = cacheServiceEpicImpl;
-		this.cacheServiceSprintImpl = cacheServiceSprintImpl;
+		this.cacheServiceEpicAddOn = cacheServiceEpicAddOn;
+		this.cacheServiceSprintAddOn = cacheServiceSprintAddOn;
 		this.cacheService = cacheService;
 		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
 	}
@@ -69,9 +69,9 @@ public class DeleteEntitiesAdminController {
 
 	private final AnnouncementRepository announcementRepo;
 
-	private final CacheServiceEpicImpl cacheServiceEpicImpl;
+	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
 
-	private final CacheServiceSprintImpl cacheServiceSprintImpl;
+	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
 
 	private final CacheService cacheService;
 
@@ -98,7 +98,7 @@ public class DeleteEntitiesAdminController {
 		Epic epic = epicRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("entity with requested Id not Found"));
 
-		cacheServiceEpicImpl.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
+		cacheServiceEpicAddOn.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
 
 		epicRepo.deleteById(id);
 
@@ -112,7 +112,7 @@ public class DeleteEntitiesAdminController {
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("entity with requested Id not Found"));
 
-		cacheServiceSprintImpl.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
+		cacheServiceSprintAddOn.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
 		
 		sprintRepo.deleteById(id);
 
@@ -126,9 +126,9 @@ public class DeleteEntitiesAdminController {
 		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("entity with requested Id not Found"));
 		
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 		
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, userStory.getSprint().getId());
 		
 		userStoryRepo.deleteById(id);
 

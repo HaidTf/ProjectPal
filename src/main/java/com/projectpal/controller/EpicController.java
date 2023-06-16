@@ -28,7 +28,7 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceEpicImpl;
+import com.projectpal.service.CacheServiceEpicAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
@@ -39,16 +39,16 @@ import jakarta.validation.Valid;
 public class EpicController {
 
 	@Autowired
-	public EpicController(EpicRepository epicRepo, CacheServiceEpicImpl cacheServiceEpicImpl,
+	public EpicController(EpicRepository epicRepo, CacheServiceEpicAddOn cacheServiceEpicAddOn,
 			CacheService cacheService) {
 		this.epicRepo = epicRepo;
-		this.cacheServiceEpicImpl = cacheServiceEpicImpl;
+		this.cacheServiceEpicAddOn = cacheServiceEpicAddOn;
 		this.cacheService = cacheService;
 	}
 
 	private final EpicRepository epicRepo;
 
-	private final CacheServiceEpicImpl cacheServiceEpicImpl;
+	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
 
 	private final CacheService cacheService;
 
@@ -59,7 +59,7 @@ public class EpicController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Epic> epics = cacheServiceEpicImpl.getNotDoneEpicListFromCacheOrDatabase(project);
+		List<Epic> epics = cacheServiceEpicAddOn.getNotDoneEpicListFromCacheOrDatabase(project);
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
@@ -97,7 +97,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.addObjectToCache(CacheServiceEpicImpl.epicListCache, project.getId(), epic);
+		cacheService.addObjectToCache(CacheServiceEpicAddOn.epicListCache, project.getId(), epic);
 
 		// Redis Cache Update End:
 
@@ -125,7 +125,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -151,7 +151,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -177,7 +177,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -198,7 +198,7 @@ public class EpicController {
 
 		// Redis Cache Update:
 
-		cacheServiceEpicImpl.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
+		cacheServiceEpicAddOn.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
 
 		// Redis Cache Update End:
 

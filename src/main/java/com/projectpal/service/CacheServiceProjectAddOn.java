@@ -13,34 +13,34 @@ import com.projectpal.entity.Sprint;
 public class CacheServiceProjectAddOn {
 
 	@Autowired
-	public CacheServiceProjectAddOn(CacheService cacheService, CacheServiceEpicImpl cacheServiceEpicImpl,
-			CacheServiceSprintImpl cacheServiceSprintImpl) {
+	public CacheServiceProjectAddOn(CacheService cacheService, CacheServiceEpicAddOn cacheServiceEpicAddOn,
+			CacheServiceSprintAddOn cacheServiceSprintAddOn) {
 		this.cacheService = cacheService;
-		this.cacheServiceEpicImpl = cacheServiceEpicImpl;
-		this.cacheServiceSprintImpl = cacheServiceSprintImpl;
+		this.cacheServiceEpicAddOn = cacheServiceEpicAddOn;
+		this.cacheServiceSprintAddOn = cacheServiceSprintAddOn;
 	}
 	
 	private final CacheService cacheService;
 	
-	private final CacheServiceEpicImpl cacheServiceEpicImpl;
+	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
 	
-	private final CacheServiceSprintImpl cacheServiceSprintImpl;
+	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
 	
 	// Project Deletion -> Cascade Remove of all child entities from cache:
 
 	public void DeleteEntitiesInCacheOnProjectDeletion(Project project) {
 
-		List<Epic> epics = cacheServiceEpicImpl.getNotDoneEpicListFromCacheOrDatabase(project);
-		List<Sprint> sprints = cacheServiceSprintImpl.getNotDoneSprintListFromCacheOrDatabase(project);
+		List<Epic> epics = cacheServiceEpicAddOn.getNotDoneEpicListFromCacheOrDatabase(project);
+		List<Sprint> sprints = cacheServiceSprintAddOn.getNotDoneSprintListFromCacheOrDatabase(project);
 
 		for (Epic epic : epics)
-			cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId());
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, epic.getId());
 
 		for (Sprint sprint : sprints)
-			cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId());
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId());
 
-		cacheService.evictListFromCache(CacheServiceEpicImpl.epicListCache, project.getId());
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
 	}
 	
 }

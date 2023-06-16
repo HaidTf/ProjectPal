@@ -11,9 +11,9 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
-import com.projectpal.service.CacheServiceEpicImpl;
-import com.projectpal.service.CacheServiceSprintImpl;
-import com.projectpal.service.CacheServiceUserStoryImpl;
+import com.projectpal.service.CacheServiceEpicAddOn;
+import com.projectpal.service.CacheServiceSprintAddOn;
+import com.projectpal.service.CacheServiceUserStoryAddOn;
 
 @Configuration
 @EnableCaching
@@ -33,10 +33,10 @@ public class RedisCacheConfig {
                 .computePrefixWith(cacheName -> "projectpal:" + cacheName);
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put(CacheServiceEpicImpl.epicListCache, cacheConfiguration1);
-        cacheConfigurations.put(CacheServiceSprintImpl.sprintListCache, cacheConfiguration1);
-        cacheConfigurations.put(CacheServiceUserStoryImpl.epicUserStoryListCache, cacheConfiguration2);
-        cacheConfigurations.put(CacheServiceUserStoryImpl.sprintUserStoryListCache, cacheConfiguration2);
+        cacheConfigurations.put(CacheServiceEpicAddOn.epicListCache, cacheConfiguration1);
+        cacheConfigurations.put(CacheServiceSprintAddOn.sprintListCache, cacheConfiguration1);
+        cacheConfigurations.put(CacheServiceUserStoryAddOn.epicUserStoryListCache, cacheConfiguration2);
+        cacheConfigurations.put(CacheServiceUserStoryAddOn.sprintUserStoryListCache, cacheConfiguration2);
 
         RedisCacheManager cacheManager = RedisCacheManager.builder(redisConnectionFactory)
         		.withInitialCacheConfigurations(cacheConfigurations)

@@ -30,7 +30,7 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceSprintImpl;
+import com.projectpal.service.CacheServiceSprintAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
@@ -42,10 +42,10 @@ public class SprintController {
 
 	@Autowired
 	public SprintController(SprintRepository sprintRepo, CacheService cacheService,
-			CacheServiceSprintImpl cacheServiceSprintImpl) {
+			CacheServiceSprintAddOn cacheServiceSprintAddOn) {
 		this.cacheService = cacheService;
 		this.sprintRepo = sprintRepo;
-		this.cacheServiceSprintImpl = cacheServiceSprintImpl;
+		this.cacheServiceSprintAddOn = cacheServiceSprintAddOn;
 
 	}
 
@@ -53,7 +53,7 @@ public class SprintController {
 
 	private final CacheService cacheService;
 
-	private final CacheServiceSprintImpl cacheServiceSprintImpl;
+	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
 
 	//Get NotDone sprints
 	
@@ -62,7 +62,7 @@ public class SprintController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Sprint> sprints = cacheServiceSprintImpl.getNotDoneSprintListFromCacheOrDatabase(project);
+		List<Sprint> sprints = cacheServiceSprintAddOn.getNotDoneSprintListFromCacheOrDatabase(project);
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
@@ -103,7 +103,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.addObjectToCache(CacheServiceSprintImpl.sprintListCache, project.getId(), sprint);
+		cacheService.addObjectToCache(CacheServiceSprintAddOn.sprintListCache, project.getId(), sprint);
 
 		// Redis Cache Update End:
 
@@ -136,7 +136,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -166,7 +166,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -192,7 +192,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -218,7 +218,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceSprintImpl.sprintListCache, project.getId());
+		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
 
 		// Redis Cache Update End:
 
@@ -242,7 +242,7 @@ public class SprintController {
 
 		// Redis Cache Update:
 
-		cacheServiceSprintImpl.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
+		cacheServiceSprintAddOn.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
 
 		// Redis Cache Update End:
 

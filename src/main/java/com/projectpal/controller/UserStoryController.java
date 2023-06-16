@@ -32,7 +32,7 @@ import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceUserStoryImpl;
+import com.projectpal.service.CacheServiceUserStoryAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
@@ -44,11 +44,11 @@ public class UserStoryController {
 
 	@Autowired
 	public UserStoryController(UserStoryRepository userStoryRepo, SprintRepository sprintRepo, EpicRepository epicRepo,
-			CacheServiceUserStoryImpl cacheServiceUserStoryImpl, CacheService cacheService) {
+			CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn, CacheService cacheService) {
 		this.userStoryRepo = userStoryRepo;
 		this.epicRepo = epicRepo;
 		this.sprintRepo = sprintRepo;
-		this.cacheServiceUserStoryImpl = cacheServiceUserStoryImpl;
+		this.cacheServiceUserStoryAddOn = cacheServiceUserStoryAddOn;
 		this.cacheService = cacheService;
 
 	}
@@ -59,7 +59,7 @@ public class UserStoryController {
 
 	private final SprintRepository sprintRepo;
 
-	private final CacheServiceUserStoryImpl cacheServiceUserStoryImpl;
+	private final CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn;
 
 	private final CacheService cacheService;
 
@@ -72,7 +72,7 @@ public class UserStoryController {
 		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = cacheServiceUserStoryImpl.getEpicUserStoryListFromCacheOrDatabase(epic);
+		List<UserStory> userStories = cacheServiceUserStoryAddOn.getEpicUserStoryListFromCacheOrDatabase(epic);
 
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
@@ -90,7 +90,7 @@ public class UserStoryController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = cacheServiceUserStoryImpl.getSprintUserStoryListFromCacheOrDatabase(sprint);
+		List<UserStory> userStories = cacheServiceUserStoryAddOn.getSprintUserStoryListFromCacheOrDatabase(sprint);
 
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
@@ -120,7 +120,7 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.addObjectToCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId(), userStory);
+		cacheService.addObjectToCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, epic.getId(), userStory);
 
 		// Redis Cache Update End:
 
@@ -157,7 +157,7 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.addObjectToCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId(), userStory);
+		cacheService.addObjectToCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId(), userStory);
 
 		// Redis Cache Update End:
 
@@ -181,9 +181,9 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache,
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
 				userStory.getSprint().getId());
 
 		// Redis Cache Update End:
@@ -208,9 +208,9 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache,
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
 				userStory.getSprint().getId());
 
 		// Redis Cache Update End:
@@ -236,9 +236,9 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache,
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
 				userStory.getSprint().getId());
 
 		// Redis Cache Update End:
@@ -261,9 +261,9 @@ public class UserStoryController {
 
 		// Redis Cache Update:
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, userStory.getEpic().getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache,
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
 				userStory.getSprint().getId());
 
 		// Redis Cache Update End:
