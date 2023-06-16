@@ -11,10 +11,10 @@ import com.projectpal.entity.enums.Progress;
 import com.projectpal.repository.SprintRepository;
 
 @Service
-public class CacheServiceSprintImpl {
+public class CacheServiceSprintAddOn {
 
 	@Autowired
-	public CacheServiceSprintImpl(CacheService cacheService, SprintRepository sprintRepo) {
+	public CacheServiceSprintAddOn(CacheService cacheService, SprintRepository sprintRepo) {
 		this.cacheService = cacheService;
 		this.sprintRepo = sprintRepo;
 	}
@@ -35,7 +35,7 @@ public class CacheServiceSprintImpl {
 		
 		cacheService.evictListFromCache(sprintListCache, sprint.getProject().getId());
 		
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, sprint.getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId());
 
 	}
 }

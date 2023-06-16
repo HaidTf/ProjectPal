@@ -12,10 +12,10 @@ import com.projectpal.entity.enums.Progress;
 import com.projectpal.repository.EpicRepository;
 
 @Service
-public class CacheServiceEpicImpl {
+public class CacheServiceEpicAddOn {
 
 	@Autowired
-	public CacheServiceEpicImpl(CacheService cacheService,EpicRepository epicRepo,CacheServiceUserStoryImpl cacheServiceUserStoryImpl) {
+	public CacheServiceEpicAddOn(CacheService cacheService,EpicRepository epicRepo,CacheServiceUserStoryAddOn cacheServiceUserStoryImpl) {
 		this.cacheService = cacheService;
 		this.epicRepo = epicRepo;
 		this.cacheServiceUserStoryImpl = cacheServiceUserStoryImpl;
@@ -25,7 +25,7 @@ public class CacheServiceEpicImpl {
 
 	private final EpicRepository epicRepo;
 
-	private final CacheServiceUserStoryImpl cacheServiceUserStoryImpl;
+	private final CacheServiceUserStoryAddOn cacheServiceUserStoryImpl;
 	
 	public static final String epicListCache = "epicListCache";
 
@@ -46,10 +46,10 @@ public class CacheServiceEpicImpl {
 		List<UserStory> userStories = cacheServiceUserStoryImpl.getEpicUserStoryListFromCacheOrDatabase(epic);
 
 		for (UserStory userStory : userStories)
-			cacheService.evictListFromCache(CacheServiceUserStoryImpl.sprintUserStoryListCache, userStory.getSprint().getId());
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, userStory.getSprint().getId());
 					
 
-		cacheService.evictListFromCache(CacheServiceUserStoryImpl.epicUserStoryListCache, epic.getId());
+		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, epic.getId());
 	}
 
 }

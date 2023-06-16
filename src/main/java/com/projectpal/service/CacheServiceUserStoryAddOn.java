@@ -11,10 +11,10 @@ import com.projectpal.entity.UserStory;
 import com.projectpal.repository.UserStoryRepository;
 
 @Service
-public class CacheServiceUserStoryImpl {
+public class CacheServiceUserStoryAddOn {
 
 	@Autowired
-	public CacheServiceUserStoryImpl(CacheService cacheService, UserStoryRepository userStoryRepo) {
+	public CacheServiceUserStoryAddOn(CacheService cacheService, UserStoryRepository userStoryRepo) {
 		this.cacheService = cacheService;
 		this.userStoryRepo = userStoryRepo;
 	}
