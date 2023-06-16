@@ -2,6 +2,7 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,7 @@ public class AnnouncementController {
 		
 		Project project = ProjectUtil.getProjectNotNull();
 		
-		List<Announcement> announcements = announcementRepo.findAllByProject(project).orElseThrow(()-> new ResourceNotFoundException("project not found"));
+		List<Announcement> announcements = announcementRepo.findAllByProject(project).orElse(new ArrayList<Announcement>(0));
 		
 		announcements.sort((announcement1,announcement2)-> announcement1.getIssueDate().compareTo(announcement2.getIssueDate()));
 		
