@@ -1,19 +1,19 @@
 package com.projectpal.dto.response;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ListHolderResponse<T> {
 
-	public ListHolderResponse(ArrayList<T> list) {
+	public ListHolderResponse(List<T> list) {
 		this.list = list;
 		this.size = list.size();
 	}
 
-	private final ArrayList<T> list;
+	private final List<T> list;
 
 	private final int size;
 
-	public ArrayList<T> getList() {
+	public List<T> getList() {
 		return list;
 	}
 
