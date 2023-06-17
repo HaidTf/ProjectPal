@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.entity.UserStory;
 import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.request.UserStoryCreationRequest;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
@@ -65,7 +66,7 @@ public class UserStoryController {
 
 	@GetMapping("/list/epic/{epicId}")
 	@Transactional
-	public ResponseEntity<List<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
+	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
 
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -77,12 +78,12 @@ public class UserStoryController {
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
 
-		return ResponseEntity.ok(userStories);
+		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
 
 	@GetMapping("/list/sprint/{sprintId}")
 	@Transactional
-	public ResponseEntity<List<UserStory>> getSprintUserStoryList(@PathVariable long sprintId) {
+	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId) {
 
 		Sprint sprint = sprintRepo.findById(sprintId)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -95,7 +96,7 @@ public class UserStoryController {
 		userStories
 				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
 
-		return ResponseEntity.ok(userStories);
+		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")

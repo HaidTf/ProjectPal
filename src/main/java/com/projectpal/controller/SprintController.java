@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.Sprint;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
@@ -58,7 +59,7 @@ public class SprintController {
 	//Get NotDone sprints
 	
 	@GetMapping("/list/notdone")
-	public ResponseEntity<List<Sprint>> getNotDoneSprintList() {
+	public ResponseEntity<ListHolderResponse<Sprint>> getNotDoneSprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -66,14 +67,14 @@ public class SprintController {
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
-		return ResponseEntity.ok(sprints);
+		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
 	}
 	
 	//Get all sprints
 	
 	@GetMapping("/list/all")
-	public ResponseEntity<List<Sprint>> getAllSprintList() {
+	public ResponseEntity<ListHolderResponse<Sprint>> getAllSprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -81,7 +82,7 @@ public class SprintController {
 
 		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
 
-		return ResponseEntity.ok(sprints);
+		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
 	}
 

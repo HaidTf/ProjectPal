@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.PriorityParameterRequest;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
@@ -55,7 +56,7 @@ public class EpicController {
 	//Get NotDone epics
 	
 	@GetMapping("/list/notdone")
-	public ResponseEntity<List<Epic>> getNotDoneEpicList() {
+	public ResponseEntity<ListHolderResponse<Epic>> getNotDoneEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -63,14 +64,14 @@ public class EpicController {
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
-		return ResponseEntity.ok(epics);
+		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
 	}
 	
 	//Get all epics
 	
 	@GetMapping("/list/all")
-	public ResponseEntity<List<Epic>> getAllEpicList() {
+	public ResponseEntity<ListHolderResponse<Epic>> getAllEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -78,7 +79,7 @@ public class EpicController {
 
 		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
 
-		return ResponseEntity.ok(epics);
+		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
 	}
 

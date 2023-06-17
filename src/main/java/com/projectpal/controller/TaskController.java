@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.request.TaskCreationRequest;
 import com.projectpal.dto.request.TaskProgressUpdateRequest;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -57,7 +58,7 @@ public class TaskController {
 	private final UserStoryRepository userStoryRepo;
 
 	@GetMapping("/list/userstory/{userStoryId}")
-	public ResponseEntity<List<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
+	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -70,13 +71,13 @@ public class TaskController {
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
-		return ResponseEntity.ok(tasks);
+		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
 
 	// Get All tasks
 
 	@GetMapping("/list/user/all")
-	public ResponseEntity<List<Task>> getUserTasksList() {
+	public ResponseEntity<ListHolderResponse<Task>> getUserTasksList() {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -84,13 +85,13 @@ public class TaskController {
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
-		return ResponseEntity.ok(tasks);
+		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
 
 	// Get NotDone tasks
 
 	@GetMapping("/list/user")
-	public ResponseEntity<List<Task>> getUserTaskTodoOrInProgressList() {
+	public ResponseEntity<ListHolderResponse<Task>> getUserTaskTodoOrInProgressList() {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -99,7 +100,7 @@ public class TaskController {
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
-		return ResponseEntity.ok(tasks);
+		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")

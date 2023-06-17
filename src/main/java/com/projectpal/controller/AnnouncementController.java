@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.ForbiddenException;
@@ -40,7 +41,7 @@ public class AnnouncementController {
 	
 	
 	@GetMapping("/list")
-	public ResponseEntity<List<Announcement>> getAnnouncements(){
+	public ResponseEntity<ListHolderResponse<Announcement>> getAnnouncements(){
 		
 		Project project = ProjectUtil.getProjectNotNull();
 		
@@ -48,7 +49,7 @@ public class AnnouncementController {
 		
 		announcements.sort((announcement1,announcement2)-> announcement1.getIssueDate().compareTo(announcement2.getIssueDate()));
 		
-		return ResponseEntity.ok(announcements); 
+		return ResponseEntity.ok(new ListHolderResponse<Announcement>(announcements)); 
 	}
 	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")

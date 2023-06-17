@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
@@ -44,16 +45,16 @@ public class InvitationController {
 	private final UserRepository userRepo;
 
 	@GetMapping("/list")
-	public ResponseEntity<List<Invitation>> getInvitations() {
+	public ResponseEntity<ListHolderResponse<Invitation>> getInvitations() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		List<Invitation> invitations = invitationRepo.findAllByProject(project)
 				.orElse(new ArrayList<Invitation>(0));
 
-		invitations.sort((inv1, inv2) -> inv1.getIssueDate().compareTo(inv2.getIssueDate()));
-
-		return ResponseEntity.ok(invitations);
+		invitations.sort((inv1, inv2) -> inv1.getIssueDate().compareTo(inv2.getIssueDate())); 
+		
+		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
