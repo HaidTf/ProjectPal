@@ -3,6 +3,7 @@ package com.projectpal.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -44,14 +45,37 @@ public class SecurityConfig {
 	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@Profile("development")
+	SecurityFilterChain developmentSecurityFilterChain(HttpSecurity http) throws Exception {
 
-		http.csrf().disable().headers((headers) -> headers.httpStrictTransportSecurity().disable() // will enable in
-																									// production
-				.xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
-				.contentSecurityPolicy("default-src 'self'")).authorizeHttpRequests().requestMatchers("/auth/**")
-				.permitAll().requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin")
-				.hasAnyRole("ADMIN", "SUPER_ADMIN").anyRequest().authenticated().and().sessionManagement()
+		http.csrf().disable()
+				.headers((headers) -> headers.httpStrictTransportSecurity().disable()
+						.xssProtection(
+								xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+						.contentSecurityPolicy("default-src 'self'"))
+				.authorizeHttpRequests().requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+				.requestMatchers("/admin").hasAnyRole("ADMIN", "SUPER_ADMIN").anyRequest().authenticated().and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.authenticationProvider(authenticationProvider())
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).exceptionHandling()
+				.authenticationEntryPoint(authenticationEntryPoint);
+
+		return http.build();
+
+	}
+
+	@Bean
+	@Profile("production")
+	SecurityFilterChain productionSecurityFilterChain(HttpSecurity http) throws Exception {
+
+		http.csrf().disable()
+				.headers((headers) -> headers
+						.xssProtection(
+								xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+						.contentSecurityPolicy("default-src 'self'"))
+				.authorizeHttpRequests().requestMatchers("/auth/**").permitAll()
+				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin").hasAnyRole("ADMIN", "SUPER_ADMIN")
+				.anyRequest().authenticated().and().sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).exceptionHandling()
