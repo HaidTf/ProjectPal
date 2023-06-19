@@ -2,6 +2,8 @@ package com.projectpal.service;
 
 
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +39,8 @@ public class AuthenticationService {
 		User user = new User(req.getName(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
 				
 		user.setRole(Role.ROLE_USER);
+		
+		user.setCreationDate(LocalDate.now());
 		
 		repo.save(user);
 
