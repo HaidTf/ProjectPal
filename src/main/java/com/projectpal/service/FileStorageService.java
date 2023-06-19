@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import com.projectpal.exception.ResourceNotFoundException;
 @Service
 public class FileStorageService {
 
-	@Value("${file.upload-dir}")
 	private String storageLocation;
 
 	public String storeFile(MultipartFile file, long parentId) {
