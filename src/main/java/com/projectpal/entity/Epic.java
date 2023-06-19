@@ -1,6 +1,7 @@
 package com.projectpal.entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,6 +17,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -32,6 +35,7 @@ public class Epic implements Serializable {
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
+		this.creationDate = LocalDate.now();
 	}
 
 	public Epic(String name, String description, int priority, Progress progress) {
@@ -61,6 +65,9 @@ public class Epic implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	private Progress progress;
+	
+	@Temporal(TemporalType.DATE)
+	private LocalDate creationDate;
 
 	@ManyToOne
 	@JsonIgnore
@@ -131,6 +138,13 @@ public class Epic implements Serializable {
 
 	public void setProgress(Progress progress) {
 		this.progress = progress;
+	}
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	@Override

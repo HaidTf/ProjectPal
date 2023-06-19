@@ -30,6 +30,7 @@ public class Sprint implements Serializable {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
+		this.creationDate = LocalDate.now();
 	}
 	 
 	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate,Progress progress) {
@@ -62,6 +63,9 @@ public class Sprint implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	private Progress progress;
+	
+	@Temporal(TemporalType.DATE)
+	private LocalDate creationDate;
 
 	@ManyToOne
 	@JsonIgnore
@@ -127,6 +131,14 @@ public class Sprint implements Serializable {
 
 	public void setProgress(Progress progress) {
 		this.progress = progress;
+	}
+	
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 
 }

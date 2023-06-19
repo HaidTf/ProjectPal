@@ -8,14 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import lombok.NoArgsConstructor;
 
 
 @Entity
+@NoArgsConstructor
 public class Invitation {
-
-	public Invitation() {
-		this.issueDate = LocalDate.now();
-	}
 	
 	public Invitation(User invitedUser, Project project) {
 		this.invitedUser = invitedUser;
