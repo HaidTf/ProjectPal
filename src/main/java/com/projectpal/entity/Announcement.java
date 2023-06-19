@@ -12,14 +12,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
+import lombok.NoArgsConstructor;
 
 
 @Entity
+@NoArgsConstructor
 public class Announcement {
-
-	public Announcement() {
-		this.issueDate = LocalDate.now();
-	}
 
 	@JsonCreator
 	public Announcement(String title, String description) {
