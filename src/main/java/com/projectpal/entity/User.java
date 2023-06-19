@@ -1,5 +1,6 @@
 package com.projectpal.entity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +20,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
@@ -58,6 +61,9 @@ public class User implements UserDetails {
 	@JsonIgnore
 	private String password;
 
+	@Temporal(TemporalType.DATE)
+	private LocalDate creationDate;
+	
 	@ManyToOne
 	private Project project;
 
@@ -93,6 +99,14 @@ public class User implements UserDetails {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	public Role getRole() {

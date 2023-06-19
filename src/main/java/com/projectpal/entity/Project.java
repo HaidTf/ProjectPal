@@ -30,6 +30,7 @@ public class Project implements Serializable {
 		this.name = name;
 		this.description = description;
 		this.lastAccessedDate = LocalDate.now();
+		this.creationDate = LocalDate.now();
 	}
 	
 	@Transient
@@ -47,6 +48,9 @@ public class Project implements Serializable {
 	@Temporal(TemporalType.DATE)
 	@JsonIgnore
 	private LocalDate lastAccessedDate;
+	
+	@Temporal(TemporalType.DATE)
+	private LocalDate creationDate;
 
 	@OneToOne
 	@JoinColumn(name = "owner_id")
@@ -157,6 +161,14 @@ public class Project implements Serializable {
 
 	public void setLastAccessedDate(LocalDate lastAccessedDate) {
 		this.lastAccessedDate = lastAccessedDate;
+	}
+	
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 
 }

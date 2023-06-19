@@ -2,6 +2,7 @@ package com.projectpal.entity;
 
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,6 +18,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -34,6 +37,7 @@ public class Task implements Serializable {
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
+		this.creationDate = LocalDate.now();
 	}
 	 
 	public Task(String name, String description, int priority,Progress progress) {
@@ -65,6 +69,9 @@ public class Task implements Serializable {
 	private Progress progress;
 	
 	private String report;
+	
+	@Temporal(TemporalType.DATE)
+	private LocalDate creationDate;
 
 	@ManyToOne
 	@JsonIgnore
@@ -129,6 +136,14 @@ public class Task implements Serializable {
 
 	public void setReport(String report) {
 		this.report = report;
+	}
+	
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	public User getAssignedUser() {
