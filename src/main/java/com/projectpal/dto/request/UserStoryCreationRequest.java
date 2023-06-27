@@ -1,37 +1,31 @@
 package com.projectpal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.projectpal.entity.UserStory;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-public class UserStoryCreationRequest {
+public final class UserStoryCreationRequest {
 
+	@JsonCreator
 	public UserStoryCreationRequest(UserStory userStory, Long epicId) {
 		this.userStory = userStory;
 		this.epicId = epicId;
 	}
 
 	@Valid
-	private UserStory userStory;
-	
+	private final UserStory userStory;
+
 	@NotNull
-	private Long epicId;
+	private final Long epicId;
 
 	public UserStory getUserStory() {
 		return userStory;
-	}
-
-	public void setUserStory(UserStory userStory) {
-		this.userStory = userStory;
 	}
 
 	public Long getEpicId() {
 		return epicId;
 	}
 
-	public void setEpicId(Long epicId) {
-		this.epicId = epicId;
-	}
-	
 }

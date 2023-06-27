@@ -2,7 +2,7 @@ package com.projectpal.dto.response;
 
 import java.util.List;
 
-public class ListHolderResponse<T> {
+public final class ListHolderResponse<T> {
 
 	public ListHolderResponse(List<T> list) {
 		this.list = list;

@@ -1,14 +1,15 @@
 package com.projectpal.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public final class AuthenticationResponse {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthenticationResponse {
+	public AuthenticationResponse(String token) {
+		this.token = token;
+	}
 
-	private String token;
+	private final String token;
+
+	public String getToken() {
+		return token;
+	}
 
 }

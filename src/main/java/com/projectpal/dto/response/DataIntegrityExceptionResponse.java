@@ -1,48 +1,33 @@
 package com.projectpal.dto.response;
 
-
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 
-
-
-
-public class DataIntegrityExceptionResponse {
+public final class DataIntegrityExceptionResponse {
 
 	public DataIntegrityExceptionResponse(DataIntegrityViolationException ex) {
 		Throwable cause = ex.getCause();
 		if (cause instanceof ConstraintViolationException) {
-			setConstraintViolation(true);
+			isConstraintViolation = true;
 			ConstraintViolationException constraintEx = (ConstraintViolationException) cause;
 			String constraint = constraintEx.getConstraintName();
-			setConstraintViolated(constraint);
-		}
-		else {
-			setConstraintViolation(false);
+			constraintViolated = constraint;
+		} else {
+			isConstraintViolation = true;
+			constraintViolated = null;
 		}
 	}
-	
-	private String constraintViolated;
 
-	private boolean isConstraintViolation;
-	
+	private final String constraintViolated;
 
-	
+	private final boolean isConstraintViolation;
+
 	public String getConstraintViolated() {
 		return constraintViolated;
-	}
-
-	public void setConstraintViolated(String constraintViolated) {
-		this.constraintViolated = constraintViolated;
 	}
 
 	public boolean isConstraintViolation() {
 		return isConstraintViolation;
 	}
 
-	public void setConstraintViolation(boolean isConstraintViolation) {
-		this.isConstraintViolation = isConstraintViolation;
-	}
-
-	
 }

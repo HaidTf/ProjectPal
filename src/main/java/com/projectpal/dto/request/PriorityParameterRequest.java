@@ -1,10 +1,13 @@
 package com.projectpal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-public class PriorityParameterRequest {
+public final class PriorityParameterRequest {
 
+	@JsonCreator
 	public PriorityParameterRequest(int priority) {
 		this.priority = priority;
 	}

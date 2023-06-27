@@ -1,6 +1,6 @@
 package com.projectpal.dto.response;
 
-public class ExceptionResponse {
+public final class ExceptionResponse {
 
 	public ExceptionResponse(String message) {
 		this.message = message;
