@@ -2,7 +2,7 @@ package com.projectpal.dto.response;
 
 import java.util.List;
 
-public class ValidationExceptionResponse {
+public final class ValidationExceptionResponse {
 
 	public ValidationExceptionResponse(List<String> errors) {
 		this.errors = errors;
