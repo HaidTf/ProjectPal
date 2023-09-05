@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.StringHolderRequest;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
@@ -58,16 +59,6 @@ public class UserController {
 	}
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
-	@PatchMapping("/update/email")
-	public ResponseEntity<Void> updateEmail(@Valid @RequestBody StringHolderRequest emailHolder) {
-
-		User user = SecurityContextUtil.getUser();
-		user.setEmail(emailHolder.getString());
-		userRepo.save(user);
-		return ResponseEntity.status(204).build();
-	}
-
-	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/update/password")
 	public ResponseEntity<Void> updatePassword(@Valid @RequestBody StringHolderRequest passwordHolder) {
 
@@ -77,41 +68,62 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
-	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR','ADMIN')")
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/update/project/exit")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
 
 		User user = SecurityContextUtil.getUser();
 
+		Project project = user.getProject();
+
+		user.setProject(null);
+		userRepo.save(user);
+
 		if (user.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
 
-			List<User> projectUsers = userRepo.findAllByProject(user.getProject()).orElse(null);
+			Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
 
-			if (projectUsers != null) {
+			if (projectUsers.isPresent() && projectUsers.get().size() > 0) {
 
-				for (User projectUser : projectUsers) {
+				boolean newProjectOwnerIsSet = false;
+
+				for (User projectUser : projectUsers.get()) {
 
 					if (projectUser.getRole() == Role.ROLE_USER_PROJECT_OPERATOR) {
+
 						projectUser.setRole(Role.ROLE_USER_PROJECT_OWNER);
 						userRepo.save(projectUser);
+
+						project.setOwner(projectUser);
+						projectRepo.save(project);
+
+						newProjectOwnerIsSet = true;
 						break;
 					}
 				}
 
+				if (!newProjectOwnerIsSet) {
+
+					User newProjectOwner = projectUsers.get().get(0);
+					newProjectOwner.setRole(Role.ROLE_USER_PROJECT_OWNER);
+					userRepo.save(newProjectOwner);
+
+					project.setOwner(newProjectOwner);
+					projectRepo.save(project);
+				}
 			} else {
-				cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(user.getProject());
-				projectRepo.delete(user.getProject());
+				cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
+				projectRepo.delete(project);
 			}
 		}
 
-		user.setProject(null);
 		user.setRole(Role.ROLE_USER);
 		userRepo.save(user);
 
 		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
 
-		if (tasks.isPresent()) {
+		if (tasks.isPresent() && tasks.get().size() > 0) {
 
 			for (Task task : tasks.get()) {
 
