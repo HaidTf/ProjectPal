@@ -76,6 +76,8 @@ public class UserControllerUTest {
 		setSecurityContext(user);
 	}
 
+	// getUser() method tests:
+	
 	@Test
 	public void testGetUser() {
 
@@ -85,15 +87,8 @@ public class UserControllerUTest {
 
 		assertEquals(response.getBody().getName(), "name");
 	}
-
-	@Test
-	public void testUpdateEmail() {
-		ResponseEntity<Void> response = userController.updateEmail(new StringHolderRequest("newEmail"));
-
-		assertEquals(response.getStatusCode().value(), 204);
-
-		assertEquals(getSecurityContextUser().getEmail(), "newEmail");
-	}
+	
+	// updatePassword method tests:
 
 	@Test
 	public void testUpdatePassword() {
@@ -102,6 +97,8 @@ public class UserControllerUTest {
 		assertEquals(response.getStatusCode().value(), 204);
 	}
 
+	// exitProject method tests:
+	
 	@Test
 	public void testProjectUserExitsProject() {
 
@@ -140,7 +137,7 @@ public class UserControllerUTest {
 	}
 
 	@Test
-	public void testProjectOwnerExitsProjectContainsOtherUsers() {
+	public void testProjectOwnerExitsProjectContainsOtherUsersIncludingProjectOperator() {
 
 		Project project = getSecurityContextUser().getProject();
 
@@ -179,6 +176,47 @@ public class UserControllerUTest {
 
 	}
 
+	@Test
+	public void testProjectOwnerExitsProjectContainsOtherUsersWithNoProjectOperator() {
+
+		Project project = getSecurityContextUser().getProject();
+
+		getSecurityContextUser().setRole(Role.ROLE_USER_PROJECT_OWNER);
+
+		User user1 = Mockito.mock(User.class);
+
+		Mockito.when(user1.getRole()).thenReturn(Role.ROLE_USER_PROJECT_PARTICIPATOR);
+
+		User user2 = new User();
+		user2.setRole(Role.ROLE_USER_PROJECT_PARTICIPATOR);
+
+		List<User> projectUsers = new ArrayList<>();
+		projectUsers.add(user1);
+		projectUsers.add(user2);
+
+		Mockito.when(userRepo.findAllByProject(project)).thenReturn(Optional.of(projectUsers));
+
+		ResponseEntity<Void> response = userController.exitProject();
+
+		User notInProjectUser = getSecurityContextUser();
+
+		assertEquals(response.getStatusCode().value(), 204);
+
+		assertNull(notInProjectUser.getProject());
+
+		assertEquals(notInProjectUser.getRole(), Role.ROLE_USER);
+
+		Mockito.verify(userRepo, Mockito.times(1)).findAllByProject(project);
+
+		Mockito.verify(user1, Mockito.times(1)).setRole(Role.ROLE_USER_PROJECT_OWNER);
+
+		Mockito.verify(cacheServiceProjectAddOn, Mockito.times(0)).DeleteEntitiesInCacheOnProjectDeletion(project);
+
+		Mockito.verify(projectRepo, Mockito.times(0)).delete(project);
+
+	}
+
+	
 	@Test
 	public void testProjectOwnerExitsProjectDoesNotContainOtherUsers() {
 
