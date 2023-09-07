@@ -50,7 +50,7 @@ public class UserControllerTest {
 		this.objectMapper = objectMapper;
 	}
 
-	private MockMvc mockMvc;
+	private final MockMvc mockMvc;
 
 	private final UserRepository userRepo;
 

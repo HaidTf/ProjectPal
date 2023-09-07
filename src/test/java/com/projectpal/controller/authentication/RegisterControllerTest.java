@@ -8,24 +8,35 @@ import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
+@ActiveProfiles("development")
 @AutoConfigureMockMvc
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class RegisterControllerTest {
 
 	@Autowired
-	private MockMvc mockMvc;
+	public RegisterControllerTest(MockMvc mockMvc) {
+		this.mockMvc = mockMvc;
+	}
+
+	private final MockMvc mockMvc;
 
 	@Test
+	@Transactional
 	public void testRegisterWithFullData() throws Exception {
 
 		Map<String, String> registerData = new HashMap<>();
@@ -53,6 +64,7 @@ public class RegisterControllerTest {
 	}
 
 	@Test
+	@Transactional
 	public void testRegisterWithNoData() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/auth/register").contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -60,6 +72,7 @@ public class RegisterControllerTest {
 	}
 
 	@Test
+	@Transactional
 	public void testRegisterWithMissingData() throws Exception {
 
 		Map<String, String> registerData = new HashMap<>();

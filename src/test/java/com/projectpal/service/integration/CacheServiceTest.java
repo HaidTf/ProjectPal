@@ -12,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
@@ -21,13 +23,13 @@ import com.projectpal.service.CacheService;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@ActiveProfiles("development")
+@Transactional
 public class CacheServiceTest {
+	
 	@Autowired
-	public CacheServiceTest(CacheService cacheService, RedisCacheManager redis, EpicRepository epicRepo,
-			ProjectRepository projectRepo) {
+	public CacheServiceTest(CacheService cacheService, ProjectRepository projectRepo) {
 		this.cacheService = cacheService;
-		this.redis = redis;
-		this.epicRepo = epicRepo;
 		this.projectRepo = projectRepo;
 	}
 
@@ -35,10 +37,10 @@ public class CacheServiceTest {
 	private final CacheService cacheService;
 
 	@SpyBean
-	private final RedisCacheManager redis;
+	private RedisCacheManager redis;
 
 	@SpyBean
-	private final EpicRepository epicRepo;
+	private EpicRepository epicRepo;
 
 	@Autowired
 	private final ProjectRepository projectRepo;
