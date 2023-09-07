@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Invitation;
@@ -19,6 +22,8 @@ import com.projectpal.service.ScheduledDeleteService;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@ActiveProfiles("development")
+@Transactional
 public class ScheduledDeleteServiceTest {
 
 	@Autowired
