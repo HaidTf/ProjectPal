@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -19,13 +20,18 @@ import com.projectpal.service.JwtService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("development")
 public class JwtAuthenticationFilterTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+    public JwtAuthenticationFilterTest(MockMvc mockMvc, JwtService jwtService) {
+		this.mockMvc = mockMvc;
+		this.jwtService = jwtService;
+	}
+
+    private final MockMvc mockMvc;
     
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
     @MockBean
     private UserDetailsService userDetailsService;
