@@ -57,8 +57,8 @@ public class SecurityConfig {
 				.requestMatchers("/admin").hasAnyRole("ADMIN", "SUPER_ADMIN").anyRequest().authenticated().and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authenticationProvider(authenticationProvider())
-				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).exceptionHandling()
-				.authenticationEntryPoint(authenticationEntryPoint);
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).formLogin().disable()
+				.httpBasic().disable().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
 
 		return http.build();
 
