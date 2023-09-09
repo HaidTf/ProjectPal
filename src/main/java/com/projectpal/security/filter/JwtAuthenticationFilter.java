@@ -47,7 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		final String authHeader = request.getHeader("Authorization");
 		final String jwt;
 		final String userEmail;
-
+		
+		
+		if(request.getRequestURI().startsWith("/api/auth/")) {
+			filterChain.doFilter(request, response);
+			return;
+			
+		}
+		
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
 			authEntryPoint.commence(request, response, new CustomAuthenticationException(
