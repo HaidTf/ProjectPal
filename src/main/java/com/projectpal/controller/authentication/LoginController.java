@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.AuthenticationRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.InternalServerErrorException;
+import com.projectpal.dto.response.ExceptionResponse;
 import com.projectpal.service.AuthenticationService;
 
 import jakarta.validation.Valid;
@@ -30,12 +29,12 @@ public class LoginController {
 	
 	
 	@ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleException(AuthenticationException ex) {
+    public ResponseEntity<ExceptionResponse> handleException(AuthenticationException ex) {
 		if (ex instanceof BadCredentialsException) {
-			throw new BadRequestException("incorrect email or password");
+			return ResponseEntity.status(401).body(new ExceptionResponse("Login failed. Incorrect email or password"));
 		}
 		else {
-			throw new InternalServerErrorException("Unknown error occured");
+			return ResponseEntity.status(500).body(new ExceptionResponse("Login failed. Unknown error occured"));
 		}
     }
 	
