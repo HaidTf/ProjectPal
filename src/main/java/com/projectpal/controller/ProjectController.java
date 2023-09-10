@@ -3,6 +3,7 @@ package com.projectpal.controller;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,8 @@ import jakarta.validation.Valid;
 public class ProjectController {
 
 	@Autowired
-	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo,CacheService cacheService,CacheServiceProjectAddOn cacheServiceProjectAddOn) {
+	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo,
+			CacheService cacheService, CacheServiceProjectAddOn cacheServiceProjectAddOn) {
 		this.projectRepo = projectRepo;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
@@ -53,7 +55,7 @@ public class ProjectController {
 	private final UserRepository userRepo;
 
 	private final TaskRepository taskRepo;
-	
+
 	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
 
 	@GetMapping("")
@@ -124,7 +126,7 @@ public class ProjectController {
 		return ResponseEntity.status(204).build();
 
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@PatchMapping("/update/demoteoperator/{name}")
 	@Transactional
@@ -162,16 +164,16 @@ public class ProjectController {
 			throw new BadRequestException("you cant remove yourself from the project through here");
 
 		user.setProject(null);
-		
+
 		user.setRole(Role.ROLE_USER);
-		
+
 		userRepo.save(user);
 
-		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(null);
+		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
 
-		if (tasks != null) {
+		if (tasks.isPresent() && tasks.get().size() > 0) {
 
-			for (Task task : tasks) {
+			for (Task task : tasks.get()) {
 				task.setAssignedUser(null);
 				taskRepo.save(task);
 			}
@@ -187,15 +189,15 @@ public class ProjectController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<User> projectUsers = userRepo.findAllByProject(project).orElse(null);
-		
-		cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
-		
-		projectRepo.delete(project);
-		
-		if (projectUsers != null) {
+		Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
 
-			for (User projectUser : projectUsers) {
+		cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
+
+		projectRepo.delete(project);
+
+		if (projectUsers.isPresent() && projectUsers.get().size() > 0) {
+
+			for (User projectUser : projectUsers.get()) {
 				projectUser.setRole(Role.ROLE_USER);
 				userRepo.save(projectUser);
 			}
@@ -205,7 +207,6 @@ public class ProjectController {
 		User owner = SecurityContextUtil.getUser();
 		owner.setRole(Role.ROLE_USER);
 		userRepo.save(owner);
-
 
 		return ResponseEntity.status(204).build();
 
