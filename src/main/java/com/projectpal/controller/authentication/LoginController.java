@@ -20,28 +20,27 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/auth/login")
 public class LoginController {
-	
+
 	@Autowired
 	public LoginController(AuthenticationService authService) {
 		this.authService = authService;
 	}
+
 	private final AuthenticationService authService;
-	
-	
+
 	@ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ExceptionResponse> handleException(AuthenticationException ex) {
+	public ResponseEntity<ExceptionResponse> handleException(AuthenticationException ex) {
 		if (ex instanceof BadCredentialsException) {
-			return ResponseEntity.status(401).body(new ExceptionResponse("Login failed. Incorrect email or password"));
-		}
-		else {
+			return ResponseEntity.status(401).header("WWW-Authenticate", "Basic realm=\"User Login\"")
+					.body(new ExceptionResponse("Login failed. Incorrect email or password"));
+		} else {
 			return ResponseEntity.status(500).body(new ExceptionResponse("Login failed. Unknown error occured"));
 		}
-    }
-	
-	
+	}
+
 	@PostMapping("")
 	public ResponseEntity<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticationRequest request) {
-		
+
 		return ResponseEntity.ok(authService.authenticate(request));
 	}
 }
