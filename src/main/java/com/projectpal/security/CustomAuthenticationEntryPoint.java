@@ -18,6 +18,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
 		response.setStatus(401);
 
+		response.addHeader("WWW-Authenticate", "Bearer");
+		
 		response.setContentType("application/json;charset=UTF-8");
 
 		String jsonResponse = new StringBuilder().append("{\"message\":").append("\"").append(authException.getMessage())
