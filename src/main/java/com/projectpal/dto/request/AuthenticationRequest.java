@@ -3,7 +3,7 @@ package com.projectpal.dto.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public final class AuthenticationRequest {
 
@@ -13,10 +13,10 @@ public final class AuthenticationRequest {
 		this.password = password;
 	}
 
-	@NotNull
+	@NotBlank
 	@Email
 	private final String email;
-	@NotNull
+	@NotBlank
 	private final String password;
 	
 	public String getEmail() {
