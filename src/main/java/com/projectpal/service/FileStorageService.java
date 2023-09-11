@@ -30,8 +30,8 @@ public class FileStorageService {
 		try {
 			if (fileName.contains(".."))
 				throw new BadRequestException("invalid characters found");
-
-			String parentDirectoryPath = storageLocation + "/" + parentId;
+			
+			String parentDirectoryPath = new StringBuilder().append(storageLocation).append("/").append(parentId).toString();
 
 			Files.createDirectories(Path.of(parentDirectoryPath));
 
@@ -50,7 +50,7 @@ public class FileStorageService {
 	public Resource loadFile(String fileName, long parentId) {
 
 		try {
-			String parentDirectoryPath = storageLocation + "/" + parentId;
+			String parentDirectoryPath = new StringBuilder().append(storageLocation).append("/").append(parentId).toString();
 
 			Path filePath = Path.of(parentDirectoryPath, fileName);
 
@@ -69,7 +69,7 @@ public class FileStorageService {
 	public void deleteFile(String fileName, long parentId) {
 
 		try {
-			String parentDirectoryPath = storageLocation + "/" + parentId;
+			String parentDirectoryPath = new StringBuilder().append(storageLocation).append("/").append(parentId).toString();
 
 			Path filePath = Path.of(parentDirectoryPath, fileName);
 
