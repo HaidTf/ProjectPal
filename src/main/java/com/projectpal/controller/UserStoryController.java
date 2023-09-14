@@ -21,16 +21,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
 import com.projectpal.dto.request.PriorityParameterRequest;
-import com.projectpal.dto.request.UserStoryCreationRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
-import com.projectpal.entity.Project;
-import com.projectpal.entity.Sprint;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
-import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceUserStoryAddOn;
@@ -40,15 +36,14 @@ import com.projectpal.utils.ProjectUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/userstory")
+@RequestMapping("/epics")
 public class UserStoryController {
 
 	@Autowired
-	public UserStoryController(UserStoryRepository userStoryRepo, SprintRepository sprintRepo, EpicRepository epicRepo,
+	public UserStoryController(UserStoryRepository userStoryRepo, EpicRepository epicRepo,
 			CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn, CacheService cacheService) {
 		this.userStoryRepo = userStoryRepo;
 		this.epicRepo = epicRepo;
-		this.sprintRepo = sprintRepo;
 		this.cacheServiceUserStoryAddOn = cacheServiceUserStoryAddOn;
 		this.cacheService = cacheService;
 
@@ -58,13 +53,11 @@ public class UserStoryController {
 
 	private final UserStoryRepository userStoryRepo;
 
-	private final SprintRepository sprintRepo;
-
 	private final CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn;
 
 	private final CacheService cacheService;
 
-	@GetMapping("/list/epic/{epicId}")
+	@GetMapping("/{epicId}/userstories")
 	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
 
@@ -81,32 +74,10 @@ public class UserStoryController {
 		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
 
-	@GetMapping("/list/sprint/{sprintId}")
-	@Transactional
-	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId) {
-
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
-
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		List<UserStory> userStories = cacheServiceUserStoryAddOn.getSprintUserStoryListFromCacheOrDatabase(sprint);
-
-		userStories
-				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
-	}
-
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
+	@PostMapping("/{epicId}/userstories")
 	@Transactional
-	public ResponseEntity<Void> createUserStory(@Valid @RequestBody UserStoryCreationRequest request) {
-
-		long epicId = request.getEpicId();
-
-		UserStory userStory = request.getUserStory();
+	public ResponseEntity<Void> createUserStory(@Valid @RequestBody UserStory userStory, @PathVariable long epicId) {
 
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -114,7 +85,7 @@ public class UserStoryController {
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countByEpicId(epicId));
-		
+
 		userStory.setEpic(epic);
 
 		userStoryRepo.save(userStory);
@@ -132,45 +103,11 @@ public class UserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/addtosprint/{sprintId}/{userStoryId}")
+	@PatchMapping("/userstories/{UserStoryId}/description")
 	@Transactional
-	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
-
-		Project project = ProjectUtil.getProjectNotNull();
-
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
+	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryRepo.findById(userStoryId)
-				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
-
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countBySprintId(sprintId));
-		
-		userStory.setSprint(sprint);
-
-		userStoryRepo.save(userStory);
-
-		// Redis Cache Update:
-
-		cacheService.addObjectToCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId(), userStory);
-
-		// Redis Cache Update End:
-
-		return ResponseEntity.status(204).build();
-	}
-
-	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description/{id}")
-	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
-
-		UserStory userStory = userStoryRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
@@ -193,11 +130,12 @@ public class UserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/priority/{id}")
+	@PatchMapping("/userstories/{userStoryId}/priority")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder, @PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
+			@PathVariable long userStoryId) {
 
-		UserStory userStory = userStoryRepo.findById(id)
+		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
@@ -221,11 +159,11 @@ public class UserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/progress/{id}")
+	@PatchMapping("/userstories/{userStoryId}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long userStoryId) {
 
-		UserStory userStory = userStoryRepo.findById(id)
+		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
@@ -248,11 +186,11 @@ public class UserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{epicId}/userstories/{userStoryId}")
 	@Transactional
-	public ResponseEntity<Void> deleteUserStory(@PathVariable long id) {
+	public ResponseEntity<Void> deleteUserStory(@PathVariable long userStoryId) {
 
-		UserStory userStory = userStoryRepo.findById(id)
+		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
