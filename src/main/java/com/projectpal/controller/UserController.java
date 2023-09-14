@@ -28,7 +28,7 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
 	@Autowired
@@ -54,12 +54,11 @@ public class UserController {
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
 		User user = SecurityContextUtil.getUser();
-		user.setPassword(null);
 		return ResponseEntity.ok(user);
 	}
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
-	@PatchMapping("/update/password")
+	@PatchMapping("/password")
 	public ResponseEntity<Void> updatePassword(@Valid @RequestBody StringHolderRequest passwordHolder) {
 
 		User user = SecurityContextUtil.getUser();
@@ -69,7 +68,7 @@ public class UserController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
-	@PatchMapping("/update/project/exit")
+	@PatchMapping("/projects/exit")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
 
