@@ -38,7 +38,7 @@ import com.projectpal.utils.ProjectUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/sprint")
+@RequestMapping("/projects/sprints")
 public class SprintController {
 
 	@Autowired
@@ -58,7 +58,7 @@ public class SprintController {
 
 	//Get NotDone sprints
 	
-	@GetMapping("/list/notdone")
+	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Sprint>> getNotDoneSprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -73,7 +73,7 @@ public class SprintController {
 	
 	//Get all sprints
 	
-	@GetMapping("/list/all")
+	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Sprint>> getAllSprintList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -87,7 +87,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	@Transactional
 	public ResponseEntity<Void> createSprint(@Valid @RequestBody Sprint sprint) {
 
@@ -115,7 +115,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/startdate/{id}")
+	@PatchMapping("/{id}/startdate")
 	@Transactional
 	public ResponseEntity<Void> updateStartDate(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @PathVariable long id) {
@@ -145,7 +145,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/enddate/{id}")
+	@PatchMapping("/{id}/enddate")
 	@Transactional
 	public ResponseEntity<Void> updateEndDate(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @PathVariable long id) {
@@ -175,7 +175,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description/{id}")
+	@PatchMapping("/{id}/description")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
 
@@ -201,7 +201,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/progress/{id}")
+	@PatchMapping("/{id}/progress")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
@@ -227,7 +227,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Void> deleteSprint(@PathVariable long id) {
 
