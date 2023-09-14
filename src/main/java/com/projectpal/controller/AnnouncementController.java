@@ -29,7 +29,7 @@ import com.projectpal.utils.ProjectUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/announcement")
+@RequestMapping("/projects/announcements")
 public class AnnouncementController {
 
 	@Autowired
@@ -40,7 +40,7 @@ public class AnnouncementController {
 	private final AnnouncementRepository announcementRepo;
 	
 	
-	@GetMapping("/list")
+	@GetMapping("")
 	public ResponseEntity<ListHolderResponse<Announcement>> getAnnouncements(){
 		
 		Project project = ProjectUtil.getProjectNotNull();
@@ -53,7 +53,7 @@ public class AnnouncementController {
 	}
 	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	public ResponseEntity<Void> createAnnouncement(@Valid @RequestBody Announcement announcement){
 		
 		announcement.setProject(ProjectUtil.getProjectNotNull());
@@ -68,11 +68,11 @@ public class AnnouncementController {
 	}
 	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{AnnouncementId}")
 	@Transactional
-	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long id) {
+	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long announcementId) {
 		
-		Announcement announcement = announcementRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("announcement not found"));
+		Announcement announcement = announcementRepo.findById(announcementId).orElseThrow(()-> new ResourceNotFoundException("announcement not found"));
 		
 		if(announcement.getProject().getId()!= ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
