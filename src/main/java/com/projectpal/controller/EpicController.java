@@ -36,7 +36,7 @@ import com.projectpal.utils.ProjectUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/epic")
+@RequestMapping("/projects/epics")
 public class EpicController {
 
 	@Autowired
@@ -53,9 +53,9 @@ public class EpicController {
 
 	private final CacheService cacheService;
 
-	//Get NotDone epics
-	
-	@GetMapping("/list/notdone")
+	// Get NotDone epics
+
+	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Epic>> getNotDoneEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -67,10 +67,10 @@ public class EpicController {
 		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
 	}
-	
-	//Get all epics
-	
-	@GetMapping("/list/all")
+
+	// Get all epics
+
+	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Epic>> getAllEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -84,14 +84,14 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	@Transactional
 	public ResponseEntity<Void> createEpic(@Valid @RequestBody Epic epic) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		MaxAllowedUtil.checkMaxAllowedOfEpic(epicRepo.countByProjectId(project.getId()));
-		
+
 		epic.setProject(project);
 
 		epicRepo.save(epic);
@@ -109,7 +109,7 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description/{id}")
+	@PatchMapping("/{id}/description")
 	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
 
@@ -134,7 +134,7 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/priority/{id}")
+	@PatchMapping("/{id}/priority")
 	@Transactional
 	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
 			@PathVariable long id) {
@@ -161,7 +161,7 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/progress/{id}")
+	@PatchMapping("/{id}/progress")
 	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
 
@@ -186,7 +186,7 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
