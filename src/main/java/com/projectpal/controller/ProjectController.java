@@ -38,7 +38,7 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/project")
+@RequestMapping("/projects")
 public class ProjectController {
 
 	@Autowired
@@ -71,7 +71,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	@Transactional
 	public ResponseEntity<Void> createProject(@Valid @RequestBody Project project) {
 
@@ -92,7 +92,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description")
+	@PatchMapping("/description")
 	public ResponseEntity<Void> updateDescription(@RequestBody String description) {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -106,7 +106,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@PatchMapping("/update/setoperator/{name}")
+	@PatchMapping("/users/{name}/operator")
 	@Transactional
 	public ResponseEntity<Void> setProjectOperator(@PathVariable String name) {
 
@@ -128,7 +128,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@PatchMapping("/update/demoteoperator/{name}")
+	@PatchMapping("/users/{name}/participator")
 	@Transactional
 	public ResponseEntity<Void> demoteProjectOperator(@PathVariable String name) {
 
@@ -150,7 +150,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/remove/user/{name}")
+	@DeleteMapping("/users/{name}/membership")
 	@Transactional
 	public ResponseEntity<Void> removeUserFromProject(@PathVariable String name) {
 
@@ -183,7 +183,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@DeleteMapping("/delete")
+	@DeleteMapping("")
 	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 
