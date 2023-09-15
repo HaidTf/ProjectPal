@@ -73,7 +73,7 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> createProject(@Valid @RequestBody Project project) {
+	public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -85,10 +85,10 @@ public class ProjectController {
 		projectRepo.save(project);
 		userRepo.save(user);
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects").build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(project);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
