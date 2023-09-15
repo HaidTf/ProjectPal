@@ -33,6 +33,7 @@ import com.projectpal.service.CacheServiceEpicAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -52,6 +53,24 @@ public class EpicController {
 	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
 
 	private final CacheService cacheService;
+
+	@GetMapping("/{epicId}")
+	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		Epic epic = epicRepo.getReferenceById(epicId);
+
+		try {
+			if (epic.getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("Epic does not exist");
+		}
+
+		return ResponseEntity.ok(epic);
+
+	}
 
 	// Get NotDone epics
 
@@ -86,7 +105,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> createEpic(@Valid @RequestBody Epic epic) {
+	public ResponseEntity<Epic> createEpic(@Valid @RequestBody Epic epic) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -102,10 +121,10 @@ public class EpicController {
 
 		// Redis Cache Update End:
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epic").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/epics/" + epic.getId()).build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(epic);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
