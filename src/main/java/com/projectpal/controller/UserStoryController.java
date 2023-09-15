@@ -23,6 +23,7 @@ import com.projectpal.entity.UserStory;
 import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
@@ -33,6 +34,7 @@ import com.projectpal.service.CacheServiceUserStoryAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -57,6 +59,24 @@ public class UserStoryController {
 
 	private final CacheService cacheService;
 
+	@GetMapping("/userstories/{userStoryId}")
+	public ResponseEntity<UserStory> getUserStory(@PathVariable long userStoryId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		UserStory userStory = userStoryRepo.getReferenceById(userStoryId);
+
+		try {
+			if (userStory.getEpic().getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("UserStory does not exist");
+		}
+
+		return ResponseEntity.ok(userStory);
+
+	}
+
 	@GetMapping("/{epicId}/userstories")
 	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
@@ -77,7 +97,7 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{epicId}/userstories")
 	@Transactional
-	public ResponseEntity<Void> createUserStory(@Valid @RequestBody UserStory userStory, @PathVariable long epicId) {
+	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory, @PathVariable long epicId) {
 
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -96,10 +116,11 @@ public class UserStoryController {
 
 		// Redis Cache Update End:
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstory").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epics/userstories/" + userStory.getId())
+				.build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(userStory);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
