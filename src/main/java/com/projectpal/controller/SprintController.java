@@ -35,6 +35,7 @@ import com.projectpal.service.CacheServiceSprintAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -56,8 +57,26 @@ public class SprintController {
 
 	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
 
-	//Get NotDone sprints
-	
+	@GetMapping("/{sprintId}")
+	public ResponseEntity<Sprint> getSprint(@PathVariable long sprintId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		Sprint sprint = sprintRepo.getReferenceById(sprintId);
+
+		try {
+			if (sprint.getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("Sprint does not exist");
+		}
+
+		return ResponseEntity.ok(sprint);
+
+	}
+
+	// Get NotDone sprints
+
 	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Sprint>> getNotDoneSprintList() {
 
@@ -70,9 +89,9 @@ public class SprintController {
 		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
 	}
-	
-	//Get all sprints
-	
+
+	// Get all sprints
+
 	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Sprint>> getAllSprintList() {
 
@@ -89,13 +108,13 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> createSprint(@Valid @RequestBody Sprint sprint) {
+	public ResponseEntity<Sprint> createSprint(@Valid @RequestBody Sprint sprint) {
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
 		Project project = ProjectUtil.getProjectNotNull();
-		
+
 		MaxAllowedUtil.checkMaxAllowedOfSprint(sprintRepo.countByProjectId(project.getId()));
 
 		sprint.setProject(project);
@@ -108,10 +127,10 @@ public class SprintController {
 
 		// Redis Cache Update End:
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/sprint").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/sprints/" + sprint.getId()).build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(sprint);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
