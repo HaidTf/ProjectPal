@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.dto.request.PriorityParameterRequest;
 import com.projectpal.dto.request.TaskProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -38,6 +39,7 @@ import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -56,6 +58,24 @@ public class TaskController {
 
 	private final UserStoryRepository userStoryRepo;
 
+	@GetMapping("/tasks/{taskId}")
+	public ResponseEntity<Task> getTask(@PathVariable long taskId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		Task task = taskRepo.getReferenceById(taskId);
+
+		try {
+			if (task.getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("Task does not exist");
+		}
+
+		return ResponseEntity.ok(task);
+
+	}
+
 	@GetMapping("/{userStoryId}/tasks")
 	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
 
@@ -64,9 +84,8 @@ public class TaskController {
 
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
-		
-		List<Task> tasks = taskRepo.findAllByUserStoryId(userStoryId)
-				.orElse(new ArrayList<Task>(0));
+
+		List<Task> tasks = taskRepo.findAllByUserStoryId(userStoryId).orElse(new ArrayList<Task>(0));
 
 		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
 
@@ -74,7 +93,7 @@ public class TaskController {
 	}
 
 	// Get All tasks
-	//TODO: move to UserController and implement filtering
+	// TODO: move to UserController and implement filtering
 	@GetMapping("/tasks/user/all")
 	public ResponseEntity<ListHolderResponse<Task>> getUserTasksList() {
 
@@ -88,7 +107,7 @@ public class TaskController {
 	}
 
 	// Get NotDone tasks
-	//TODO: move to UserController and implement filtering
+	// TODO: move to UserController and implement filtering
 	@GetMapping("/tasks/user/notdone")
 	public ResponseEntity<ListHolderResponse<Task>> getUserTaskTodoOrInProgressList() {
 
@@ -101,11 +120,11 @@ public class TaskController {
 
 		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
 	@Transactional
-	public ResponseEntity<Void> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
+	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
 
 		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("no userStory with the given id is found"));
@@ -119,10 +138,10 @@ public class TaskController {
 
 		taskRepo.save(task);
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/{userStoryId}/tasks").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/tasks/" + task.getId()).build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(task);
 
 	}
 
@@ -165,7 +184,8 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/tasks/{taskId}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid TaskProgressUpdateRequest request, @PathVariable long taskId) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid TaskProgressUpdateRequest request,
+			@PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
