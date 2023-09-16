@@ -92,35 +92,6 @@ public class TaskController {
 		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
 
-	// Get All tasks
-	// TODO: move to UserController and implement filtering
-	@GetMapping("/tasks/user/all")
-	public ResponseEntity<ListHolderResponse<Task>> getUserTasksList() {
-
-		User user = SecurityContextUtil.getUser();
-
-		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(new ArrayList<Task>(0));
-
-		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
-	}
-
-	// Get NotDone tasks
-	// TODO: move to UserController and implement filtering
-	@GetMapping("/tasks/user/notdone")
-	public ResponseEntity<ListHolderResponse<Task>> getUserTaskTodoOrInProgressList() {
-
-		User user = SecurityContextUtil.getUser();
-
-		List<Task> tasks = taskRepo.findAllByAssignedUserAndProgressNot(user, Progress.DONE)
-				.orElse(new ArrayList<Task>(0));
-
-		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
-	}
-
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
 	@Transactional
