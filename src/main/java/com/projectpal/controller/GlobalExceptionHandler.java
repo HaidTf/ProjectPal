@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,8 +35,8 @@ public class GlobalExceptionHandler {
 	// Raised when null request is received into a @RequestBody annotated method
 	// parameter
 
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+	@ExceptionHandler({HttpMessageNotReadableException.class,HttpMediaTypeNotSupportedException.class})
+	public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(Exception ex) {
 		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
