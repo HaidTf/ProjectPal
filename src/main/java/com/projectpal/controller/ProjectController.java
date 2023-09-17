@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.request.DescriptionUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
@@ -106,11 +107,11 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody String description) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		project.setDescription(description);
+		project.setDescription(descriptionUpdateRequest.getDescription());
 
 		projectRepo.save(project);
 
