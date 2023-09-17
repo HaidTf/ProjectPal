@@ -26,10 +26,11 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/announcement")
+@RequestMapping("/projects/announcements")
 public class AnnouncementController {
 
 	@Autowired
@@ -38,47 +39,68 @@ public class AnnouncementController {
 	}
 
 	private final AnnouncementRepository announcementRepo;
-	
-	
-	@GetMapping("/list")
-	public ResponseEntity<ListHolderResponse<Announcement>> getAnnouncements(){
-		
+
+	@GetMapping("/{announcementId}")
+	public ResponseEntity<Announcement> getAnnouncement(@PathVariable long announcementId) {
+
 		Project project = ProjectUtil.getProjectNotNull();
-		
-		List<Announcement> announcements = announcementRepo.findAllByProject(project).orElse(new ArrayList<Announcement>(0));
-		
-		announcements.sort((announcement1,announcement2)-> announcement1.getIssueDate().compareTo(announcement2.getIssueDate()));
-		
-		return ResponseEntity.ok(new ListHolderResponse<Announcement>(announcements)); 
+
+		Announcement announcement = announcementRepo.getReferenceById(announcementId);
+
+		try {
+			if (announcement.getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("Announcement does not exist");
+		}
+
+		return ResponseEntity.ok(announcement);
+
 	}
-	
+
+	@GetMapping("")
+	public ResponseEntity<ListHolderResponse<Announcement>> getAnnouncements() {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		List<Announcement> announcements = announcementRepo.findAllByProject(project)
+				.orElse(new ArrayList<Announcement>(0));
+
+		announcements.sort(
+				(announcement1, announcement2) -> announcement1.getIssueDate().compareTo(announcement2.getIssueDate()));
+
+		return ResponseEntity.ok(new ListHolderResponse<Announcement>(announcements));
+	}
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
-	public ResponseEntity<Void> createAnnouncement(@Valid @RequestBody Announcement announcement){
-		
+	@PostMapping("")
+	public ResponseEntity<Announcement> createAnnouncement(@Valid @RequestBody Announcement announcement) {
+
 		announcement.setProject(ProjectUtil.getProjectNotNull());
-		
+
 		announcementRepo.save(announcement);
-		
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/announcement").build();
+
+		UriComponents uriComponents = UriComponentsBuilder
+				.fromPath("/api/projects/announcements/" + announcement.getId()).build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
-			
+		return ResponseEntity.status(201).location(location).body(announcement);
+
 	}
-	
+
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{AnnouncementId}")
 	@Transactional
-	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long id) {
-		
-		Announcement announcement = announcementRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("announcement not found"));
-		
-		if(announcement.getProject().getId()!= ProjectUtil.getProjectNotNull().getId())
+	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long announcementId) {
+
+		Announcement announcement = announcementRepo.findById(announcementId)
+				.orElseThrow(() -> new ResourceNotFoundException("announcement not found"));
+
+		if (announcement.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
-		
+
 		announcementRepo.delete(announcement);
-		
+
 		return ResponseEntity.status(204).build();
 	}
 }

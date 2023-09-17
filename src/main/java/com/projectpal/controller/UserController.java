@@ -1,5 +1,6 @@
 package com.projectpal.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.StringHolderRequest;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
@@ -28,7 +32,7 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
 	@Autowired
@@ -54,12 +58,11 @@ public class UserController {
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
 		User user = SecurityContextUtil.getUser();
-		user.setPassword(null);
 		return ResponseEntity.ok(user);
 	}
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
-	@PatchMapping("/update/password")
+	@PatchMapping("/password")
 	public ResponseEntity<Void> updatePassword(@Valid @RequestBody StringHolderRequest passwordHolder) {
 
 		User user = SecurityContextUtil.getUser();
@@ -68,8 +71,37 @@ public class UserController {
 		return ResponseEntity.status(204).build();
 	}
 
+	// Get All tasks
+	// TODO: implement filtering
+	@GetMapping("/tasks/all")
+	public ResponseEntity<ListHolderResponse<Task>> getUserTasksList() {
+
+		User user = SecurityContextUtil.getUser();
+
+		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(new ArrayList<Task>(0));
+
+		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
+
+		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
+	}
+
+	// Get NotDone tasks
+	// TODO: implement filtering
+	@GetMapping("/tasks/notdone")
+	public ResponseEntity<ListHolderResponse<Task>> getUserTaskTodoOrInProgressList() {
+
+		User user = SecurityContextUtil.getUser();
+
+		List<Task> tasks = taskRepo.findAllByAssignedUserAndProgressNot(user, Progress.DONE)
+				.orElse(new ArrayList<Task>(0));
+
+		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
+
+		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
+	}
+	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
-	@PatchMapping("/update/project/exit")
+	@DeleteMapping("/projects/membership")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
 

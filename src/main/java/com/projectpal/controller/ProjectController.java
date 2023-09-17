@@ -3,6 +3,7 @@ package com.projectpal.controller;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
@@ -38,7 +41,7 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/project")
+@RequestMapping("/projects")
 public class ProjectController {
 
 	@Autowired
@@ -70,10 +73,21 @@ public class ProjectController {
 		return ResponseEntity.ok(project);
 	}
 
+	@GetMapping("/users")
+	public ResponseEntity<ListHolderResponse<User>> getProjectMembers() {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		List<User> users = userRepo.findAllByProject(project).orElse(new ArrayList<User>(0));
+
+		return ResponseEntity.ok(new ListHolderResponse<User>(users));
+
+	}
+
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> createProject(@Valid @RequestBody Project project) {
+	public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
 
 		User user = SecurityContextUtil.getUser();
 
@@ -85,19 +99,19 @@ public class ProjectController {
 		projectRepo.save(project);
 		userRepo.save(user);
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects").build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(project);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody String description) {
+	@PatchMapping("/description")
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		project.setDescription(description);
+		project.setDescription(descriptionUpdateRequest.getDescription());
 
 		projectRepo.save(project);
 
@@ -106,9 +120,9 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@PatchMapping("/update/setoperator/{name}")
+	@PatchMapping("/users/{name}/role")
 	@Transactional
-	public ResponseEntity<Void> setProjectOperator(@PathVariable String name) {
+	public ResponseEntity<Void> setUserProjectRole(@PathVariable String name, @RequestBody Role role) {
 
 		User user = userRepo.findUserByName(name)
 				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
@@ -119,38 +133,19 @@ public class ProjectController {
 		if (SecurityContextUtil.getUser().getName() == name)
 			throw new BadRequestException("you cant set yourself as a project operator");
 
-		user.setRole(Role.ROLE_USER_PROJECT_OPERATOR);
-
+		if (role != Role.ROLE_USER_PROJECT_PARTICIPATOR || role != Role.ROLE_USER_PROJECT_OPERATOR)
+			throw new BadRequestException("You are not allowed to set this role");
+		
+		user.setRole(role);
+		
 		userRepo.save(user);
-
+		
 		return ResponseEntity.status(204).build();
-
-	}
-
-	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@PatchMapping("/update/demoteoperator/{name}")
-	@Transactional
-	public ResponseEntity<Void> demoteProjectOperator(@PathVariable String name) {
-
-		User user = userRepo.findUserByName(name)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
-
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("the user must be in the project");
-
-		if (SecurityContextUtil.getUser().getName() == name)
-			throw new BadRequestException("you cant remove yourself from project operation");
-
-		user.setRole(Role.ROLE_USER_PROJECT_PARTICIPATOR);
-
-		userRepo.save(user);
-
-		return ResponseEntity.status(204).build();
-
+		
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/remove/user/{name}")
+	@DeleteMapping("/users/{name}/membership")
 	@Transactional
 	public ResponseEntity<Void> removeUserFromProject(@PathVariable String name) {
 
@@ -183,7 +178,7 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@DeleteMapping("/delete")
+	@DeleteMapping("")
 	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 

@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.PriorityParameterRequest;
+import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.PriorityUpdateRequest;
+import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
-import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
@@ -33,10 +33,11 @@ import com.projectpal.service.CacheServiceEpicAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/epic")
+@RequestMapping("/projects/epics")
 public class EpicController {
 
 	@Autowired
@@ -53,9 +54,27 @@ public class EpicController {
 
 	private final CacheService cacheService;
 
-	//Get NotDone epics
-	
-	@GetMapping("/list/notdone")
+	@GetMapping("/{epicId}")
+	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
+
+		Project project = ProjectUtil.getProjectNotNull();
+
+		Epic epic = epicRepo.getReferenceById(epicId);
+
+		try {
+			if (epic.getProject().getId() != project.getId())
+				throw new ForbiddenException("You are not allowed access to other projects");
+		} catch (EntityNotFoundException ex) {
+			throw new ResourceNotFoundException("Epic does not exist");
+		}
+
+		return ResponseEntity.ok(epic);
+
+	}
+
+	// Get NotDone epics
+
+	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Epic>> getNotDoneEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -67,10 +86,10 @@ public class EpicController {
 		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
 	}
-	
-	//Get all epics
-	
-	@GetMapping("/list/all")
+
+	// Get all epics
+
+	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Epic>> getAllEpicList() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -84,14 +103,14 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/create")
+	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> createEpic(@Valid @RequestBody Epic epic) {
+	public ResponseEntity<Epic> createEpic(@Valid @RequestBody Epic epic) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		MaxAllowedUtil.checkMaxAllowedOfEpic(epicRepo.countByProjectId(project.getId()));
-		
+
 		epic.setProject(project);
 
 		epicRepo.save(epic);
@@ -102,16 +121,16 @@ public class EpicController {
 
 		// Redis Cache Update End:
 
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epic").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/epics/" + epic.getId()).build();
 		URI location = uriComponents.toUri();
 
-		return ResponseEntity.status(201).location(location).build();
+		return ResponseEntity.status(201).location(location).body(epic);
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/description/{id}")
+	@PatchMapping("/{id}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -120,7 +139,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
 
-		epic.setDescription(description);
+		epic.setDescription(descriptionUpdateRequest.getDescription());
 
 		epicRepo.save(epic);
 
@@ -134,9 +153,9 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/priority/{id}")
+	@PatchMapping("/{id}/priority")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
@@ -161,9 +180,9 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/update/progress/{id}")
+	@PatchMapping("/{id}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -172,7 +191,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		epic.setProgress(progress);
+		epic.setProgress(progressUpdateRequest.getProgress());
 
 		epicRepo.save(epic);
 
@@ -186,7 +205,7 @@ public class EpicController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
