@@ -1,12 +1,10 @@
 package com.projectpal.controller;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.Sprint;
+import com.projectpal.dto.request.DateUpdateRequest;
+import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
-import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
@@ -136,8 +135,7 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/startdate")
 	@Transactional
-	public ResponseEntity<Void> updateStartDate(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @PathVariable long id) {
+	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest, @PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -147,10 +145,10 @@ public class SprintController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
-		if (startDate.isAfter(sprint.getEndDate()))
+		if (startDateUpdateRequest.getDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		sprint.setStartDate(startDate);
+		sprint.setStartDate(startDateUpdateRequest.getDate());
 
 		sprintRepo.save(sprint);
 
@@ -166,8 +164,8 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/enddate")
 	@Transactional
-	public ResponseEntity<Void> updateEndDate(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, @PathVariable long id) {
+	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateUpdateRequest endDateUpdateRequest,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -177,10 +175,10 @@ public class SprintController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
-		if (endDate.isBefore(sprint.getStartDate()))
+		if (endDateUpdateRequest.getDate().isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		sprint.setEndDate(endDate);
+		sprint.setEndDate(endDateUpdateRequest.getDate());
 
 		sprintRepo.save(sprint);
 
@@ -196,7 +194,8 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -206,7 +205,7 @@ public class SprintController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
-		sprint.setDescription(description);
+		sprint.setDescription(descriptionUpdateRequest.getDescription());
 
 		sprintRepo.save(sprint);
 
@@ -222,7 +221,8 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -232,7 +232,7 @@ public class SprintController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
-		sprint.setProgress(progress);
+		sprint.setProgress(progressUpdateRequest.getProgress());
 
 		sprintRepo.save(sprint);
 
