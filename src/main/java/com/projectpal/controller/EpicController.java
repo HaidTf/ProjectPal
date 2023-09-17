@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.PriorityParameterRequest;
+import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.PriorityUpdateRequest;
+import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
-import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
@@ -130,7 +130,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -139,7 +139,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
 
-		epic.setDescription(description);
+		epic.setDescription(descriptionUpdateRequest.getDescription());
 
 		epicRepo.save(epic);
 
@@ -155,7 +155,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/priority")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
@@ -182,7 +182,7 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestParam Progress progress, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest, @PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -191,7 +191,7 @@ public class EpicController {
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		epic.setProgress(progress);
+		epic.setProgress(progressUpdateRequest.getProgress());
 
 		epicRepo.save(epic);
 
