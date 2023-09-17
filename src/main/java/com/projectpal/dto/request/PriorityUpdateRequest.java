@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-public final class PriorityParameterRequest {
+public final class PriorityUpdateRequest {
 
 	@JsonCreator
-	public PriorityParameterRequest(int priority) {
+	public PriorityUpdateRequest(int priority) {
 		this.priority = priority;
 	}
 
