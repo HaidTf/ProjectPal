@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.PriorityParameterRequest;
+import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.PriorityUpdateRequest;
 import com.projectpal.dto.request.TaskProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
@@ -38,7 +39,6 @@ import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
@@ -119,14 +119,14 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody String description, @PathVariable long taskId) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
-		task.setDescription(description);
+		task.setDescription(descriptionUpdateRequest.getDescription());
 
 		taskRepo.save(task);
 
@@ -136,7 +136,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/priority")
 	@Transactional
-	public ResponseEntity<Void> updatePriority(/* Request Parameter */ @Valid PriorityParameterRequest priorityHolder,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
 		Task task = taskRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
@@ -189,9 +189,9 @@ public class TaskController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/tasks/{taskId}/users")
+	@PatchMapping("/tasks/{taskId}/users/{name}")
 	@Transactional
-	public ResponseEntity<Void> updateAssignedUser(/* Request Parameter */ @Nullable String name,
+	public ResponseEntity<Void> updateAssignedUser(@PathVariable String name,
 			@PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
