@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public final class TaskProgressUpdateRequest {
 
@@ -23,6 +24,7 @@ public final class TaskProgressUpdateRequest {
 
 	@Nullable
 	@JsonProperty("report")
+	@Size(max=500)
 	private final String report;
 
 	public Progress getProgress() {
