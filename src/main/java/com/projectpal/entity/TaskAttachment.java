@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -27,7 +27,7 @@ public class TaskAttachment implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
-	@NotNull
+	@NotBlank
 	private String fileName;
 
 	@ManyToOne
