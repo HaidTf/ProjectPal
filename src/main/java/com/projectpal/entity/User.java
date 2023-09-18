@@ -23,6 +23,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 
@@ -46,18 +47,18 @@ public class User implements UserDetails {
 	private long id;
 
 	@Column(unique = true)
-	@NotNull
+	@NotBlank
 	private String name;
 
 	@Column(unique = true)
-	@NotNull
+	@NotBlank
 	private String email;
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
 	private Role role;
 
-	@NotNull
+	@NotBlank
 	@JsonIgnore
 	private String password;
 
