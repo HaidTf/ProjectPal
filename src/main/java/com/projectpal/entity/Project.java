@@ -8,6 +8,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +19,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -40,9 +42,12 @@ public class Project implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
-	@NotNull
+	@NotBlank
+	@Size(min=3,max=60)
 	private String name;
 
+	@Nullable
+	@Size(max=300)
 	private String description;
 	
 	@Temporal(TemporalType.DATE)
