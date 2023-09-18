@@ -3,7 +3,7 @@ package com.projectpal.dto.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jakarta.annotation.Nullable;
-
+import jakarta.validation.constraints.Size;
 
 public final class DescriptionUpdateRequest {
 
@@ -13,10 +13,11 @@ public final class DescriptionUpdateRequest {
 	}
 
 	@Nullable
+	@Size(max=300)
 	private final String description;
 
 	public String getDescription() {
 		return description;
 	}
-	
+
 }
