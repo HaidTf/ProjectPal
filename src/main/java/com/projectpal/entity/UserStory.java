@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +23,9 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.NoArgsConstructor;
 
 
@@ -53,9 +56,12 @@ public class UserStory implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 	
-	@NotNull
+	@NotBlank
+	@Size(min=3,max=60)
 	private String name;
 
+	@Nullable
+	@Size(max=300)
 	private String description;
 
 	@Column(columnDefinition = "TINYINT")

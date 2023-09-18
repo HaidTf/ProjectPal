@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +17,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -48,9 +51,12 @@ public class Sprint implements Serializable {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
-	@NotNull
+	@NotBlank
+	@Size(min=3,max=60)
 	private String name;
 
+	@Nullable
+	@Size(max=300)
 	private String description;
 
 	@Temporal(TemporalType.DATE)
