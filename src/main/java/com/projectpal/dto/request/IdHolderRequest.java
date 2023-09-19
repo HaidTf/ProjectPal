@@ -13,7 +13,7 @@ public final class IdHolderRequest {
 	}
 
 	@NotNull
-	@JsonAlias({ "userId" })
+	@JsonAlias({ "userId","userStoryId" })
 	private final long id;
 
 	public long getId() {
