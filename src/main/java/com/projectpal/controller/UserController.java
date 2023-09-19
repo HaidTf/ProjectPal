@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.dto.request.StringHolderRequest;
+import com.projectpal.dto.request.PasswordUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
@@ -32,7 +32,7 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/users/me")
 public class UserController {
 
 	@Autowired
@@ -63,10 +63,10 @@ public class UserController {
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/password")
-	public ResponseEntity<Void> updatePassword(@Valid @RequestBody StringHolderRequest passwordHolder) {
+	public ResponseEntity<Void> updatePassword(@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
 
 		User user = SecurityContextUtil.getUser();
-		user.setPassword(encoder.encode(passwordHolder.getString()));
+		user.setPassword(encoder.encode(passwordUpdateRequest.getPassword()));
 		userRepo.save(user);
 		return ResponseEntity.status(204).build();
 	}
@@ -101,7 +101,7 @@ public class UserController {
 	}
 	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
-	@DeleteMapping("/projects/membership")
+	@DeleteMapping("/project/membership")
 	@Transactional
 	public ResponseEntity<Void> exitProject() {
 
