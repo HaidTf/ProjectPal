@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.RoleUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
@@ -33,7 +34,6 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceProjectAddOn;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
@@ -41,12 +41,12 @@ import com.projectpal.utils.SecurityContextUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/project")
 public class ProjectController {
 
 	@Autowired
 	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo,
-			CacheService cacheService, CacheServiceProjectAddOn cacheServiceProjectAddOn) {
+			CacheServiceProjectAddOn cacheServiceProjectAddOn) {
 		this.projectRepo = projectRepo;
 		this.userRepo = userRepo;
 		this.taskRepo = taskRepo;
@@ -120,42 +120,44 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
-	@PatchMapping("/users/{name}/role")
+	@PatchMapping("/users/{userId}/role")
 	@Transactional
-	public ResponseEntity<Void> setUserProjectRole(@PathVariable String name, @RequestBody Role role) {
+	public ResponseEntity<Void> setUserProjectRole(@PathVariable long userId,
+			@RequestBody @Valid RoleUpdateRequest roleUpdateRequest) {
 
-		User user = userRepo.findUserByName(name)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("the user must be in the project");
 
-		if (SecurityContextUtil.getUser().getName() == name)
-			throw new BadRequestException("you cant set yourself as a project operator");
+		if (SecurityContextUtil.getUser().getId() == userId)
+			throw new BadRequestException("you can not change your own role");
 
-		if (role != Role.ROLE_USER_PROJECT_PARTICIPATOR || role != Role.ROLE_USER_PROJECT_OPERATOR)
+		if (roleUpdateRequest.getRole() != Role.ROLE_USER_PROJECT_PARTICIPATOR
+				|| roleUpdateRequest.getRole() != Role.ROLE_USER_PROJECT_OPERATOR)
 			throw new BadRequestException("You are not allowed to set this role");
-		
-		user.setRole(role);
-		
+
+		user.setRole(roleUpdateRequest.getRole());
+
 		userRepo.save(user);
-		
+
 		return ResponseEntity.status(204).build();
-		
+
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/users/{name}/membership")
+	@DeleteMapping("/users/{userId}/membership")
 	@Transactional
-	public ResponseEntity<Void> removeUserFromProject(@PathVariable String name) {
+	public ResponseEntity<Void> removeUserFromProject(@PathVariable long userId) {
 
-		User user = userRepo.findUserByName(name)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with the intended name is found"));
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("you are not allowed remove users from other projects");
+			throw new ForbiddenException("the user must be in the project");
 
-		if (SecurityContextUtil.getUser().getName() == name)
+		if (SecurityContextUtil.getUser().getId() == userId)
 			throw new BadRequestException("you cant remove yourself from the project through here");
 
 		user.setProject(null);
