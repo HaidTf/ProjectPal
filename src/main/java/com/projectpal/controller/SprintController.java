@@ -34,11 +34,10 @@ import com.projectpal.service.CacheServiceSprintAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/projects/sprints")
+@RequestMapping("/project/sprints")
 public class SprintController {
 
 	@Autowired
@@ -61,14 +60,11 @@ public class SprintController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Sprint sprint = sprintRepo.getReferenceById(sprintId);
+		Sprint sprint = sprintRepo.findById(sprintId)
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
 
-		try {
-			if (sprint.getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Sprint does not exist");
-		}
+		if (sprint.getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(sprint);
 
@@ -133,9 +129,10 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/{id}/startdate")
+	@PatchMapping("/{id}/start-date")
 	@Transactional
-	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest, @PathVariable long id) {
+	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest,
+			@PathVariable long id) {
 
 		Sprint sprint = sprintRepo.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
@@ -162,7 +159,7 @@ public class SprintController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/{id}/enddate")
+	@PatchMapping("/{id}/end-date")
 	@Transactional
 	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateUpdateRequest endDateUpdateRequest,
 			@PathVariable long id) {
