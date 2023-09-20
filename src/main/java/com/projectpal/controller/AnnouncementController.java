@@ -26,11 +26,10 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.utils.ProjectUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/projects/announcements")
+@RequestMapping("/project/announcements")
 public class AnnouncementController {
 
 	@Autowired
@@ -45,14 +44,11 @@ public class AnnouncementController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Announcement announcement = announcementRepo.getReferenceById(announcementId);
+		Announcement announcement = announcementRepo.findById(announcementId)
+				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
 
-		try {
-			if (announcement.getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Announcement does not exist");
-		}
+		if (announcement.getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(announcement);
 
