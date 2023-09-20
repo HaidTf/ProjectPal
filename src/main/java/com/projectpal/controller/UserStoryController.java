@@ -34,7 +34,6 @@ import com.projectpal.service.CacheServiceUserStoryAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -64,14 +63,11 @@ public class UserStoryController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		UserStory userStory = userStoryRepo.getReferenceById(userStoryId);
+		UserStory userStory = userStoryRepo.findById(userStoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
-		try {
-			if (userStory.getEpic().getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("UserStory does not exist");
-		}
+		if (userStory.getEpic().getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(userStory);
 
@@ -97,7 +93,8 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{epicId}/userstories")
 	@Transactional
-	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory, @PathVariable long epicId) {
+	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory,
+			@PathVariable long epicId) {
 
 		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -126,7 +123,8 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{UserStoryId}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long userStoryId) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+			@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -182,7 +180,8 @@ public class UserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest, @PathVariable long userStoryId) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+			@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryRepo.findById(userStoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
@@ -207,7 +206,7 @@ public class UserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@DeleteMapping("/{epicId}/userstories/{userStoryId}")
+	@DeleteMapping("/userstories/{userStoryId}")
 	@Transactional
 	public ResponseEntity<Void> deleteUserStory(@PathVariable long userStoryId) {
 
