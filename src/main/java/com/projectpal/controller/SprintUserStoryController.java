@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projectpal.dto.request.IdHolderRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
@@ -25,6 +28,8 @@ import com.projectpal.service.CacheService;
 import com.projectpal.service.CacheServiceUserStoryAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/sprints/{sprintId}/userstories")
@@ -66,9 +71,10 @@ public class SprintUserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/{userStoryId}/add")
+	@PostMapping("")
 	@Transactional
-	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
+	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
+			@RequestBody @Valid IdHolderRequest userStoryIdHolder) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -78,7 +84,7 @@ public class SprintUserStoryController {
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		UserStory userStory = userStoryRepo.findById(userStoryId)
+		UserStory userStory = userStoryRepo.findById(userStoryIdHolder.getId())
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getEpic().getProject().getId() != project.getId())
@@ -100,7 +106,7 @@ public class SprintUserStoryController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/{userStoryId}/remove")
+	@DeleteMapping("/{userStoryId}")
 	@Transactional
 	public ResponseEntity<Void> removeUserStoryFromSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
 
@@ -116,14 +122,13 @@ public class SprintUserStoryController {
 				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
 
 		if (userStory.getSprint().getId() != sprint.getId()) {
-			
+
 			if (userStory.getEpic().getProject().getId() != project.getId())
 				throw new ForbiddenException("you are not allowed access to other projects");
 			else {
 				throw new BadRequestException("They userStory is not in the specified sprint");
 			}
 		}
-		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countBySprintId(sprintId));
 
 		userStory.setSprint(null);
 
