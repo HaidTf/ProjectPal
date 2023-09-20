@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.DescriptionUpdateRequest;
+import com.projectpal.dto.request.IdHolderRequest;
 import com.projectpal.dto.request.PriorityUpdateRequest;
 import com.projectpal.dto.request.TaskProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
@@ -39,7 +40,6 @@ import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -63,14 +63,10 @@ public class TaskController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Task task = taskRepo.getReferenceById(taskId);
+		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 
-		try {
-			if (task.getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Task does not exist");
-		}
+		if (task.getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(task);
 
@@ -119,7 +115,8 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long taskId) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+			@PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
 
@@ -189,9 +186,9 @@ public class TaskController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PatchMapping("/tasks/{taskId}/users/{name}")
+	@PostMapping("/tasks/{taskId}/assigned-user")
 	@Transactional
-	public ResponseEntity<Void> updateAssignedUser(@PathVariable String name,
+	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
 			@PathVariable long taskId) {
 
 		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
@@ -199,19 +196,29 @@ public class TaskController {
 		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
-		if (name == null) {
-			task.setAssignedUser(null);
-			taskRepo.save(task);
-			return ResponseEntity.status(204).build();
-		}
-
-		User user = userRepo.findUserByName(name)
-				.orElseThrow(() -> new ResourceNotFoundException("user with specified id not found"));
+		User user = userRepo.findById(userIdHolder.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
-			throw new ForbiddenException("you are not allowed to assign tasks to users not in your project");
+			throw new ForbiddenException("the user must be in the project");
 
 		task.setAssignedUser(user);
+		taskRepo.save(task);
+
+		return ResponseEntity.status(204).build();
+	}
+
+	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
+	@DeleteMapping("/tasks/{taskId}/assigned-user")
+	@Transactional
+	public ResponseEntity<Void> removeAssignedUser(@PathVariable long taskId) {
+
+		Task task = taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("task not found"));
+
+		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+			throw new ForbiddenException("you are not allowed to access other projects");
+
+		task.setAssignedUser(null);
 		taskRepo.save(task);
 
 		return ResponseEntity.status(204).build();
