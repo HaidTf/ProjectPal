@@ -33,11 +33,10 @@ import com.projectpal.service.CacheServiceEpicAddOn;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/projects/epics")
+@RequestMapping("/project/epics")
 public class EpicController {
 
 	@Autowired
@@ -59,14 +58,10 @@ public class EpicController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Epic epic = epicRepo.getReferenceById(epicId);
+		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
 
-		try {
-			if (epic.getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Epic does not exist");
-		}
+		if (epic.getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(epic);
 
@@ -130,7 +125,8 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
 	@Transactional
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest, @PathVariable long id) {
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+			@PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
@@ -182,7 +178,8 @@ public class EpicController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
 	@Transactional
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest, @PathVariable long id) {
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+			@PathVariable long id) {
 
 		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
 
