@@ -30,7 +30,6 @@ import com.projectpal.repository.UserRepository;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
-import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 public class InvitationController {
@@ -45,25 +44,22 @@ public class InvitationController {
 
 	private final UserRepository userRepo;
 
-	@GetMapping("/projects/invitations/{invitationId}")
+	@GetMapping("/project/invitations/{invitationId}")
 	public ResponseEntity<Invitation> getProjectRelatedInvitation(@PathVariable long invitationId) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Invitation invitation = invitationRepo.getReferenceById(invitationId);
+		Invitation invitation = invitationRepo.findById(invitationId)
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
 
-		try {
-			if (invitation.getProject().getId() != project.getId())
-				throw new ForbiddenException("You are not allowed access to other projects");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Invitation does not exist");
-		}
+		if (invitation.getProject().getId() != project.getId())
+			throw new ForbiddenException("You are not allowed access to other projects");
 
 		return ResponseEntity.ok(invitation);
 
 	}
 
-	@GetMapping("/projects/invitations")
+	@GetMapping("/project/invitations")
 	public ResponseEntity<ListHolderResponse<Invitation>> getProjectRelatedInvitations() {
 
 		Project project = ProjectUtil.getProjectNotNull();
@@ -75,25 +71,22 @@ public class InvitationController {
 		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
 	}
 
-	@GetMapping("/users/invitations/{invitationId}")
+	@GetMapping("/users/me/invitations/{invitationId}")
 	public ResponseEntity<Invitation> getReceivedInvitation(@PathVariable long invitationId) {
 
 		User user = SecurityContextUtil.getUser();
 
-		Invitation invitation = invitationRepo.getReferenceById(invitationId);
+		Invitation invitation = invitationRepo.findById(invitationId)
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
 
-		try {
-			if (invitation.getInvitedUser().getId() != user.getId())
-				throw new ForbiddenException("You are not allowed access to other users information");
-		} catch (EntityNotFoundException ex) {
-			throw new ResourceNotFoundException("Invitation does not exist");
-		}
+		if (invitation.getInvitedUser().getId() != user.getId())
+			throw new ForbiddenException("You are not allowed access to another user's information");
 
 		return ResponseEntity.ok(invitation);
 
 	}
 
-	@GetMapping("/users/invitations")
+	@GetMapping("/users/me/invitations")
 	public ResponseEntity<ListHolderResponse<Invitation>> getReceivedInvitations() {
 
 		User user = SecurityContextUtil.getUser();
@@ -106,18 +99,18 @@ public class InvitationController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/users/{name}/invitations")
+	@PostMapping("/users/{userId}/invitations")
 	@Transactional
-	public ResponseEntity<Invitation> invite(@PathVariable String name) {
+	public ResponseEntity<Invitation> invite(@PathVariable long userId) {
 
-		User user = userRepo.findUserByName(name)
+		User user = userRepo.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("the user you want to invite is not found"));
 
 		if (user.getProject().getId() == ProjectUtil.getProjectNotNull().getId())
 			throw new BadRequestException("invited user is already in the intended project");
 
-		if (SecurityContextUtil.getUser().getName() == name)
-			throw new BadRequestException("you cant send an invitation to yourself");
+		if (SecurityContextUtil.getUser().getId() == userId)
+			throw new BadRequestException("you can not send an invitation to yourself");
 
 		Invitation invitation = new Invitation(user, ProjectUtil.getProjectNotNull());
 
@@ -131,7 +124,7 @@ public class InvitationController {
 	}
 
 	@PreAuthorize("!hasRole('USER_PROJECT_OWNER')")
-	@PatchMapping("/users/invitations/{invitationId}")
+	@PatchMapping("/users/me/invitations/{invitationId}")
 	@Transactional
 	public ResponseEntity<Void> acceptInvitation(@PathVariable long invitationId) {
 
@@ -155,7 +148,7 @@ public class InvitationController {
 
 	}
 
-	@DeleteMapping("/users/invitations/{invitationId}")
+	@DeleteMapping("/users/me/invitations/{invitationId}")
 	@Transactional
 	public ResponseEntity<Void> rejectInvitation(@PathVariable long id) {
 
