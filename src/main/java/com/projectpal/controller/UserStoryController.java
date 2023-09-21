@@ -72,7 +72,7 @@ public class UserStoryController {
 		return ResponseEntity.ok(userStory);
 
 	}
-
+	// TODO: implement filtering
 	@GetMapping("/{epicId}/userstories")
 	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId) {
@@ -140,8 +140,9 @@ public class UserStoryController {
 
 		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
-				userStory.getSprint().getId());
+		if (userStory.getSprint() != null)
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
+					userStory.getSprint().getId());
 
 		// Redis Cache Update End:
 
@@ -168,8 +169,9 @@ public class UserStoryController {
 
 		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
-				userStory.getSprint().getId());
+		if (userStory.getSprint() != null)
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
+					userStory.getSprint().getId());
 
 		// Redis Cache Update End:
 
@@ -197,8 +199,9 @@ public class UserStoryController {
 
 		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
-				userStory.getSprint().getId());
+		if (userStory.getSprint() != null)
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
+					userStory.getSprint().getId());
 
 		// Redis Cache Update End:
 
@@ -222,8 +225,9 @@ public class UserStoryController {
 
 		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
-				userStory.getSprint().getId());
+		if (userStory.getSprint() != null)
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
+					userStory.getSprint().getId());
 
 		// Redis Cache Update End:
 
