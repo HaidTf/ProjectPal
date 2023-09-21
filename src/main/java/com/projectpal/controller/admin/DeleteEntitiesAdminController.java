@@ -128,7 +128,9 @@ public class DeleteEntitiesAdminController {
 		
 		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.epicUserStoryListCache, userStory.getEpic().getId());
 		
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, userStory.getSprint().getId());
+		if (userStory.getSprint() != null)
+			cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache,
+					userStory.getSprint().getId());
 		
 		userStoryRepo.deleteById(id);
 
