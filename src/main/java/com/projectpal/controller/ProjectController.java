@@ -72,7 +72,7 @@ public class ProjectController {
 
 		return ResponseEntity.ok(project);
 	}
-
+	// TODO: implement filtering
 	@GetMapping("/users")
 	public ResponseEntity<ListHolderResponse<User>> getProjectMembers() {
 

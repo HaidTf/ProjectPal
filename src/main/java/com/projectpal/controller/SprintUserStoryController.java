@@ -51,7 +51,7 @@ public class SprintUserStoryController {
 	private final CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn;
 
 	private final CacheService cacheService;
-
+	// TODO: implement filtering
 	@GetMapping("")
 	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId) {

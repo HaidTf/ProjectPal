@@ -71,7 +71,7 @@ public class TaskController {
 		return ResponseEntity.ok(task);
 
 	}
-
+	// TODO: implement filtering
 	@GetMapping("/{userStoryId}/tasks")
 	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@PathVariable long userStoryId) {
 

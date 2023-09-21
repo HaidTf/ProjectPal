@@ -71,7 +71,7 @@ public class SprintController {
 	}
 
 	// Get NotDone sprints
-
+	// TODO: implement filtering
 	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Sprint>> getNotDoneSprintList() {
 
@@ -86,7 +86,7 @@ public class SprintController {
 	}
 
 	// Get all sprints
-
+	// TODO: implement filtering
 	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Sprint>> getAllSprintList() {
 

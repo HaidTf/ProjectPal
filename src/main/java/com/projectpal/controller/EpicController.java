@@ -68,7 +68,7 @@ public class EpicController {
 	}
 
 	// Get NotDone epics
-
+	// TODO: implement filtering
 	@GetMapping("/notdone")
 	public ResponseEntity<ListHolderResponse<Epic>> getNotDoneEpicList() {
 
@@ -83,7 +83,7 @@ public class EpicController {
 	}
 
 	// Get all epics
-
+	// TODO: implement filtering
 	@GetMapping("/all")
 	public ResponseEntity<ListHolderResponse<Epic>> getAllEpicList() {
 
