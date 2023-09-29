@@ -11,10 +11,10 @@ import com.projectpal.entity.enums.Progress;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public final class TaskProgressUpdateRequest {
+public final class TaskProgressAndReportUpdateRequest {
 
 	@JsonCreator
-	public TaskProgressUpdateRequest(Progress progress, String report) {
+	public TaskProgressAndReportUpdateRequest(Progress progress, String report) {
 		this.progress = progress;
 		this.report = report;
 	}
