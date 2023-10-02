@@ -2,9 +2,11 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -25,13 +28,11 @@ import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.EpicRepository;
-import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceEpicAddOn;
-import com.projectpal.utils.MaxAllowedUtil;
+import com.projectpal.service.EpicService;
 import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
 
@@ -40,25 +41,18 @@ import jakarta.validation.Valid;
 public class EpicController {
 
 	@Autowired
-	public EpicController(EpicRepository epicRepo, CacheServiceEpicAddOn cacheServiceEpicAddOn,
-			CacheService cacheService) {
-		this.epicRepo = epicRepo;
-		this.cacheServiceEpicAddOn = cacheServiceEpicAddOn;
-		this.cacheService = cacheService;
+	public EpicController(EpicService epicService) {
+		this.epicService = epicService;
 	}
 
-	private final EpicRepository epicRepo;
-
-	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
-
-	private final CacheService cacheService;
+	private final EpicService epicService;
 
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Epic epic = epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
+		Epic epic = epicService.findEpicById(epicId);
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("You are not allowed access to other projects");
@@ -67,31 +61,16 @@ public class EpicController {
 
 	}
 
-	// Get NotDone epics
-	// TODO: implement filtering
-	@GetMapping("/notdone")
-	public ResponseEntity<ListHolderResponse<Epic>> getNotDoneEpicList() {
+	@GetMapping("")
+	public ResponseEntity<ListHolderResponse<Epic>> getEpics(
+			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
+			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Epic> epics = cacheServiceEpicAddOn.getNotDoneEpicListFromCacheOrDatabase(project);
+		SortValidationUtil.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
 
-		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
-
-	}
-
-	// Get all epics
-	// TODO: implement filtering
-	@GetMapping("/all")
-	public ResponseEntity<ListHolderResponse<Epic>> getAllEpicList() {
-
-		Project project = ProjectUtil.getProjectNotNull();
-
-		List<Epic> epics = epicRepo.findAllByProject(project).orElse(new ArrayList<Epic>(0));
-
-		epics.sort((epic1, epic2) -> Integer.compare(epic1.getPriority(), epic2.getPriority()));
+		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDbOrCache(project, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
@@ -104,19 +83,9 @@ public class EpicController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		MaxAllowedUtil.checkMaxAllowedOfEpic(epicRepo.countByProjectId(project.getId()));
+		epicService.createEpic(project, epic);
 
-		epic.setProject(project);
-
-		epicRepo.save(epic);
-
-		// Redis Cache Update:
-
-		cacheService.addObjectToCache(CacheServiceEpicAddOn.epicListCache, project.getId(), epic);
-
-		// Redis Cache Update End:
-
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/epics/" + epic.getId()).build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/epics/" + epic.getId()).build();
 		URI location = uriComponents.toUri();
 
 		return ResponseEntity.status(201).location(location).body(epic);
@@ -128,22 +97,14 @@ public class EpicController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long id) {
 
-		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
+		Epic epic = epicService.findEpicById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
 
-		epic.setDescription(descriptionUpdateRequest.getDescription());
-
-		epicRepo.save(epic);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
-
-		// Redis Cache Update End:
+		epicService.updateDescription(epic, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -154,22 +115,14 @@ public class EpicController {
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
-		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
+		Epic epic = epicService.findEpicById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
 
-		epic.setPriority(priorityHolder.getPriority());
-
-		epicRepo.save(epic);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
-
-		// Redis Cache Update End:
+		epicService.updatePriority(epic, priorityHolder.getPriority());
 
 		return ResponseEntity.status(204).build();
 
@@ -181,22 +134,14 @@ public class EpicController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long id) {
 
-		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
+		Epic epic = epicService.findEpicById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		epic.setProgress(progressUpdateRequest.getProgress());
-
-		epicRepo.save(epic);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceEpicAddOn.epicListCache, project.getId());
-
-		// Redis Cache Update End:
+		epicService.updateProgress(epic, progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -206,20 +151,14 @@ public class EpicController {
 	@Transactional
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
-		Epic epic = epicRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("epic does not exist"));
+		Epic epic = epicService.findEpicById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
 
-		// Redis Cache Update:
-
-		cacheServiceEpicAddOn.deleteEpicFromCacheAndCascadeDeleteChildren(epic);
-
-		// Redis Cache Update End:
-
-		epicRepo.delete(epic);
+		epicService.deleteEpic(epic);
 
 		return ResponseEntity.status(204).build();
 	}

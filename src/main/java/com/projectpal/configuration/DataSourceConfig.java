@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Profile;
 
 import com.zaxxer.hikari.HikariDataSource;
 
-import jakarta.activation.DataSource;
-
 @Configuration
 public class DataSourceConfig {
 

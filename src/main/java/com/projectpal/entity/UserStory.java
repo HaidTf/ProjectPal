@@ -3,6 +3,7 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -51,6 +52,14 @@ public class UserStory implements Serializable {
 	
 	@Transient
 	private static final long serialVersionUID = 5L;
+	
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
+
+	public static final String EPIC_USERSTORY_CACHE = "epicUserStoryListCache";
+	
+	public static final String SPRINT_USERSTORY_CACHE = "sprintUserStoryListCache";
+
+	public static final int MAX_NUMBER_OF_TASKS = 20;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")

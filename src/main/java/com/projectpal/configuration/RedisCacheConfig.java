@@ -11,9 +11,9 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
-import com.projectpal.service.CacheServiceEpicAddOn;
-import com.projectpal.service.CacheServiceSprintAddOn;
-import com.projectpal.service.CacheServiceUserStoryAddOn;
+import com.projectpal.entity.Epic;
+import com.projectpal.entity.Sprint;
+import com.projectpal.entity.UserStory;
 
 @Configuration
 @EnableCaching
@@ -23,7 +23,7 @@ public class RedisCacheConfig {
     RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
     	
         RedisCacheConfiguration cacheConfiguration1 = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(4)) 
+                .entryTtl(Duration.ofHours(2)) 
                 .disableCachingNullValues() 
                 .computePrefixWith(cacheName -> "projectpal:" + cacheName);
         
@@ -33,10 +33,10 @@ public class RedisCacheConfig {
                 .computePrefixWith(cacheName -> "projectpal:" + cacheName);
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put(CacheServiceEpicAddOn.epicListCache, cacheConfiguration1);
-        cacheConfigurations.put(CacheServiceSprintAddOn.sprintListCache, cacheConfiguration1);
-        cacheConfigurations.put(CacheServiceUserStoryAddOn.epicUserStoryListCache, cacheConfiguration2);
-        cacheConfigurations.put(CacheServiceUserStoryAddOn.sprintUserStoryListCache, cacheConfiguration2);
+        cacheConfigurations.put(Epic.EPIC_CACHE, cacheConfiguration1);
+        cacheConfigurations.put(Sprint.SPRINT_CACHE, cacheConfiguration1);
+        cacheConfigurations.put(UserStory.EPIC_USERSTORY_CACHE, cacheConfiguration2);
+        cacheConfigurations.put(UserStory.SPRINT_USERSTORY_CACHE, cacheConfiguration2);
 
         RedisCacheManager cacheManager = RedisCacheManager.builder(redisConnectionFactory)
         		.withInitialCacheConfigurations(cacheConfigurations)

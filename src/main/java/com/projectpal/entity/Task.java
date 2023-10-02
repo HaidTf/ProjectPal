@@ -4,6 +4,7 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -52,6 +53,8 @@ public class Task implements Serializable {
 	
 	@Transient
 	private static final long serialVersionUID = 6L;
+	
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")

@@ -1,8 +1,11 @@
 package com.projectpal.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.IdHolderRequest;
@@ -19,14 +23,12 @@ import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.UserStory;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.SprintRepository;
-import com.projectpal.repository.UserStoryRepository;
-import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceUserStoryAddOn;
-import com.projectpal.utils.MaxAllowedUtil;
+import com.projectpal.service.SprintService;
+import com.projectpal.service.SprintUserStoryService;
+import com.projectpal.service.UserStoryService;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -36,36 +38,30 @@ import jakarta.validation.Valid;
 public class SprintUserStoryController {
 
 	@Autowired
-	public SprintUserStoryController(SprintRepository sprintRepo, UserStoryRepository userStoryRepo,
-			CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn, CacheService cacheService) {
-		this.sprintRepo = sprintRepo;
-		this.userStoryRepo = userStoryRepo;
-		this.cacheServiceUserStoryAddOn = cacheServiceUserStoryAddOn;
-		this.cacheService = cacheService;
+	public SprintUserStoryController(SprintUserStoryService sprintUserStoryService, SprintService sprintService, UserStoryService userStoryService) {
+		this.userStoryService = userStoryService;
+		this.sprintUserStoryService = sprintUserStoryService;
+		this.sprintService = sprintService;
 	}
 
-	private final SprintRepository sprintRepo;
+	private final UserStoryService userStoryService;
 
-	private final UserStoryRepository userStoryRepo;
+	private final SprintUserStoryService sprintUserStoryService;
 
-	private final CacheServiceUserStoryAddOn cacheServiceUserStoryAddOn;
+	private final SprintService sprintService;
 
-	private final CacheService cacheService;
-	// TODO: implement filtering
 	@GetMapping("")
 	@Transactional
-	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId) {
+	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId,
+			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
+			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(sprintId);
 
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = cacheServiceUserStoryAddOn.getSprintUserStoryListFromCacheOrDatabase(sprint);
-
-		userStories
-				.sort((userStory1, userStory2) -> Integer.compare(userStory1.getPriority(), userStory2.getPriority()));
+		List<UserStory> userStories = sprintUserStoryService.findAllBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
@@ -78,29 +74,17 @@ public class SprintUserStoryController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(sprintId);
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		UserStory userStory = userStoryRepo.findById(userStoryIdHolder.getId())
-				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
+		UserStory userStory = userStoryService.findUserStoryById(userStoryIdHolder.getId());
 
 		if (userStory.getEpic().getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		MaxAllowedUtil.checkMaxAllowedOfUserStory(userStoryRepo.countBySprintId(sprintId));
-
-		userStory.setSprint(sprint);
-
-		userStoryRepo.save(userStory);
-
-		// Redis Cache Update:
-
-		cacheService.addObjectToCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId(), userStory);
-
-		// Redis Cache Update End:
+		sprintUserStoryService.addUserStoryToSprint(userStory, sprint);
 
 		return ResponseEntity.status(204).build();
 	}
@@ -112,14 +96,12 @@ public class SprintUserStoryController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(sprintId);
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		UserStory userStory = userStoryRepo.findById(userStoryId)
-				.orElseThrow(() -> new ResourceNotFoundException("userStory does not exist"));
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
 		if (userStory.getSprint().getId() != sprint.getId()) {
 
@@ -130,15 +112,7 @@ public class SprintUserStoryController {
 			}
 		}
 
-		userStory.setSprint(null);
-
-		userStoryRepo.save(userStory);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceUserStoryAddOn.sprintUserStoryListCache, sprint.getId());
-
-		// Redis Cache Update End:
+		sprintUserStoryService.removeUserStoryFromSprint(userStory, sprint);
 
 		return ResponseEntity.status(204).build();
 	}

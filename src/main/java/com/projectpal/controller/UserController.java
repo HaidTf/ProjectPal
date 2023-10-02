@@ -1,32 +1,31 @@
 package com.projectpal.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.PasswordUpdateRequest;
-import com.projectpal.dto.response.ListHolderResponse;
-import com.projectpal.entity.Project;
+import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.entity.enums.Role;
-import com.projectpal.repository.ProjectRepository;
-import com.projectpal.repository.TaskRepository;
-import com.projectpal.repository.UserRepository;
-import com.projectpal.service.CacheServiceProjectAddOn;
+import com.projectpal.service.TaskService;
+import com.projectpal.service.UserService;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
@@ -36,24 +35,14 @@ import jakarta.validation.Valid;
 public class UserController {
 
 	@Autowired
-	public UserController(UserRepository userRepo, PasswordEncoder encoder, TaskRepository taskRepo,
-			ProjectRepository projectRepo, CacheServiceProjectAddOn cacheServiceProjectAddOn) {
-		this.encoder = encoder;
-		this.userRepo = userRepo;
-		this.taskRepo = taskRepo;
-		this.projectRepo = projectRepo;
-		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
+	public UserController(TaskService taskService, UserService userService) {
+		this.taskService = taskService;
+		this.userService = userService;
 	}
 
-	private final PasswordEncoder encoder;
+	private final UserService userService;
 
-	private final UserRepository userRepo;
-
-	private final TaskRepository taskRepo;
-
-	private final ProjectRepository projectRepo;
-
-	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
+	private final TaskService taskService;
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser() {
@@ -61,109 +50,40 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 
+	@GetMapping("/tasks")
+	public ResponseEntity<CustomPageResponse<Task>> getMyTasks(
+			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
+			@PageableDefault(page = 0, size = 20, sort = "priority", direction = Direction.DESC) Pageable pageable) {
+
+		User user = SecurityContextUtil.getUser();
+
+		MaxAllowedUtil.checkMaxAllowedPageSize(pageable.getPageSize());
+
+		Page<Task> tasks = taskService.findPageByUserAndProgress(user, progress, pageable);
+
+		return ResponseEntity.ok(new CustomPageResponse<Task>(tasks));
+	}
+
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/password")
 	public ResponseEntity<Void> updatePassword(@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
 
 		User user = SecurityContextUtil.getUser();
-		user.setPassword(encoder.encode(passwordUpdateRequest.getPassword()));
-		userRepo.save(user);
+
+		userService.updateUserPassword(user, passwordUpdateRequest.getPassword());
+
 		return ResponseEntity.status(204).build();
 	}
 
-	// Get All tasks
-	// TODO: implement filtering
-	@GetMapping("/tasks/all")
-	public ResponseEntity<ListHolderResponse<Task>> getUserTasksList() {
-
-		User user = SecurityContextUtil.getUser();
-
-		List<Task> tasks = taskRepo.findAllByAssignedUser(user).orElse(new ArrayList<Task>(0));
-
-		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
-	}
-
-	// Get NotDone tasks
-	// TODO: implement filtering
-	@GetMapping("/tasks/notdone")
-	public ResponseEntity<ListHolderResponse<Task>> getUserTaskTodoOrInProgressList() {
-
-		User user = SecurityContextUtil.getUser();
-
-		List<Task> tasks = taskRepo.findAllByAssignedUserAndProgressNot(user, Progress.DONE)
-				.orElse(new ArrayList<Task>(0));
-
-		tasks.sort((task1, task2) -> Integer.compare(task1.getPriority(), task2.getPriority()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
-	}
-	
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@DeleteMapping("/project/membership")
 	@Transactional
-	public ResponseEntity<Void> exitProject() {
+	public ResponseEntity<Void> exitCurrentProject() {
 
 		User user = SecurityContextUtil.getUser();
 
-		Project project = user.getProject();
+		userService.exitUserProject(user);
 
-		user.setProject(null);
-		userRepo.save(user);
-
-		if (user.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
-
-			Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
-
-			if (projectUsers.isPresent() && projectUsers.get().size() > 0) {
-
-				boolean newProjectOwnerIsSet = false;
-
-				for (User projectUser : projectUsers.get()) {
-
-					if (projectUser.getRole() == Role.ROLE_USER_PROJECT_OPERATOR) {
-
-						projectUser.setRole(Role.ROLE_USER_PROJECT_OWNER);
-						userRepo.save(projectUser);
-
-						project.setOwner(projectUser);
-						projectRepo.save(project);
-
-						newProjectOwnerIsSet = true;
-						break;
-					}
-				}
-
-				if (!newProjectOwnerIsSet) {
-
-					User newProjectOwner = projectUsers.get().get(0);
-					newProjectOwner.setRole(Role.ROLE_USER_PROJECT_OWNER);
-					userRepo.save(newProjectOwner);
-
-					project.setOwner(newProjectOwner);
-					projectRepo.save(project);
-				}
-			} else {
-				cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
-				projectRepo.delete(project);
-			}
-		}
-
-		user.setRole(Role.ROLE_USER);
-		userRepo.save(user);
-
-		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
-
-		if (tasks.isPresent() && tasks.get().size() > 0) {
-
-			for (Task task : tasks.get()) {
-
-				task.setAssignedUser(null);
-				taskRepo.save(task);
-
-			}
-		}
 		return ResponseEntity.status(204).build();
 
 	}

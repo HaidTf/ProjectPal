@@ -1,6 +1,7 @@
 package com.projectpal.entity;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,6 +29,8 @@ public class Announcement {
 		this.issueDate = LocalDate.now();
 	}
 
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("issueDate");
+	
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
