@@ -2,6 +2,7 @@ package com.projectpal.entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,41 +36,47 @@ public class Sprint implements Serializable {
 		this.progress = startDate.isBefore(LocalDate.now()) ? Progress.INPROGRESS : Progress.TODO;
 		this.creationDate = LocalDate.now();
 	}
-	 
-	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate,Progress progress) {
+
+	public Sprint(String name, String description, LocalDate startDate, LocalDate endDate, Progress progress) {
 		this.name = name;
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.progress = progress;
 	}
-	
+
 	@Transient
 	private static final long serialVersionUID = 4L;
+
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "startDate", "endDate");
+
+	public static final String SPRINT_CACHE = "sprintListCache";
+
+	public static final int MAX_NUMBER_OF_USERSTORIES = 30;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
 	@NotBlank
-	@Size(min=3,max=60)
+	@Size(min = 3, max = 60)
 	private String name;
 
 	@Nullable
-	@Size(max=300)
+	@Size(max = 300)
 	private String description;
 
 	@Temporal(TemporalType.DATE)
 	@NotNull
 	private LocalDate startDate;
-	
+
 	@Temporal(TemporalType.DATE)
 	@NotNull
 	private LocalDate endDate;
 
 	@Enumerated(EnumType.STRING)
 	private Progress progress;
-	
+
 	@Temporal(TemporalType.DATE)
 	private LocalDate creationDate;
 
@@ -138,7 +145,7 @@ public class Sprint implements Serializable {
 	public void setProgress(Progress progress) {
 		this.progress = progress;
 	}
-	
+
 	public LocalDate getCreationDate() {
 		return creationDate;
 	}

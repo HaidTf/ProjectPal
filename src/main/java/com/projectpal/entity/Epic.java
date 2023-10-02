@@ -3,6 +3,7 @@ package com.projectpal.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,6 +51,12 @@ public class Epic implements Serializable {
 
 	@Transient
 	private static final long serialVersionUID = 3L;
+	
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
+
+	public static final String EPIC_CACHE = "epicListCache";
+
+	public static final int MAX_NUMBER_OF_USERSTORIES = 40;
 
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
