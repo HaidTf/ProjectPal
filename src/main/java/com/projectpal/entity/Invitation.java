@@ -1,6 +1,7 @@
 package com.projectpal.entity;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +22,8 @@ public class Invitation {
 		this.issueDate = LocalDate.now();
 	}
 
+	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("issueDate");
+	
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
