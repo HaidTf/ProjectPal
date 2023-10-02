@@ -82,7 +82,7 @@ public class TaskController {
 		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<Task> tasks = taskService.findAllByUserStoryAndProgressList(userStory, progress, sort);
+		List<Task> tasks = taskService.findTasksByUserStoryAndProgressSet(userStory, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
