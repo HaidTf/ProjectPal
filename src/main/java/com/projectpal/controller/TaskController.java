@@ -160,7 +160,7 @@ public class TaskController {
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
-	@PostMapping("/tasks/{taskId}/assigned-user")
+	@PatchMapping("/tasks/{taskId}/assigned-user")
 	@Transactional
 	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
 			@PathVariable long taskId) {
