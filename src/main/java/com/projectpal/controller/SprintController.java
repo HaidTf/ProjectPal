@@ -2,9 +2,11 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,11 +17,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.Sprint;
+import com.projectpal.entity.enums.Progress;
 import com.projectpal.dto.request.DateUpdateRequest;
 import com.projectpal.dto.request.DescriptionUpdateRequest;
 import com.projectpal.dto.request.ProgressUpdateRequest;
@@ -27,41 +31,28 @@ import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.SprintRepository;
-import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceSprintAddOn;
-import com.projectpal.utils.MaxAllowedUtil;
+import com.projectpal.service.SprintService;
 import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/project/sprints")
 public class SprintController {
-
 	@Autowired
-	public SprintController(SprintRepository sprintRepo, CacheService cacheService,
-			CacheServiceSprintAddOn cacheServiceSprintAddOn) {
-		this.cacheService = cacheService;
-		this.sprintRepo = sprintRepo;
-		this.cacheServiceSprintAddOn = cacheServiceSprintAddOn;
-
+	public SprintController(SprintService sprintService) {
+		this.sprintService = sprintService;
 	}
 
-	private final SprintRepository sprintRepo;
-
-	private final CacheService cacheService;
-
-	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
+	private final SprintService sprintService;
 
 	@GetMapping("/{sprintId}")
 	public ResponseEntity<Sprint> getSprint(@PathVariable long sprintId) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Sprint sprint = sprintRepo.findById(sprintId)
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(sprintId);
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("You are not allowed access to other projects");
@@ -70,31 +61,16 @@ public class SprintController {
 
 	}
 
-	// Get NotDone sprints
-	// TODO: implement filtering
-	@GetMapping("/notdone")
-	public ResponseEntity<ListHolderResponse<Sprint>> getNotDoneSprintList() {
+	@GetMapping("")
+	public ResponseEntity<ListHolderResponse<Sprint>> getSprints(
+			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
+			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Sprint> sprints = cacheServiceSprintAddOn.getNotDoneSprintListFromCacheOrDatabase(project);
+		SortValidationUtil.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
 
-		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
-
-	}
-
-	// Get all sprints
-	// TODO: implement filtering
-	@GetMapping("/all")
-	public ResponseEntity<ListHolderResponse<Sprint>> getAllSprintList() {
-
-		Project project = ProjectUtil.getProjectNotNull();
-
-		List<Sprint> sprints = sprintRepo.findAllByProject(project).orElse(new ArrayList<Sprint>(0));
-
-		sprints.sort((sprint1, sprint2) -> sprint1.getStartDate().compareTo(sprint2.getStartDate()));
+		List<Sprint> sprints = sprintService.findAllByProjectAndProgressFromDbOrCache(project, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
@@ -105,24 +81,14 @@ public class SprintController {
 	@Transactional
 	public ResponseEntity<Sprint> createSprint(@Valid @RequestBody Sprint sprint) {
 
+		Project project = ProjectUtil.getProjectNotNull();
+
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		Project project = ProjectUtil.getProjectNotNull();
+		sprintService.createSprint(project, sprint);
 
-		MaxAllowedUtil.checkMaxAllowedOfSprint(sprintRepo.countByProjectId(project.getId()));
-
-		sprint.setProject(project);
-
-		sprintRepo.save(sprint);
-
-		// Redis Cache Update:
-
-		cacheService.addObjectToCache(CacheServiceSprintAddOn.sprintListCache, project.getId(), sprint);
-
-		// Redis Cache Update End:
-
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/sprints/" + sprint.getId()).build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/sprints/" + sprint.getId()).build();
 		URI location = uriComponents.toUri();
 
 		return ResponseEntity.status(201).location(location).body(sprint);
@@ -134,8 +100,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -145,15 +110,7 @@ public class SprintController {
 		if (startDateUpdateRequest.getDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		sprint.setStartDate(startDateUpdateRequest.getDate());
-
-		sprintRepo.save(sprint);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
-
-		// Redis Cache Update End:
+		sprintService.updateStartDate(sprint, startDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -164,8 +121,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateUpdateRequest endDateUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
@@ -175,15 +131,7 @@ public class SprintController {
 		if (endDateUpdateRequest.getDate().isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
 
-		sprint.setEndDate(endDateUpdateRequest.getDate());
-
-		sprintRepo.save(sprint);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
-
-		// Redis Cache Update End:
+		sprintService.updateEndDate(sprint,endDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -194,23 +142,14 @@ public class SprintController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
 
-		sprint.setDescription(descriptionUpdateRequest.getDescription());
-
-		sprintRepo.save(sprint);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
-
-		// Redis Cache Update End:
+		sprintService.updateDescription(sprint,descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -221,23 +160,14 @@ public class SprintController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
-		sprint.setProgress(progressUpdateRequest.getProgress());
-
-		sprintRepo.save(sprint);
-
-		// Redis Cache Update:
-
-		cacheService.evictListFromCache(CacheServiceSprintAddOn.sprintListCache, project.getId());
-
-		// Redis Cache Update End:
+		sprintService.updateProgress(sprint,progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -247,21 +177,14 @@ public class SprintController {
 	@Transactional
 	public ResponseEntity<Void> deleteSprint(@PathVariable long id) {
 
-		Sprint sprint = sprintRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("sprint does not exist"));
+		Sprint sprint = sprintService.findSprintById(id);
 
 		Project project = ProjectUtil.getProjectNotNull();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
 
-		sprintRepo.delete(sprint);
-
-		// Redis Cache Update:
-
-		cacheServiceSprintAddOn.deleteSprintFromCacheAndCascadeDeleteChildren(sprint);
-
-		// Redis Cache Update End:
+		sprintService.deleteSprint(sprint);
 
 		return ResponseEntity.status(204).build();
 	}
