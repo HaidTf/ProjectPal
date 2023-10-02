@@ -2,9 +2,9 @@ package com.projectpal.controller;
 
 import java.net.URI;
 import java.util.List;
-import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,44 +13,42 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.InvitationRepository;
-import com.projectpal.repository.UserRepository;
+import com.projectpal.service.InvitationService;
+import com.projectpal.service.UserService;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
-
 
 @RestController
 public class InvitationController {
 
 	@Autowired
-	public InvitationController(InvitationRepository invitationRepo, UserRepository userRepo) {
-		this.invitationRepo = invitationRepo;
-		this.userRepo = userRepo;
+	public InvitationController(InvitationService invitationService, UserService userService) {
+		this.invitationService = invitationService;
+		this.userService = userService;
 	}
 
-	private final InvitationRepository invitationRepo;
+	private final InvitationService invitationService;
 
-	private final UserRepository userRepo;
+	private final UserService userService;
 
 	@GetMapping("/project/invitations/{invitationId}")
 	public ResponseEntity<Invitation> getProjectRelatedInvitation(@PathVariable long invitationId) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Invitation invitation = invitationRepo.findById(invitationId)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		if (invitation.getProject().getId() != project.getId())
 			throw new ForbiddenException("You are not allowed access to other projects");
@@ -60,15 +58,15 @@ public class InvitationController {
 	}
 
 	@GetMapping("/project/invitations")
-	public ResponseEntity<ListHolderResponse<Invitation>> getProjectRelatedInvitations() {
+	public ResponseEntity<CustomPageResponse<Invitation>> getProjectRelatedInvitations(
+			@RequestParam(required = false, defaultValue = "0") int page,
+			@RequestParam(required = false, defaultValue = "10") int size) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Invitation> invitations = invitationRepo.findAllByProject(project).orElse(new ArrayList<Invitation>(0));
+		Page<Invitation> invitations = invitationService.findPageByProject(project, page, size);
 
-		invitations.sort((inv1, inv2) -> inv1.getIssueDate().compareTo(inv2.getIssueDate()));
-
-		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
+		return ResponseEntity.ok(new CustomPageResponse<Invitation>(invitations));
 	}
 
 	@GetMapping("/users/me/invitations/{invitationId}")
@@ -76,8 +74,7 @@ public class InvitationController {
 
 		User user = SecurityContextUtil.getUser();
 
-		Invitation invitation = invitationRepo.findById(invitationId)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		if (invitation.getInvitedUser().getId() != user.getId())
 			throw new ForbiddenException("You are not allowed access to another user's information");
@@ -91,9 +88,7 @@ public class InvitationController {
 
 		User user = SecurityContextUtil.getUser();
 
-		List<Invitation> invitations = invitationRepo.findAllByInvitedUser(user).orElse(new ArrayList<Invitation>(0));
-
-		invitations.sort((inv1, inv2) -> inv1.getIssueDate().compareTo(inv2.getIssueDate()));
+		List<Invitation> invitations = invitationService.findAllByUser(user);
 
 		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
 	}
@@ -103,20 +98,14 @@ public class InvitationController {
 	@Transactional
 	public ResponseEntity<Invitation> invite(@PathVariable long userId) {
 
-		User user = userRepo.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("the user you want to invite is not found"));
-
-		if (user.getProject().getId() == ProjectUtil.getProjectNotNull().getId())
-			throw new BadRequestException("invited user is already in the intended project");
+		User user = userService.findUserById(userId);
 
 		if (SecurityContextUtil.getUser().getId() == userId)
 			throw new BadRequestException("you can not send an invitation to yourself");
 
-		Invitation invitation = new Invitation(user, ProjectUtil.getProjectNotNull());
+		Invitation invitation = invitationService.inviteUserToProject(user, ProjectUtil.getProjectNotNull());
 
-		invitationRepo.save(invitation);
-
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects/invitations/" + invitation.getId())
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/invitations/" + invitation.getId())
 				.build();
 		URI location = uriComponents.toUri();
 
@@ -128,21 +117,14 @@ public class InvitationController {
 	@Transactional
 	public ResponseEntity<Void> acceptInvitation(@PathVariable long invitationId) {
 
-		Invitation invitation = invitationRepo.findById(invitationId)
-				.orElseThrow(() -> new ResourceNotFoundException("invitation not found"));
-
-		if (invitation.getInvitedUser().getId() != SecurityContextUtil.getUser().getId())
-			throw new ForbiddenException("you are not allowed to modify other user's invitations");
+		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		User user = SecurityContextUtil.getUser();
 
-		user.setProject(invitation.getProject());
+		if (invitation.getInvitedUser().getId() != user.getId())
+			throw new ForbiddenException("you are not allowed to modify other user's invitations");
 
-		user.setRole(Role.ROLE_USER_PROJECT_PARTICIPATOR);
-
-		userRepo.save(user);
-
-		invitationRepo.delete(invitation);
+		invitationService.userAcceptsInvitation(user, invitation);
 
 		return ResponseEntity.status(204).build();
 
@@ -150,15 +132,14 @@ public class InvitationController {
 
 	@DeleteMapping("/users/me/invitations/{invitationId}")
 	@Transactional
-	public ResponseEntity<Void> rejectInvitation(@PathVariable long id) {
+	public ResponseEntity<Void> rejectInvitation(@PathVariable long invitationId) {
 
-		Invitation invitation = invitationRepo.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("invitation not found"));
+		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		if (invitation.getInvitedUser().getId() != SecurityContextUtil.getUser().getId())
 			throw new ForbiddenException("you are not allowed to modify other user's invitations");
 
-		invitationRepo.delete(invitation);
+		invitationService.rejectInvitation(invitation);
 
 		return ResponseEntity.status(204).build();
 
