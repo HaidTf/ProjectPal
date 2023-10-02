@@ -1,12 +1,9 @@
 package com.projectpal.controller;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,24 +14,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.DescriptionUpdateRequest;
 import com.projectpal.dto.request.RoleUpdateRequest;
-import com.projectpal.dto.response.ListHolderResponse;
+import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Project;
-import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.ProjectRepository;
-import com.projectpal.repository.TaskRepository;
-import com.projectpal.repository.UserRepository;
-import com.projectpal.service.CacheServiceProjectAddOn;
+import com.projectpal.service.ProjectService;
+import com.projectpal.service.UserService;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
@@ -45,42 +40,37 @@ import jakarta.validation.Valid;
 public class ProjectController {
 
 	@Autowired
-	public ProjectController(ProjectRepository projectRepo, UserRepository userRepo, TaskRepository taskRepo,
-			CacheServiceProjectAddOn cacheServiceProjectAddOn) {
-		this.projectRepo = projectRepo;
-		this.userRepo = userRepo;
-		this.taskRepo = taskRepo;
-		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
+	public ProjectController(ProjectService projectService, UserService userService) {
+		this.projectService = projectService;
+		this.userService = userService;
 	}
 
-	private final ProjectRepository projectRepo;
+	private final ProjectService projectService;
 
-	private final UserRepository userRepo;
-
-	private final TaskRepository taskRepo;
-
-	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
+	private final UserService userService;
 
 	@GetMapping("")
 	public ResponseEntity<Project> getProject() {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		project.setLastAccessedDate(LocalDate.now());
-
-		projectRepo.save(project);
+		projectService.updateProjectLastAccessedDate(project);
 
 		return ResponseEntity.ok(project);
 	}
-	// TODO: implement filtering
+
 	@GetMapping("/users")
-	public ResponseEntity<ListHolderResponse<User>> getProjectMembers() {
+	public ResponseEntity<CustomPageResponse<User>> getProjectMembers(@RequestParam(required = false) Role role,
+			@RequestParam(required = false, defaultValue = "0") int page,
+			@RequestParam(required = false, defaultValue = "20") int size) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<User> users = userRepo.findAllByProject(project).orElse(new ArrayList<User>(0));
+		MaxAllowedUtil.checkMaxAllowedPageSize(size);
 
-		return ResponseEntity.ok(new ListHolderResponse<User>(users));
+		Page<User> users = userService.findAllByProjectAndRole(project, role, page, size);
+
+		return ResponseEntity.ok(new CustomPageResponse<User>(users));
 
 	}
 
@@ -91,15 +81,9 @@ public class ProjectController {
 
 		User user = SecurityContextUtil.getUser();
 
-		user.setRole(Role.ROLE_USER_PROJECT_OWNER);
-		user.setProject(project);
+		projectService.createProjectAndSetOwner(project, user);
 
-		project.setOwner(user);
-
-		projectRepo.save(project);
-		userRepo.save(user);
-
-		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/projects").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project").build();
 		URI location = uriComponents.toUri();
 
 		return ResponseEntity.status(201).location(location).body(project);
@@ -111,9 +95,7 @@ public class ProjectController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		project.setDescription(descriptionUpdateRequest.getDescription());
-
-		projectRepo.save(project);
+		projectService.updateProjectDescription(project, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 
@@ -125,8 +107,7 @@ public class ProjectController {
 	public ResponseEntity<Void> setUserProjectRole(@PathVariable long userId,
 			@RequestBody @Valid RoleUpdateRequest roleUpdateRequest) {
 
-		User user = userRepo.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
+		User user = userService.findUserById(userId);
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("the user must be in the project");
@@ -138,9 +119,7 @@ public class ProjectController {
 				|| roleUpdateRequest.getRole() != Role.ROLE_USER_PROJECT_OPERATOR)
 			throw new BadRequestException("You are not allowed to set this role");
 
-		user.setRole(roleUpdateRequest.getRole());
-
-		userRepo.save(user);
+		userService.updateUserRole(user, roleUpdateRequest.getRole());
 
 		return ResponseEntity.status(204).build();
 
@@ -151,8 +130,7 @@ public class ProjectController {
 	@Transactional
 	public ResponseEntity<Void> removeUserFromProject(@PathVariable long userId) {
 
-		User user = userRepo.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
+		User user = userService.findUserById(userId);
 
 		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("the user must be in the project");
@@ -160,22 +138,8 @@ public class ProjectController {
 		if (SecurityContextUtil.getUser().getId() == userId)
 			throw new BadRequestException("you cant remove yourself from the project through here");
 
-		user.setProject(null);
+		userService.exitUserProject(user);
 
-		user.setRole(Role.ROLE_USER);
-
-		userRepo.save(user);
-
-		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
-
-		if (tasks.isPresent() && tasks.get().size() > 0) {
-
-			for (Task task : tasks.get()) {
-				task.setAssignedUser(null);
-				taskRepo.save(task);
-			}
-
-		}
 		return ResponseEntity.status(204).build();
 	}
 
@@ -186,24 +150,7 @@ public class ProjectController {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
-
-		cacheServiceProjectAddOn.DeleteEntitiesInCacheOnProjectDeletion(project);
-
-		projectRepo.delete(project);
-
-		if (projectUsers.isPresent() && projectUsers.get().size() > 0) {
-
-			for (User projectUser : projectUsers.get()) {
-				projectUser.setRole(Role.ROLE_USER);
-				userRepo.save(projectUser);
-			}
-
-		}
-
-		User owner = SecurityContextUtil.getUser();
-		owner.setRole(Role.ROLE_USER);
-		userRepo.save(owner);
+		projectService.deleteProject(project);
 
 		return ResponseEntity.status(204).build();
 
