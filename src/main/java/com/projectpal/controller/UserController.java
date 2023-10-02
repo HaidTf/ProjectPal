@@ -25,7 +25,6 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.TaskService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
@@ -57,9 +56,7 @@ public class UserController {
 
 		User user = SecurityContextUtil.getUser();
 
-		MaxAllowedUtil.checkMaxAllowedPageSize(pageable.getPageSize());
-
-		Page<Task> tasks = taskService.findPageByUserAndProgress(user, progress, pageable);
+		Page<Task> tasks = taskService.findPageByUserAndProgressSet(user, progress, pageable);
 
 		return ResponseEntity.ok(new CustomPageResponse<Task>(tasks));
 	}
