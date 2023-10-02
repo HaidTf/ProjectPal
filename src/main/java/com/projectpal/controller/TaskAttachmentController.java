@@ -1,32 +1,5 @@
 package com.projectpal.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.projectpal.entity.Task;
-import com.projectpal.entity.TaskAttachment;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.TaskAttachmentRepository;
-import com.projectpal.repository.TaskRepository;
-import com.projectpal.service.FileStorageService;
-import com.projectpal.utils.ProjectUtil;
-
 //This class is not suitable for production and is implemented just for the sake of reducing the complexity resulted by the integration with third party storage services
 
 //MARKED FOR REMOVAL: Integration with 3rd party service is in replacement
