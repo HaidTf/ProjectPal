@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
+import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 @Service
@@ -43,6 +45,9 @@ public class AnnouncementService {
 	}
 
 	public Page<Announcement> findPageByProject(Project project, int page, int size) {
+
+		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
+			throw new ConflictException("Page size exceeded size limit");
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 

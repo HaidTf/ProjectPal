@@ -23,7 +23,6 @@ import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.AnnouncementService;
-import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -59,8 +58,6 @@ public class AnnouncementController {
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
 		Project project = ProjectUtil.getProjectNotNull();
-
-		MaxAllowedUtil.checkMaxAllowedPageSize(size);
 
 		Page<Announcement> announcements = announcementService.findPageByProject(project, page, size);
 
