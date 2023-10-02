@@ -38,6 +38,10 @@ public class Project implements Serializable {
 	@Transient
 	private static final long serialVersionUID = 2L;
 
+	public static final int MAX_NUMBER_OF_EPICS = 20;
+	
+	public static final int MAX_NUMBER_OF_SPRINTS = 30;
+
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
