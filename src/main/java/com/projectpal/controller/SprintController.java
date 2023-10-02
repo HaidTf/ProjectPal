@@ -70,7 +70,7 @@ public class SprintController {
 
 		SortValidationUtil.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
 
-		List<Sprint> sprints = sprintService.findAllByProjectAndProgressFromDbOrCache(project, progress, sort);
+		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDbOrCache(project, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
