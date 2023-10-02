@@ -1,10 +1,9 @@
 package com.projectpal.controller;
 
 import java.net.URI;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,16 +13,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.response.ListHolderResponse;
+import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.repository.AnnouncementRepository;
+import com.projectpal.service.AnnouncementService;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 
 import jakarta.validation.Valid;
@@ -33,19 +33,18 @@ import jakarta.validation.Valid;
 public class AnnouncementController {
 
 	@Autowired
-	public AnnouncementController(AnnouncementRepository announcementRepo) {
-		this.announcementRepo = announcementRepo;
+	public AnnouncementController(AnnouncementService announcementService) {
+		this.announcementService = announcementService;
 	}
 
-	private final AnnouncementRepository announcementRepo;
+	private final AnnouncementService announcementService;
 
 	@GetMapping("/{announcementId}")
 	public ResponseEntity<Announcement> getAnnouncement(@PathVariable long announcementId) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		Announcement announcement = announcementRepo.findById(announcementId)
-				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
+		Announcement announcement = announcementService.findAnnouncementById(announcementId);
 
 		if (announcement.getProject().getId() != project.getId())
 			throw new ForbiddenException("You are not allowed access to other projects");
@@ -55,29 +54,29 @@ public class AnnouncementController {
 	}
 
 	@GetMapping("")
-	public ResponseEntity<ListHolderResponse<Announcement>> getAnnouncements() {
+	public ResponseEntity<CustomPageResponse<Announcement>> getAnnouncements(
+			@RequestParam(required = false, defaultValue = "0") int page,
+			@RequestParam(required = false, defaultValue = "5") int size) {
 
 		Project project = ProjectUtil.getProjectNotNull();
 
-		List<Announcement> announcements = announcementRepo.findAllByProject(project)
-				.orElse(new ArrayList<Announcement>(0));
+		MaxAllowedUtil.checkMaxAllowedPageSize(size);
 
-		announcements.sort(
-				(announcement1, announcement2) -> announcement1.getIssueDate().compareTo(announcement2.getIssueDate()));
+		Page<Announcement> announcements = announcementService.findPageByProject(project, page, size);
 
-		return ResponseEntity.ok(new ListHolderResponse<Announcement>(announcements));
+		return ResponseEntity.ok(new CustomPageResponse<Announcement>(announcements));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	public ResponseEntity<Announcement> createAnnouncement(@Valid @RequestBody Announcement announcement) {
 
-		announcement.setProject(ProjectUtil.getProjectNotNull());
+		Project project = ProjectUtil.getProjectNotNull();
 
-		announcementRepo.save(announcement);
+		announcementService.createAnnouncement(project, announcement);
 
 		UriComponents uriComponents = UriComponentsBuilder
-				.fromPath("/api/projects/announcements/" + announcement.getId()).build();
+				.fromPath("/api/project/announcements/" + announcement.getId()).build();
 		URI location = uriComponents.toUri();
 
 		return ResponseEntity.status(201).location(location).body(announcement);
@@ -89,13 +88,12 @@ public class AnnouncementController {
 	@Transactional
 	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long announcementId) {
 
-		Announcement announcement = announcementRepo.findById(announcementId)
-				.orElseThrow(() -> new ResourceNotFoundException("announcement not found"));
+		Announcement announcement = announcementService.findAnnouncementById(announcementId);
 
 		if (announcement.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
-		announcementRepo.delete(announcement);
+		announcementService.deleteAnnouncement(announcement);
 
 		return ResponseEntity.status(204).build();
 	}
