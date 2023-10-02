@@ -29,7 +29,6 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
@@ -65,8 +64,6 @@ public class ProjectController {
 			@RequestParam(required = false, defaultValue = "20") int size) {
 
 		Project project = ProjectUtil.getProjectNotNull();
-
-		MaxAllowedUtil.checkMaxAllowedPageSize(size);
 
 		Page<User> users = userService.findAllByProjectAndRole(project, role, page, size);
 
