@@ -20,6 +20,7 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.repository.TaskRepository;
+import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 @Service
@@ -48,6 +49,9 @@ public class TaskService {
 	
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
+		if(pageable.getPageSize()>MaxAllowedUtil.MAX_PAGE_SIZE)
+			throw new ConflictException("Page size exceeded size limit");
+		
 		SortValidationUtil.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
 
 		if (progress.size() == 0 || progress.size() == 3)
