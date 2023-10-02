@@ -61,7 +61,7 @@ public class SprintUserStoryController {
 		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = sprintUserStoryService.findAllBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
+		List<UserStory> userStories = sprintUserStoryService.findUserStoriesBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
