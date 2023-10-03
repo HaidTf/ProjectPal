@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,7 +30,7 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.EpicService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
@@ -50,7 +49,7 @@ public class EpicController {
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Epic epic = epicService.findEpicById(epicId);
 
@@ -66,7 +65,7 @@ public class EpicController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		SortValidationUtil.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
 
@@ -78,10 +77,9 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	@Transactional
 	public ResponseEntity<Epic> createEpic(@Valid @RequestBody Epic epic) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		epicService.createEpic(project, epic);
 
@@ -93,13 +91,12 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
-	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long id) {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
@@ -111,13 +108,12 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/priority")
-	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
@@ -130,13 +126,12 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
-	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long id) {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
@@ -148,12 +143,11 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/{id}")
-	@Transactional
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");

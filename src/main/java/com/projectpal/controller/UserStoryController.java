@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,7 +32,7 @@ import com.projectpal.entity.Project;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.EpicService;
 import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
@@ -55,7 +54,7 @@ public class UserStoryController {
 	@GetMapping("/userstories/{userStoryId}")
 	public ResponseEntity<UserStory> getUserStory(@PathVariable long userStoryId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
@@ -67,14 +66,15 @@ public class UserStoryController {
 	}
 
 	@GetMapping("/{epicId}/userstories")
-	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
+		Project project = SecurityContextUtil.getUserProjectNotNull();
+		
 		Epic epic = epicService.findEpicById(epicId);
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		SortValidationUtil.validateSortObjectProperties(UserStory.ALLOWED_SORT_PROPERTIES, sort);
@@ -88,13 +88,12 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{epicId}/userstories")
-	@Transactional
 	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory,
 			@PathVariable long epicId) {
 
 		Epic epic = epicService.findEpicById(epicId);
 
-		if (epic.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (epic.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryService.createUserStory(epic, userStory);
@@ -108,13 +107,12 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{UserStoryId}/description")
-	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryService.updateDescription(userStory, descriptionUpdateRequest.getDescription());
@@ -124,13 +122,12 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/priority")
-	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryService.updatePriority(userStory, priorityUpdateRequest.getPriority());
@@ -141,13 +138,12 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/progress")
-	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryService.updateProgress(userStory, progressUpdateRequest.getProgress());
@@ -157,12 +153,11 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/userstories/{userStoryId}")
-	@Transactional
 	public ResponseEntity<Void> deleteUserStory(@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		userStoryService.deleteUserStory(userStory);

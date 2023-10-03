@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,8 +28,6 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.MaxAllowedUtil;
-import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
@@ -52,7 +49,7 @@ public class ProjectController {
 	@GetMapping("")
 	public ResponseEntity<Project> getProject() {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.updateProjectLastAccessedDate(project);
 
@@ -64,9 +61,7 @@ public class ProjectController {
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "20") int size) {
 
-		Project project = ProjectUtil.getProjectNotNull();
-
-		MaxAllowedUtil.checkMaxAllowedPageSize(size);
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Page<User> users = userService.findAllByProjectAndRole(project, role, page, size);
 
@@ -76,7 +71,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("")
-	@Transactional
 	public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
 
 		User user = SecurityContextUtil.getUser();
@@ -93,7 +87,7 @@ public class ProjectController {
 	@PatchMapping("/description")
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.updateProjectDescription(project, descriptionUpdateRequest.getDescription());
 
@@ -103,13 +97,12 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@PatchMapping("/users/{userId}/role")
-	@Transactional
 	public ResponseEntity<Void> setUserProjectRole(@PathVariable long userId,
 			@RequestBody @Valid RoleUpdateRequest roleUpdateRequest) {
 
 		User user = userService.findUserById(userId);
 
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (user.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("the user must be in the project");
 
 		if (SecurityContextUtil.getUser().getId() == userId)
@@ -127,12 +120,11 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/users/{userId}/membership")
-	@Transactional
 	public ResponseEntity<Void> removeUserFromProject(@PathVariable long userId) {
 
 		User user = userService.findUserById(userId);
 
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (user.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("the user must be in the project");
 
 		if (SecurityContextUtil.getUser().getId() == userId)
@@ -145,10 +137,9 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@DeleteMapping("")
-	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.deleteProject(project);
 

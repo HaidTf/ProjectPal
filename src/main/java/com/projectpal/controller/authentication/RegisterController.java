@@ -3,7 +3,6 @@ package com.projectpal.controller.authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +37,6 @@ public class RegisterController {
 	}
 
 	@PostMapping("")
-	@Transactional
 	public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
 
 		AuthenticationResponse response = authService.register(request);

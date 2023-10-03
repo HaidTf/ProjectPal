@@ -14,9 +14,11 @@ import org.springframework.stereotype.Service;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
+import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.utils.MaxAllowedUtil;
 
 @Service
 public class UserService {
@@ -38,7 +40,7 @@ public class UserService {
 	private final ProjectRepository projectRepo;
 
 	private final TaskService taskService;
-	
+
 	private final ProjectService projectService;
 
 	public User findUserById(long userId) {
@@ -48,8 +50,11 @@ public class UserService {
 
 	public Page<User> findAllByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
 
+		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
+			throw new ConflictException("Page size exceeded size limit");
+
 		Pageable pageable = PageRequest.of(page, size);
-		
+
 		if (role == null)
 			return userRepo.findAllByProjectAndRole(project, role, pageable);
 		else {

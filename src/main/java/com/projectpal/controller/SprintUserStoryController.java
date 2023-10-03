@@ -8,7 +8,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +28,7 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.SprintService;
 import com.projectpal.service.SprintUserStoryService;
 import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
 
@@ -51,28 +50,28 @@ public class SprintUserStoryController {
 	private final SprintService sprintService;
 
 	@GetMapping("")
-	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
+		Project project = SecurityContextUtil.getUserProjectNotNull();
+		
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
-		List<UserStory> userStories = sprintUserStoryService.findAllBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
+		List<UserStory> userStories = sprintUserStoryService.findUserStoriesBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	@Transactional
 	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
 			@RequestBody @Valid IdHolderRequest userStoryIdHolder) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
@@ -91,10 +90,9 @@ public class SprintUserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/{userStoryId}")
-	@Transactional
 	public ResponseEntity<Void> removeUserStoryFromSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,8 +22,7 @@ import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.AnnouncementService;
-import com.projectpal.utils.MaxAllowedUtil;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
 
@@ -42,7 +40,7 @@ public class AnnouncementController {
 	@GetMapping("/{announcementId}")
 	public ResponseEntity<Announcement> getAnnouncement(@PathVariable long announcementId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Announcement announcement = announcementService.findAnnouncementById(announcementId);
 
@@ -58,9 +56,7 @@ public class AnnouncementController {
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
-		Project project = ProjectUtil.getProjectNotNull();
-
-		MaxAllowedUtil.checkMaxAllowedPageSize(size);
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Page<Announcement> announcements = announcementService.findPageByProject(project, page, size);
 
@@ -71,7 +67,7 @@ public class AnnouncementController {
 	@PostMapping("")
 	public ResponseEntity<Announcement> createAnnouncement(@Valid @RequestBody Announcement announcement) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		announcementService.createAnnouncement(project, announcement);
 
@@ -85,12 +81,11 @@ public class AnnouncementController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/{AnnouncementId}")
-	@Transactional
 	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long announcementId) {
 
 		Announcement announcement = announcementService.findAnnouncementById(announcementId);
 
-		if (announcement.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (announcement.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		announcementService.deleteAnnouncement(announcement);
