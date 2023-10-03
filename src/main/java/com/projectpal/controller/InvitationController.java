@@ -27,7 +27,6 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.InvitationService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 @RestController
@@ -46,7 +45,7 @@ public class InvitationController {
 	@GetMapping("/project/invitations/{invitationId}")
 	public ResponseEntity<Invitation> getProjectRelatedInvitation(@PathVariable long invitationId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Invitation invitation = invitationService.findInvitationById(invitationId);
 
@@ -62,7 +61,7 @@ public class InvitationController {
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "10") int size) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Page<Invitation> invitations = invitationService.findPageByProject(project, page, size);
 
@@ -103,7 +102,7 @@ public class InvitationController {
 		if (SecurityContextUtil.getUser().getId() == userId)
 			throw new BadRequestException("you can not send an invitation to yourself");
 
-		Invitation invitation = invitationService.inviteUserToProject(user, ProjectUtil.getProjectNotNull());
+		Invitation invitation = invitationService.inviteUserToProject(user, SecurityContextUtil.getUserProject());
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/invitations/" + invitation.getId())
 				.build();

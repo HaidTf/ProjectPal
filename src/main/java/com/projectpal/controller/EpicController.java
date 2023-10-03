@@ -31,7 +31,7 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.EpicService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
@@ -50,7 +50,7 @@ public class EpicController {
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Epic epic = epicService.findEpicById(epicId);
 
@@ -66,7 +66,7 @@ public class EpicController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		SortValidationUtil.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
 
@@ -81,7 +81,7 @@ public class EpicController {
 	@Transactional
 	public ResponseEntity<Epic> createEpic(@Valid @RequestBody Epic epic) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		epicService.createEpic(project, epic);
 
@@ -99,7 +99,7 @@ public class EpicController {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
@@ -117,7 +117,7 @@ public class EpicController {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
@@ -136,7 +136,7 @@ public class EpicController {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");
@@ -153,7 +153,7 @@ public class EpicController {
 
 		Epic epic = epicService.findEpicById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (epic.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete epics from other projects");

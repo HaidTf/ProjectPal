@@ -29,7 +29,7 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.SprintService;
 import com.projectpal.service.SprintUserStoryService;
 import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
 
@@ -56,9 +56,11 @@ public class SprintUserStoryController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
+		Project project = SecurityContextUtil.getUserProjectNotNull();
+		
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
-		if (sprint.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		List<UserStory> userStories = sprintUserStoryService.findUserStoriesBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
@@ -72,7 +74,7 @@ public class SprintUserStoryController {
 	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
 			@RequestBody @Valid IdHolderRequest userStoryIdHolder) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
@@ -94,7 +96,7 @@ public class SprintUserStoryController {
 	@Transactional
 	public ResponseEntity<Void> removeUserStoryFromSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 

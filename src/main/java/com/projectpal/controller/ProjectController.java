@@ -29,7 +29,6 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
@@ -51,7 +50,7 @@ public class ProjectController {
 	@GetMapping("")
 	public ResponseEntity<Project> getProject() {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.updateProjectLastAccessedDate(project);
 
@@ -63,7 +62,7 @@ public class ProjectController {
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "20") int size) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Page<User> users = userService.findAllByProjectAndRole(project, role, page, size);
 
@@ -90,7 +89,7 @@ public class ProjectController {
 	@PatchMapping("/description")
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.updateProjectDescription(project, descriptionUpdateRequest.getDescription());
 
@@ -106,7 +105,7 @@ public class ProjectController {
 
 		User user = userService.findUserById(userId);
 
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (user.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("the user must be in the project");
 
 		if (SecurityContextUtil.getUser().getId() == userId)
@@ -129,7 +128,7 @@ public class ProjectController {
 
 		User user = userService.findUserById(userId);
 
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (user.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("the user must be in the project");
 
 		if (SecurityContextUtil.getUser().getId() == userId)
@@ -145,7 +144,7 @@ public class ProjectController {
 	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		projectService.deleteProject(project);
 

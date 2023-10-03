@@ -36,7 +36,6 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.TaskService;
 import com.projectpal.service.UserService;
 import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.ProjectUtil;
 import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
@@ -61,7 +60,7 @@ public class TaskController {
 	@GetMapping("/tasks/{taskId}")
 	public ResponseEntity<Task> getTask(@PathVariable long taskId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Task task = taskService.findTaskById(taskId);
 
@@ -77,9 +76,11 @@ public class TaskController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
+		Project project = SecurityContextUtil.getUserProjectNotNull();
+		
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed access to other projects");
 
 		List<Task> tasks = taskService.findTasksByUserStoryAndProgressSet(userStory, progress, sort);
@@ -94,7 +95,7 @@ public class TaskController {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		if (userStory.getEpic().getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to acccess other projects");
 
 		taskService.createTask(userStory, task);
@@ -114,7 +115,7 @@ public class TaskController {
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		taskService.updateDescription(task, descriptionUpdateRequest.getDescription());
@@ -130,7 +131,7 @@ public class TaskController {
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		taskService.updatePriority(task, priorityUpdateRequest.getPriority());
@@ -148,7 +149,7 @@ public class TaskController {
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		User user = SecurityContextUtil.getUser();
@@ -165,14 +166,16 @@ public class TaskController {
 	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
 			@PathVariable long taskId) {
 
+		Project project = SecurityContextUtil.getUserProject();
+		
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		User user = userService.findUserById(userIdHolder.getId());
 
-		if (user.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (user.getProject().getId() != project.getId())
 			throw new ForbiddenException("the user must be in the project");
 
 		taskService.updateAssignedUser(task,user);
@@ -187,7 +190,7 @@ public class TaskController {
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		taskService.removeTaskAssignedUser(task);
@@ -202,7 +205,7 @@ public class TaskController {
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != ProjectUtil.getProjectNotNull().getId())
+		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
 			throw new ForbiddenException("you are not allowed to access other projects");
 
 		taskService.deleteTask(task);

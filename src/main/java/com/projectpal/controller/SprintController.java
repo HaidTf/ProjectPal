@@ -32,7 +32,7 @@ import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.SprintService;
-import com.projectpal.utils.ProjectUtil;
+import com.projectpal.utils.SecurityContextUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 import jakarta.validation.Valid;
@@ -50,7 +50,7 @@ public class SprintController {
 	@GetMapping("/{sprintId}")
 	public ResponseEntity<Sprint> getSprint(@PathVariable long sprintId) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
@@ -66,7 +66,7 @@ public class SprintController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProjectNotNull();
 
 		SortValidationUtil.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
 
@@ -81,7 +81,7 @@ public class SprintController {
 	@Transactional
 	public ResponseEntity<Sprint> createSprint(@Valid @RequestBody Sprint sprint) {
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -102,7 +102,7 @@ public class SprintController {
 
 		Sprint sprint = sprintService.findSprintById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
@@ -123,7 +123,7 @@ public class SprintController {
 
 		Sprint sprint = sprintService.findSprintById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
@@ -144,7 +144,7 @@ public class SprintController {
 
 		Sprint sprint = sprintService.findSprintById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
@@ -162,7 +162,7 @@ public class SprintController {
 
 		Sprint sprint = sprintService.findSprintById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
@@ -179,7 +179,7 @@ public class SprintController {
 
 		Sprint sprint = sprintService.findSprintById(id);
 
-		Project project = ProjectUtil.getProjectNotNull();
+		Project project = SecurityContextUtil.getUserProject();
 
 		if (sprint.getProject().getId() != project.getId())
 			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
