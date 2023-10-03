@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -90,7 +89,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
-	@Transactional
 	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
@@ -109,7 +107,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/description")
-	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long taskId) {
 
@@ -125,7 +122,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/priority")
-	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
 			@PathVariable long taskId) {
 
@@ -142,7 +138,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/tasks/{taskId}/progress")
-	@Transactional
 	public ResponseEntity<Void> updateProgress(
 			@RequestBody @Valid TaskProgressAndReportUpdateRequest taskProgressAndReportUpdateRequest,
 			@PathVariable long taskId) {
@@ -162,7 +157,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/assigned-user")
-	@Transactional
 	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
 			@PathVariable long taskId) {
 
@@ -185,7 +179,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/tasks/{taskId}/assigned-user")
-	@Transactional
 	public ResponseEntity<Void> removeAssignedUser(@PathVariable long taskId) {
 
 		Task task = taskService.findTaskById(taskId);
@@ -200,7 +193,6 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/tasks/{taskId}")
-	@Transactional
 	public ResponseEntity<Void> deleteTask(@PathVariable long taskId) {
 
 		Task task = taskService.findTaskById(taskId);

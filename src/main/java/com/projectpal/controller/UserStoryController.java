@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -67,7 +66,6 @@ public class UserStoryController {
 	}
 
 	@GetMapping("/{epicId}/userstories")
-	@Transactional
 	public ResponseEntity<ListHolderResponse<UserStory>> getEpicUserStoryList(@PathVariable long epicId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
@@ -90,7 +88,6 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{epicId}/userstories")
-	@Transactional
 	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory,
 			@PathVariable long epicId) {
 
@@ -110,7 +107,6 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{UserStoryId}/description")
-	@Transactional
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long userStoryId) {
 
@@ -126,7 +122,6 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/priority")
-	@Transactional
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
 			@PathVariable long userStoryId) {
 
@@ -143,7 +138,6 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/progress")
-	@Transactional
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long userStoryId) {
 
@@ -159,7 +153,6 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/userstories/{userStoryId}")
-	@Transactional
 	public ResponseEntity<Void> deleteUserStory(@PathVariable long userStoryId) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);

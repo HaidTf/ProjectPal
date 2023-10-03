@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -72,7 +71,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("")
-	@Transactional
 	public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
 
 		User user = SecurityContextUtil.getUser();
@@ -99,7 +97,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@PatchMapping("/users/{userId}/role")
-	@Transactional
 	public ResponseEntity<Void> setUserProjectRole(@PathVariable long userId,
 			@RequestBody @Valid RoleUpdateRequest roleUpdateRequest) {
 
@@ -123,7 +120,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/users/{userId}/membership")
-	@Transactional
 	public ResponseEntity<Void> removeUserFromProject(@PathVariable long userId) {
 
 		User user = userService.findUserById(userId);
@@ -141,7 +137,6 @@ public class ProjectController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@DeleteMapping("")
-	@Transactional
 	public ResponseEntity<Void> deleteProject() {
 
 		Project project = SecurityContextUtil.getUserProject();
