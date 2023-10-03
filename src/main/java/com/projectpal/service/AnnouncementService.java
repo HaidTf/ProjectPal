@@ -13,7 +13,6 @@ import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.utils.MaxAllowedUtil;
-import com.projectpal.utils.ProjectUtil;
 
 @Service
 public class AnnouncementService {
@@ -33,7 +32,7 @@ public class AnnouncementService {
 
 	public void createAnnouncement(Project project, Announcement announcement) {
 
-		announcement.setProject(ProjectUtil.getProjectNotNull());
+		announcement.setProject(project);
 
 		announcementRepo.save(announcement);
 
