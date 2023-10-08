@@ -16,6 +16,8 @@ import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Role;
+import com.projectpal.exception.BadRequestException;
+import com.projectpal.exception.ForbiddenException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
 
@@ -24,11 +26,14 @@ public class ProjectService {
 
 	@Autowired
 	public ProjectService(ProjectRepository projectRepo, UserRepository userRepo, EpicService epicService,
-			SprintService sprintService, CacheService<Project> cacheService) {
+			SprintService sprintService, CacheService<Project> cacheService, UserService userService,
+			TaskService taskService) {
 		this.projectRepo = projectRepo;
 		this.userRepo = userRepo;
 		this.epicService = epicService;
 		this.sprintService = sprintService;
+		this.userService = userService;
+		this.taskService = taskService;
 		this.cacheService = cacheService;
 	}
 
@@ -39,6 +44,10 @@ public class ProjectService {
 	private final EpicService epicService;
 
 	private final SprintService sprintService;
+
+	private final UserService userService;
+
+	private final TaskService taskService;
 
 	private final CacheService<Project> cacheService;
 
@@ -68,6 +77,23 @@ public class ProjectService {
 		project.setLastAccessedDate(LocalDate.now());
 
 		projectRepo.save(project);
+	}
+
+	public void removeUserFromCurrentUserProject(User currentUser, long userId) {
+
+		if (currentUser.getId() == userId)
+			throw new BadRequestException("You cant remove yourself from the project through here");
+
+		User user = userService.findUserById(userId);
+
+		if (user.getProject().getId() != currentUser.getProject().getId())
+			throw new ForbiddenException("the user must be in the project");
+
+		user.setProject(null);
+		user.setRole(Role.ROLE_USER);
+		userRepo.save(user);
+
+		taskService.exitUserTasks(user);
 	}
 
 	public void deleteProject(Project project) {
