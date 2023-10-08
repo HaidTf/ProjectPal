@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
+import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
+import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
@@ -68,19 +70,31 @@ public class UserService {
 		userRepo.save(user);
 	}
 
-	public void updateUserRole(User user, Role role) {
+	public void updateUserProjectRole(User currentUser, long userId, Role role) {
+
+		User user = this.findUserById(userId);
+
+		if (user.getProject().getId() != currentUser.getProject().getId())
+			throw new ForbiddenException("the user must be in the project");
+
+		if (currentUser.getId() == userId)
+			throw new BadRequestException("you can not change your own role");
+
+		if (role != Role.ROLE_USER_PROJECT_PARTICIPATOR || role != Role.ROLE_USER_PROJECT_OPERATOR)
+			throw new BadRequestException("You are not allowed to set this role");
+
 		user.setRole(role);
 		userRepo.save(user);
 	}
 
-	public void exitUserProject(User user) {
+	public void exitUserProject(User currentUser) {
 
-		Project project = user.getProject();
+		Project project = currentUser.getProject();
 
-		user.setProject(null);
-		userRepo.save(user);
+		currentUser.setProject(null);
+		userRepo.save(currentUser);
 
-		if (user.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
+		if (currentUser.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
 
 			Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
 
@@ -118,10 +132,10 @@ public class UserService {
 			}
 		}
 
-		user.setRole(Role.ROLE_USER);
-		userRepo.save(user);
+		currentUser.setRole(Role.ROLE_USER);
+		userRepo.save(currentUser);
 
-		taskService.exitUserTasks(user);
+		taskService.exitUserTasks(currentUser);
 	}
 
 }
