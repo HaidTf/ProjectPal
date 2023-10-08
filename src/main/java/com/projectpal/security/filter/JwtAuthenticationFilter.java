@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.projectpal.exception.CustomAuthenticationException;
-import com.projectpal.security.CustomAuthenticationEntryPoint;
-import com.projectpal.service.JwtService;
+import com.projectpal.security.entrypoint.CustomAuthenticationEntryPoint;
+import com.projectpal.security.token.JwtService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;

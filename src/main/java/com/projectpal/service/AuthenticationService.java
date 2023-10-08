@@ -17,6 +17,7 @@ import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.security.token.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
