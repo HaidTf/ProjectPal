@@ -1,4 +1,4 @@
-package com.projectpal.security;
+package com.projectpal.security.entrypoint;
 
 import java.io.IOException;
 
