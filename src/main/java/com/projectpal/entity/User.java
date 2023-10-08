@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -64,7 +66,7 @@ public class User implements UserDetails {
 
 	@Temporal(TemporalType.DATE)
 	private LocalDate creationDate;
-	
+
 	@ManyToOne
 	private Project project;
 
@@ -116,6 +118,10 @@ public class User implements UserDetails {
 
 	public void setRole(Role role) {
 		this.role = role;
+	}
+
+	public Optional<Project> getOptionalOfProject() {
+		return Optional.ofNullable(project);
 	}
 
 	public Project getProject() {
