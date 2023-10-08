@@ -26,7 +26,7 @@ import com.projectpal.entity.enums.Role;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.service.JwtService;
+import com.projectpal.security.token.JwtService;
 
 import java.util.Map;
 import java.util.Optional;

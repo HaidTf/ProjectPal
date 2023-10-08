@@ -7,7 +7,7 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 
 import com.projectpal.entity.User;
-import com.projectpal.service.JwtService;
+import com.projectpal.security.token.JwtService;
 
 public class JwtServiceUTest {
 

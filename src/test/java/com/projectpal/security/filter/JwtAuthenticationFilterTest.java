@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.projectpal.entity.User;
-import com.projectpal.service.JwtService;
+import com.projectpal.security.token.JwtService;
 
 
 

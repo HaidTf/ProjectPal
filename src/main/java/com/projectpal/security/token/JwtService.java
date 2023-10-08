@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.security.token;
 
 import java.security.Key;
 import java.util.Date;
