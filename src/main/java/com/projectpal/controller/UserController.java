@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,7 +25,6 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.TaskService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.SecurityContextUtil;
 
 import jakarta.validation.Valid;
 
@@ -43,17 +43,14 @@ public class UserController {
 	private final TaskService taskService;
 
 	@GetMapping("")
-	public ResponseEntity<User> getUser() {
-		User user = SecurityContextUtil.getUser();
+	public ResponseEntity<User> getUser(@AuthenticationPrincipal User user) {
 		return ResponseEntity.ok(user);
 	}
 
 	@GetMapping("/tasks")
-	public ResponseEntity<CustomPageResponse<Task>> getMyTasks(
+	public ResponseEntity<CustomPageResponse<Task>> getMyTasks(@AuthenticationPrincipal User user,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@PageableDefault(page = 0, size = 20, sort = "priority", direction = Direction.DESC) Pageable pageable) {
-
-		User user = SecurityContextUtil.getUser();
 
 		Page<Task> tasks = taskService.findPageByUserAndProgressSet(user, progress, pageable);
 
@@ -62,9 +59,8 @@ public class UserController {
 
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/password")
-	public ResponseEntity<Void> updatePassword(@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
-
-		User user = SecurityContextUtil.getUser();
+	public ResponseEntity<Void> updatePassword(@AuthenticationPrincipal User user,
+			@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
 
 		userService.updateUserPassword(user, passwordUpdateRequest.getPassword());
 
@@ -73,9 +69,7 @@ public class UserController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@DeleteMapping("/project/membership")
-	public ResponseEntity<Void> exitCurrentProject() {
-
-		User user = SecurityContextUtil.getUser();
+	public ResponseEntity<Void> exitCurrentProject(@AuthenticationPrincipal User user) {
 
 		userService.exitUserProject(user);
 
