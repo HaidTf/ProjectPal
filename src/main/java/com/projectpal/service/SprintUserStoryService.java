@@ -11,28 +11,43 @@ import org.springframework.stereotype.Service;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.repository.UserStoryRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class SprintUserStoryService {
 
 	@Autowired
 	public SprintUserStoryService(UserStoryRepository userStoryRepo, UserStoryCacheService userStoryCacheService,
-			UserStoryService userStoryService) {
+			UserStoryService userStoryService, SprintService sprintService,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.userStoryRepo = userStoryRepo;
 		this.userStoryService = userStoryService;
+		this.sprintService = sprintService;
 		this.userStoryCacheService = userStoryCacheService;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final UserStoryRepository userStoryRepo;
 
 	private final UserStoryService userStoryService;
 
+	private final SprintService sprintService;
+
 	private final UserStoryCacheService userStoryCacheService;
 
-	public List<UserStory> findUserStoriesBySprintAndProgressListFromDbOrCache(Sprint sprint, Set<Progress> progress,
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
+
+	public List<UserStory> findUserStoriesBySprintAndProgressListFromDbOrCache(long sprintId, Set<Progress> progress,
 			Sort sort) {
+
+		Sprint sprint = sprintService.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
 
 		Optional<List<UserStory>> userStories = Optional.empty();
 
@@ -44,7 +59,8 @@ public class SprintUserStoryService {
 			userStories = userStoryCacheService.getObjectsFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
 			if (userStories.isEmpty()) {
 				userStories = Optional.of(userStoryRepo.findAllBySprintAndProgressList(sprint, progress));
-				userStoryCacheService.populateCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId(), userStories.get());
+				userStoryCacheService.populateCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId(),
+						userStories.get());
 			}
 
 			userStoryService.sort(userStories.get(), sort);
@@ -71,7 +87,17 @@ public class SprintUserStoryService {
 
 	}
 
-	public void addUserStoryToSprint(UserStory userStory, Sprint sprint) {
+	public void addUserStoryToSprint(long userStoryId, long sprintId) {
+
+		Sprint sprint = sprintService.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
 
 		if (userStoryRepo.countBySprintId(sprint.getId()) > Sprint.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in a sprint");
@@ -85,7 +111,22 @@ public class SprintUserStoryService {
 
 	}
 
-	public void removeUserStoryFromSprint(UserStory userStory, Sprint sprint) {
+	public void removeUserStoryFromSprint(long userStoryId, long sprintId) {
+
+		Sprint sprint = sprintService.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+
+		if (userStory.getSprint().getId() != sprint.getId()) {
+
+			UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+					userStory);
+
+			throw new BadRequestException("They userStory is not in the specified sprint");
+		}
 
 		userStory.setSprint(null);
 
