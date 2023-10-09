@@ -13,24 +13,34 @@ import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
+import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class InvitationService {
 
 	@Autowired
-	public InvitationService(InvitationRepository invitationRepo, UserRepository userRepo) {
+	public InvitationService(InvitationRepository invitationRepo, UserRepository userRepo, UserService userService,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.invitationRepo = invitationRepo;
 		this.userRepo = userRepo;
+		this.userService = userService;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final InvitationRepository invitationRepo;
 
 	private final UserRepository userRepo;
-	
+
+	private final UserService userService;
+
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
+
 	public Invitation findInvitationById(long invitationId) {
 
 		return invitationRepo.findById(invitationId)
@@ -38,7 +48,12 @@ public class InvitationService {
 
 	}
 
-	public Invitation inviteUserToProject(User user, Project project) {
+	public Invitation inviteUserToProject(long userId, Project project) {
+
+		User user = userService.findUserById(userId);
+
+		if (authenticationContextFacadeImpl.getCurrentUser().getId() == userId)
+			throw new BadRequestException("you can not send an invitation to yourself");
 
 		if (user.getProject().getId() == project.getId())
 			throw new ConflictException("invited user is already in the intended project");
@@ -64,7 +79,11 @@ public class InvitationService {
 
 	}
 
-	public void userAcceptsInvitation(User user, Invitation invitation) {
+	public void userAcceptsInvitation(User user, long invitationId) {
+
+		Invitation invitation = this.findInvitationById(invitationId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserInvitation(user, invitation);
 
 		user.setProject(invitation.getProject());
 
@@ -76,7 +95,12 @@ public class InvitationService {
 
 	}
 
-	public void rejectInvitation(Invitation invitation) {
+	public void rejectInvitation(long invitationId) {
+
+		Invitation invitation = this.findInvitationById(invitationId);
+
+		UserEntityAccessValidationUtil
+				.verifyUserAccessToUserInvitation(authenticationContextFacadeImpl.getCurrentUser(), invitation);
 
 		invitationRepo.delete(invitation);
 	}
