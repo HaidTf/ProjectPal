@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,36 +21,30 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Invitation;
-import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.InvitationService;
-import com.projectpal.service.UserService;
-import com.projectpal.utils.SecurityContextUtil;
+import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @RestController
 public class InvitationController {
 
 	@Autowired
-	public InvitationController(InvitationService invitationService, UserService userService) {
+	public InvitationController(InvitationService invitationService) {
 		this.invitationService = invitationService;
-		this.userService = userService;
 	}
 
 	private final InvitationService invitationService;
 
-	private final UserService userService;
-
 	@GetMapping("/project/invitations/{invitationId}")
-	public ResponseEntity<Invitation> getProjectRelatedInvitation(@PathVariable long invitationId) {
+	public ResponseEntity<Invitation> getProjectRelatedInvitation(@AuthenticationPrincipal User currentUser,
+			@PathVariable long invitationId) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		Invitation invitation = invitationService.findInvitationById(invitationId);
 
-		if (invitation.getProject().getId() != project.getId())
-			throw new ForbiddenException("You are not allowed access to other projects");
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectInvitation(currentUser, invitation);
 
 		return ResponseEntity.ok(invitation);
 
@@ -57,50 +52,42 @@ public class InvitationController {
 
 	@GetMapping("/project/invitations")
 	public ResponseEntity<CustomPageResponse<Invitation>> getProjectRelatedInvitations(
-			@RequestParam(required = false, defaultValue = "0") int page,
+			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "10") int size) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Page<Invitation> invitations = invitationService.findPageByProject(project, page, size);
+		Page<Invitation> invitations = invitationService.findPageByProject(currentUser.getProject(), page, size);
 
 		return ResponseEntity.ok(new CustomPageResponse<Invitation>(invitations));
 	}
 
 	@GetMapping("/users/me/invitations/{invitationId}")
-	public ResponseEntity<Invitation> getReceivedInvitation(@PathVariable long invitationId) {
-
-		User user = SecurityContextUtil.getUser();
+	public ResponseEntity<Invitation> getReceivedInvitation(@AuthenticationPrincipal User currentUser,
+			@PathVariable long invitationId) {
 
 		Invitation invitation = invitationService.findInvitationById(invitationId);
 
-		if (invitation.getInvitedUser().getId() != user.getId())
-			throw new ForbiddenException("You are not allowed access to another user's information");
+		UserEntityAccessValidationUtil.verifyUserAccessToUserInvitation(currentUser, invitation);
 
 		return ResponseEntity.ok(invitation);
 
 	}
 
 	@GetMapping("/users/me/invitations")
-	public ResponseEntity<ListHolderResponse<Invitation>> getReceivedInvitations() {
+	public ResponseEntity<ListHolderResponse<Invitation>> getReceivedInvitations(
+			@AuthenticationPrincipal User currentUser) {
 
-		User user = SecurityContextUtil.getUser();
-
-		List<Invitation> invitations = invitationService.findAllByUser(user);
+		List<Invitation> invitations = invitationService.findAllByUser(currentUser);
 
 		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/users/{userId}/invitations")
-	public ResponseEntity<Invitation> invite(@PathVariable long userId) {
+	public ResponseEntity<Invitation> invite(@AuthenticationPrincipal User currentUser, @PathVariable long userId) {
 
-		User user = userService.findUserById(userId);
-
-		if (SecurityContextUtil.getUser().getId() == userId)
-			throw new BadRequestException("you can not send an invitation to yourself");
-
-		Invitation invitation = invitationService.inviteUserToProject(user, SecurityContextUtil.getUserProject());
+		Invitation invitation = invitationService.inviteUserToProject(userId, currentUser.getProject());
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/invitations/" + invitation.getId())
 				.build();
@@ -111,16 +98,10 @@ public class InvitationController {
 
 	@PreAuthorize("!hasRole('USER_PROJECT_OWNER')")
 	@PatchMapping("/users/me/invitations/{invitationId}")
-	public ResponseEntity<Void> acceptInvitation(@PathVariable long invitationId) {
+	public ResponseEntity<Void> acceptInvitation(@AuthenticationPrincipal User currentUser,
+			@PathVariable long invitationId) {
 
-		Invitation invitation = invitationService.findInvitationById(invitationId);
-
-		User user = SecurityContextUtil.getUser();
-
-		if (invitation.getInvitedUser().getId() != user.getId())
-			throw new ForbiddenException("you are not allowed to modify other user's invitations");
-
-		invitationService.userAcceptsInvitation(user, invitation);
+		invitationService.userAcceptsInvitation(currentUser, invitationId);
 
 		return ResponseEntity.status(204).build();
 
@@ -129,12 +110,7 @@ public class InvitationController {
 	@DeleteMapping("/users/me/invitations/{invitationId}")
 	public ResponseEntity<Void> rejectInvitation(@PathVariable long invitationId) {
 
-		Invitation invitation = invitationService.findInvitationById(invitationId);
-
-		if (invitation.getInvitedUser().getId() != SecurityContextUtil.getUser().getId())
-			throw new ForbiddenException("you are not allowed to modify other user's invitations");
-
-		invitationService.rejectInvitation(invitation);
+		invitationService.rejectInvitation(invitationId);
 
 		return ResponseEntity.status(204).build();
 
