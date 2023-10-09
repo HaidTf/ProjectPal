@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,16 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.dto.request.IdHolderRequest;
 import com.projectpal.dto.response.ListHolderResponse;
-import com.projectpal.entity.Project;
-import com.projectpal.entity.Sprint;
+import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
-import com.projectpal.service.SprintService;
 import com.projectpal.service.SprintUserStoryService;
-import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.SecurityContextUtil;
+import com.projectpal.utils.ProjectMembershipValidationUtil;
 
 import jakarta.validation.Valid;
 
@@ -37,31 +33,22 @@ import jakarta.validation.Valid;
 public class SprintUserStoryController {
 
 	@Autowired
-	public SprintUserStoryController(SprintUserStoryService sprintUserStoryService, SprintService sprintService, UserStoryService userStoryService) {
-		this.userStoryService = userStoryService;
+	public SprintUserStoryController(SprintUserStoryService sprintUserStoryService) {
 		this.sprintUserStoryService = sprintUserStoryService;
-		this.sprintService = sprintService;
 	}
-
-	private final UserStoryService userStoryService;
 
 	private final SprintUserStoryService sprintUserStoryService;
 
-	private final SprintService sprintService;
-
 	@GetMapping("")
-	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(@PathVariable long sprintId,
+	public ResponseEntity<ListHolderResponse<UserStory>> getSprintUserStoryList(
+			@AuthenticationPrincipal User currentUser, @PathVariable long sprintId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
-		
-		Sprint sprint = sprintService.findSprintById(sprintId);
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		List<UserStory> userStories = sprintUserStoryService.findUserStoriesBySprintAndProgressListFromDbOrCache(sprint, progress, sort);
+		List<UserStory> userStories = sprintUserStoryService
+				.findUserStoriesBySprintAndProgressListFromDbOrCache(sprintId, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<UserStory>(userStories));
 	}
@@ -71,19 +58,7 @@ public class SprintUserStoryController {
 	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
 			@RequestBody @Valid IdHolderRequest userStoryIdHolder) {
 
-		Project project = SecurityContextUtil.getUserProject();
-
-		Sprint sprint = sprintService.findSprintById(sprintId);
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		UserStory userStory = userStoryService.findUserStoryById(userStoryIdHolder.getId());
-
-		if (userStory.getEpic().getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		sprintUserStoryService.addUserStoryToSprint(userStory, sprint);
+		sprintUserStoryService.addUserStoryToSprint(userStoryIdHolder.getId(), sprintId);
 
 		return ResponseEntity.status(204).build();
 	}
@@ -92,25 +67,7 @@ public class SprintUserStoryController {
 	@DeleteMapping("/{userStoryId}")
 	public ResponseEntity<Void> removeUserStoryFromSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
 
-		Project project = SecurityContextUtil.getUserProject();
-
-		Sprint sprint = sprintService.findSprintById(sprintId);
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		if (userStory.getSprint().getId() != sprint.getId()) {
-
-			if (userStory.getEpic().getProject().getId() != project.getId())
-				throw new ForbiddenException("you are not allowed access to other projects");
-			else {
-				throw new BadRequestException("They userStory is not in the specified sprint");
-			}
-		}
-
-		sprintUserStoryService.removeUserStoryFromSprint(userStory, sprint);
+		sprintUserStoryService.removeUserStoryFromSprint(userStoryId, sprintId);
 
 		return ResponseEntity.status(204).build();
 	}
