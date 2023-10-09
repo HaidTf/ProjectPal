@@ -17,15 +17,19 @@ import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class EpicService {
 
 	public EpicService(EpicRepository epicRepo, UserStoryRepository userStoryRepo,
 			@Qualifier("epicCacheService") CacheService<Epic> epicCacheService,
-			@Qualifier("epicCacheService") CacheService<UserStory> userStoryCacheService) {
+			@Qualifier("epicCacheService") CacheService<UserStory> userStoryCacheService,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.epicRepo = epicRepo;
 		this.userStoryRepo = userStoryRepo;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 		this.epicCacheService = epicCacheService;
 		this.userStoryCacheService = userStoryCacheService;
 	}
@@ -33,6 +37,8 @@ public class EpicService {
 	private final EpicRepository epicRepo;
 
 	private final UserStoryRepository userStoryRepo;
+
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	private final CacheService<Epic> epicCacheService;
 
@@ -82,6 +88,84 @@ public class EpicService {
 
 	}
 
+	public void createEpic(Project project, Epic epic) {
+
+		if (epicRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_EPICS)
+			throw new ConflictException("Reached maximum number of epics allowed in a project");
+
+		epic.setProject(project);
+
+		epicRepo.save(epic);
+
+		epicCacheService.addObjectToCache(Epic.EPIC_CACHE, project.getId(), epic);
+
+	}
+
+	public void updateDescription(long epicId, String description) {
+
+		Epic epic = this.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+
+		epic.setDescription(description);
+
+		epicRepo.save(epic);
+
+		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+
+	}
+
+	public void updatePriority(long epicId, int priority) {
+
+		Epic epic = this.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+
+		epic.setPriority(priority);
+
+		epicRepo.save(epic);
+
+		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+
+	}
+
+	public void updateProgress(long epicId, Progress progress) {
+
+		Epic epic = this.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+
+		epic.setProgress(progress);
+
+		epicRepo.save(epic);
+
+		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+
+	}
+
+	public void deleteEpic(long epicId) {
+
+		Epic epic = this.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+
+		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+
+		List<UserStory> userStories = userStoryCacheService
+				.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
+						.findAllByEpicAndProgressList(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
+
+		for (UserStory userStory : userStories) {
+			if (userStory.getSprint() != null)
+				userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE,
+						userStory.getSprint().getId());
+		}
+		userStoryCacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
+
+		epicRepo.delete(epic);
+
+	}
+
 	protected void sort(List<Epic> epics, Sort sort) {
 
 		Comparator<Epic> combinedComparator = null;
@@ -94,7 +178,7 @@ public class EpicService {
 			case "priority":
 				currentComparator = Comparator.comparing(Epic::getPriority);
 				break;
-			case "creation-date":
+			case "creationDate":
 				currentComparator = Comparator.comparing(Epic::getCreationDate);
 				break;
 			default:
@@ -113,68 +197,6 @@ public class EpicService {
 		if (combinedComparator != null) {
 			epics.sort(combinedComparator);
 		}
-
-	}
-
-	public void createEpic(Project project, Epic epic) {
-
-		if (epicRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_EPICS)
-			throw new ConflictException("Reached maximum number of epics allowed in a project");
-
-		epic.setProject(project);
-
-		epicRepo.save(epic);
-
-		epicCacheService.addObjectToCache(Epic.EPIC_CACHE, project.getId(), epic);
-
-	}
-
-	public void updateDescription(Epic epic, String description) {
-
-		epic.setDescription(description);
-
-		epicRepo.save(epic);
-
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
-
-	}
-
-	public void updatePriority(Epic epic, int priority) {
-
-		epic.setPriority(priority);
-
-		epicRepo.save(epic);
-
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
-
-	}
-
-	public void updateProgress(Epic epic, Progress progress) {
-
-		epic.setProgress(progress);
-
-		epicRepo.save(epic);
-
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
-
-	}
-
-	public void deleteEpic(Epic epic) {
-
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
-
-		List<UserStory> userStories = userStoryCacheService
-				.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
-						.findAllByEpicAndProgressList(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
-
-		for (UserStory userStory : userStories) {
-			if (userStory.getSprint() != null)
-				userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE,
-						userStory.getSprint().getId());
-		}
-		userStoryCacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
-
-		epicRepo.delete(epic);
 
 	}
 
