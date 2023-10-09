@@ -12,17 +12,23 @@ import com.projectpal.entity.Project;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class AnnouncementService {
 
 	@Autowired
-	public AnnouncementService(AnnouncementRepository announcementRepo) {
+	public AnnouncementService(AnnouncementRepository announcementRepo,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.announcementRepo = announcementRepo;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final AnnouncementRepository announcementRepo;
+
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	public Announcement findAnnouncementById(long announcementId) {
 		return announcementRepo.findById(announcementId)
@@ -38,7 +44,12 @@ public class AnnouncementService {
 
 	}
 
-	public void deleteAnnouncement(Announcement announcement) {
+	public void deleteAnnouncement(long announcementId) {
+
+		Announcement announcement = this.findAnnouncementById(announcementId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToAnnouncement(authenticationContextFacadeImpl.getCurrentUser(),
+				announcement);
 
 		announcementRepo.delete(announcement);
 	}
