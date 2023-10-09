@@ -15,19 +15,28 @@ import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.UserStoryRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class UserStoryService {
 
 	@Autowired
-	public UserStoryService(UserStoryRepository userStoryRepo, UserStoryCacheService userStoryCacheService) {
+	public UserStoryService(UserStoryRepository userStoryRepo, UserStoryCacheService userStoryCacheService,
+			EpicService epicService, AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.userStoryRepo = userStoryRepo;
+		this.epicService = epicService;
 		this.userStoryCacheService = userStoryCacheService;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final UserStoryRepository userStoryRepo;
 
+	private final EpicService epicService;
+
 	private final UserStoryCacheService userStoryCacheService;
+
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	public UserStory findUserStoryById(long userStoryId) {
 
@@ -36,7 +45,12 @@ public class UserStoryService {
 
 	}
 
-	public List<UserStory> findUserStoriesByEpicAndProgressFromDbOrCache(Epic epic, Set<Progress> progress, Sort sort) {
+	public List<UserStory> findUserStoriesByEpicAndProgressFromDbOrCache(long epicId, Set<Progress> progress,
+			Sort sort) {
+
+		Epic epic = epicService.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
 
 		Optional<List<UserStory>> userStories = Optional.empty();
 
@@ -61,8 +75,7 @@ public class UserStoryService {
 
 	}
 
-	public List<UserStory> findUserStoriesByEpicAndProgressFromDb(Epic epic, Set<Progress> progress,
-			Sort sort) {
+	public List<UserStory> findUserStoriesByEpicAndProgressFromDb(Epic epic, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
 		case 0, 3 -> {
@@ -74,6 +87,79 @@ public class UserStoryService {
 
 		}
 
+	}
+
+	public void createUserStory(long epicId, UserStory userStory) {
+
+		Epic epic = epicService.findEpicById(epicId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+
+		if (userStoryRepo.countBySprintId(epic.getId()) > Epic.MAX_NUMBER_OF_USERSTORIES)
+			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
+
+		userStory.setEpic(epic);
+
+		userStoryRepo.save(userStory);
+
+		userStoryCacheService.addObjectToCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
+
+	}
+
+	public void updateDescription(long userStoryId, String description) {
+
+		UserStory userStory = this.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
+
+		userStory.setDescription(description);
+
+		userStoryRepo.save(userStory);
+
+		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
+
+	}
+
+	public void updatePriority(long userStoryId, int priority) {
+
+		UserStory userStory = this.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
+
+		userStory.setPriority(priority);
+
+		userStoryRepo.save(userStory);
+
+		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
+
+	}
+
+	public void updateProgress(long userStoryId, Progress progress) {
+
+		UserStory userStory = this.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
+
+		userStory.setProgress(progress);
+
+		userStoryRepo.save(userStory);
+
+		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
+	}
+
+	public void deleteUserStory(long userStoryId) {
+
+		UserStory userStory = this.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
+
+		userStoryRepo.delete(userStory);
+
+		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
 	}
 
 	protected void sort(List<UserStory> userStories, Sort sort) {
@@ -109,54 +195,4 @@ public class UserStoryService {
 		}
 
 	}
-
-	public void createUserStory(Epic epic, UserStory userStory) {
-
-		if (userStoryRepo.countBySprintId(epic.getId()) > Epic.MAX_NUMBER_OF_USERSTORIES)
-			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
-		
-		userStory.setEpic(epic);
-
-		userStoryRepo.save(userStory);
-
-		userStoryCacheService.addObjectToCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
-
-	}
-
-	public void updateDescription(UserStory userStory, String description) {
-
-		userStory.setDescription(description);
-
-		userStoryRepo.save(userStory);
-
-		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
-
-	}
-
-	public void updatePriority(UserStory userStory, int priority) {
-
-		userStory.setPriority(priority);
-
-		userStoryRepo.save(userStory);
-
-		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
-
-	}
-
-	public void updateProgress(UserStory userStory, Progress progress) {
-
-		userStory.setProgress(progress);
-
-		userStoryRepo.save(userStory);
-
-		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
-	}
-
-	public void deleteUserStory(UserStory userStory) {
-
-		userStoryRepo.delete(userStory);
-
-		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
-	}
-
 }
