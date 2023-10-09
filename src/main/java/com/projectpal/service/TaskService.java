@@ -20,24 +20,41 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.repository.TaskRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class TaskService {
 
 	@Autowired
-	public TaskService(TaskRepository taskRepo) {
+	public TaskService(TaskRepository taskRepo, UserStoryService userStoryService, UserService userService,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.taskRepo = taskRepo;
+		this.userStoryService = userStoryService;
+		this.userService = userService;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final TaskRepository taskRepo;
+
+	private final UserStoryService userStoryService;
+
+	private final UserService userService;
+
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	public Task findTaskById(long taskId) {
 		return taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 	}
 
-	public List<Task> findTasksByUserStoryAndProgressSet(UserStory userStory, Set<Progress> progress, Sort sort) {
+	public List<Task> findTasksByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress, Sort sort) {
+
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByUserStory(userStory, sort);
@@ -46,12 +63,12 @@ public class TaskService {
 		}
 
 	}
-	
+
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
-		if(pageable.getPageSize()>MaxAllowedUtil.MAX_PAGE_SIZE)
+		if (pageable.getPageSize() > MaxAllowedUtil.MAX_PAGE_SIZE)
 			throw new ConflictException("Page size exceeded size limit");
-		
+
 		SortValidationUtil.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
 
 		if (progress.size() == 0 || progress.size() == 3)
@@ -62,7 +79,12 @@ public class TaskService {
 
 	}
 
-	public void createTask(UserStory userStory, Task task) {
+	public void createTask(long userStoryId, Task task) {
+
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
 
 		if (taskRepo.countByUserStoryId(userStory.getId()) > UserStory.MAX_NUMBER_OF_TASKS)
 			throw new ConflictException("Maximum number of tasks allowed reached");
@@ -73,28 +95,44 @@ public class TaskService {
 
 	}
 
-	public void updateDescription(Task task, String description) {
+	public void updateDescription(long taskId, String description) {
+
+		Task task = this.findTaskById(taskId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
+				task);
 
 		task.setDescription(description);
 
 		taskRepo.save(task);
 	}
 
-	public void updatePriority(Task task, int priority) {
+	public void updatePriority(long taskId, int priority) {
+
+		Task task = this.findTaskById(taskId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
+				task);
 
 		task.setPriority(priority);
 
 		taskRepo.save(task);
 	}
 
-	public void updateProgressAndReport(User callingUser, Task task, Progress progress, String report) {
+	public void updateProgressAndReport(long taskId, Progress progress, String report) {
+
+		Task task = this.findTaskById(taskId);
+
+		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(currentUser, task);
 
 		if (task.getProgress() == Progress.DONE)
 			throw new BadRequestException("finished task's progress cant be updated after it is set to DONE");
 
-		if (callingUser.getRole() != Role.ROLE_USER_PROJECT_OWNER
-				|| callingUser.getRole() != Role.ROLE_USER_PROJECT_OPERATOR) {
-			if (callingUser.getId() != task.getAssignedUser().getId())
+		if (currentUser.getRole() != Role.ROLE_USER_PROJECT_OWNER
+				|| currentUser.getRole() != Role.ROLE_USER_PROJECT_OPERATOR) {
+			if (currentUser.getId() != task.getAssignedUser().getId())
 				throw new ForbiddenException("you cant update progress of tasks assigned to other users");
 		}
 
@@ -111,13 +149,28 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
-	public void updateAssignedUser(Task task, User user) {
+	public void updateAssignedUser(long taskId, long userId) {
+
+		Task task = this.findTaskById(taskId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
+				task);
+
+		User user = userService.findUserById(userId);
+
+		if (user.getProject().getId() != authenticationContextFacadeImpl.getCurrentUser().getProject().getId())
+			throw new ForbiddenException("The user must be in the project");
 
 		task.setAssignedUser(user);
 		taskRepo.save(task);
 	}
 
-	public void removeTaskAssignedUser(Task task) {
+	public void removeTaskAssignedUser(long taskId) {
+
+		Task task = this.findTaskById(taskId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
+				task);
 
 		task.setAssignedUser(null);
 		taskRepo.save(task);
@@ -138,11 +191,14 @@ public class TaskService {
 		}
 	}
 
-	public void deleteTask(Task task) {
+	public void deleteTask(long taskId) {
+
+		Task task = this.findTaskById(taskId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
+				task);
 
 		taskRepo.delete(task);
 	}
-
-
 
 }
