@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,11 +28,12 @@ import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
+import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.EpicService;
-import com.projectpal.utils.SecurityContextUtil;
+import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 
@@ -47,29 +49,29 @@ public class EpicController {
 	private final EpicService epicService;
 
 	@GetMapping("/{epicId}")
-	public ResponseEntity<Epic> getEpic(@PathVariable long epicId) {
+	public ResponseEntity<Epic> getEpic(@AuthenticationPrincipal User currentUser, @PathVariable long epicId) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		Epic epic = epicService.findEpicById(epicId);
 
-		if (epic.getProject().getId() != project.getId())
-			throw new ForbiddenException("You are not allowed access to other projects");
+		UserEntityAccessValidationUtil.verifyUserAccessToEpic(currentUser, epic);
 
 		return ResponseEntity.ok(epic);
 
 	}
 
 	@GetMapping("")
-	public ResponseEntity<ListHolderResponse<Epic>> getEpics(
+	public ResponseEntity<ListHolderResponse<Epic>> getEpics(@AuthenticationPrincipal User currentUser,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		SortValidationUtil.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
 
-		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDbOrCache(project, progress, sort);
+		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDbOrCache(currentUser.getProject(), progress,
+				sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Epic>(epics));
 
@@ -77,9 +79,9 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	public ResponseEntity<Epic> createEpic(@Valid @RequestBody Epic epic) {
+	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody Epic epic) {
 
-		Project project = SecurityContextUtil.getUserProject();
+		Project project = currentUser.getProject();
 
 		epicService.createEpic(project, epic);
 
@@ -94,14 +96,7 @@ public class EpicController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long id) {
 
-		Epic epic = epicService.findEpicById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (epic.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to update description of epics from other projects");
-
-		epicService.updateDescription(epic, descriptionUpdateRequest.getDescription());
+		epicService.updateDescription(id, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -111,14 +106,7 @@ public class EpicController {
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
 			@PathVariable long id) {
 
-		Epic epic = epicService.findEpicById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (epic.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to update priority of epics from other projects");
-
-		epicService.updatePriority(epic, priorityHolder.getPriority());
+		epicService.updatePriority(id, priorityHolder.getPriority());
 
 		return ResponseEntity.status(204).build();
 
@@ -129,14 +117,7 @@ public class EpicController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long id) {
 
-		Epic epic = epicService.findEpicById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (epic.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to delete epics from other projects");
-
-		epicService.updateProgress(epic, progressUpdateRequest.getProgress());
+		epicService.updateProgress(id, progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -145,14 +126,7 @@ public class EpicController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
-		Epic epic = epicService.findEpicById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (epic.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to delete epics from other projects");
-
-		epicService.deleteEpic(epic);
+		epicService.deleteEpic(id);
 
 		return ResponseEntity.status(204).build();
 	}
