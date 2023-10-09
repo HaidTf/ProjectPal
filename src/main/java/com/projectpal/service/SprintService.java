@@ -15,9 +15,12 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
+import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
 public class SprintService {
@@ -25,10 +28,12 @@ public class SprintService {
 	@Autowired
 	public SprintService(SprintRepository sprintRepo,
 			@Qualifier("sprintCacheService") CacheService<Sprint> sprintCacheService,
-			@Qualifier("userStoryCacheService") CacheService<UserStory> userStoryCacheService) {
+			@Qualifier("userStoryCacheService") CacheService<UserStory> userStoryCacheService,
+			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.sprintRepo = sprintRepo;
 		this.sprintCacheService = sprintCacheService;
 		this.userStoryCacheService = userStoryCacheService;
+		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
 	private final SprintRepository sprintRepo;
@@ -37,11 +42,14 @@ public class SprintService {
 
 	private final CacheService<UserStory> userStoryCacheService;
 
+	private final AuthenticationContextFacade authenticationContextFacadeImpl;
+
 	public Sprint findSprintById(long sprintId) {
 		return sprintRepo.findById(sprintId).orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
 	}
 
-	public List<Sprint> findSprintsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress, Sort sort) {
+	public List<Sprint> findSprintsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress,
+			Sort sort) {
 
 		Optional<List<Sprint>> sprints = Optional.empty();
 
@@ -79,6 +87,97 @@ public class SprintService {
 		}
 	}
 
+	public void createSprint(Project project, Sprint sprint) {
+
+		if (sprintRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_SPRINTS)
+			throw new ConflictException("Maximum number of Sprint allowed reached");
+
+		sprint.setProject(project);
+
+		sprintRepo.save(sprint);
+
+		sprintCacheService.addObjectToCache(Sprint.SPRINT_CACHE, project.getId(), sprint);
+
+	}
+
+	public void updateStartDate(long sprintId, LocalDate date) {
+
+		Sprint sprint = this.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		if (date.isAfter(sprint.getEndDate()))
+			throw new BadRequestException("End date is before Start date");
+
+		sprint.setStartDate(date);
+
+		sprintRepo.save(sprint);
+
+		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+
+	}
+
+	public void updateEndDate(long sprintId, LocalDate date) {
+
+		Sprint sprint = this.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		if (date.isBefore(sprint.getStartDate()))
+			throw new BadRequestException("End date is before Start date");
+
+		sprint.setEndDate(date);
+
+		sprintRepo.save(sprint);
+
+		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+	}
+
+	public void updateDescription(long sprintId, String description) {
+
+		Sprint sprint = this.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		sprint.setDescription(description);
+
+		sprintRepo.save(sprint);
+
+		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+	}
+
+	public void updateProgress(long sprintId, Progress progress) {
+
+		Sprint sprint = this.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		sprint.setProgress(progress);
+
+		sprintRepo.save(sprint);
+
+		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+	}
+
+	public void deleteSprint(long sprintId) {
+
+		Sprint sprint = this.findSprintById(sprintId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
+				sprint);
+
+		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+
+		userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
+
+		sprintRepo.delete(sprint);
+
+	}
+
 	protected void sort(List<Sprint> sprints, Sort sort) {
 
 		Comparator<Sprint> combinedComparator = null;
@@ -89,13 +188,13 @@ public class SprintService {
 
 			switch (order.getProperty()) {
 
-			case "start-date":
+			case "startDate":
 				currentComparator = Comparator.comparing(Sprint::getStartDate);
 				break;
-			case "end-date":
+			case "endDate":
 				currentComparator = Comparator.comparing(Sprint::getEndDate);
 				break;
-			case "creation-date":
+			case "creationDate":
 				currentComparator = Comparator.comparing(Sprint::getCreationDate);
 				break;
 			default:
@@ -113,66 +212,6 @@ public class SprintService {
 		if (combinedComparator != null) {
 			sprints.sort(combinedComparator);
 		}
-
-	}
-
-	public void createSprint(Project project, Sprint sprint) {
-
-		if (sprintRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_SPRINTS)
-			throw new ConflictException("");
-
-		sprint.setProject(project);
-
-		sprintRepo.save(sprint);
-
-		sprintCacheService.addObjectToCache(Sprint.SPRINT_CACHE, project.getId(), sprint);
-
-	}
-
-	public void updateStartDate(Sprint sprint, LocalDate date) {
-
-		sprint.setStartDate(date);
-
-		sprintRepo.save(sprint);
-
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
-
-	}
-
-	public void updateEndDate(Sprint sprint, LocalDate date) {
-
-		sprint.setEndDate(date);
-
-		sprintRepo.save(sprint);
-
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
-	}
-
-	public void updateDescription(Sprint sprint, String description) {
-
-		sprint.setDescription(description);
-
-		sprintRepo.save(sprint);
-
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
-	}
-
-	public void updateProgress(Sprint sprint, Progress progress) {
-
-		sprint.setProgress(progress);
-
-		sprintRepo.save(sprint);
-
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
-	}
-
-	public void deleteSprint(Sprint sprint) {
-
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
-
-		userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
-
-		sprintRepo.delete(sprint);
 
 	}
 
