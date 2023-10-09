@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.Sprint;
+import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.dto.request.DateUpdateRequest;
 import com.projectpal.dto.request.DescriptionUpdateRequest;
@@ -29,10 +31,10 @@ import com.projectpal.dto.request.ProgressUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.SprintService;
-import com.projectpal.utils.SecurityContextUtil;
+import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 
@@ -47,29 +49,29 @@ public class SprintController {
 	private final SprintService sprintService;
 
 	@GetMapping("/{sprintId}")
-	public ResponseEntity<Sprint> getSprint(@PathVariable long sprintId) {
+	public ResponseEntity<Sprint> getSprint(@AuthenticationPrincipal User currentUser, @PathVariable long sprintId) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
 
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("You are not allowed access to other projects");
+		UserEntityAccessValidationUtil.verifyUserAccessToSprint(currentUser, sprint);
 
 		return ResponseEntity.ok(sprint);
 
 	}
 
 	@GetMapping("")
-	public ResponseEntity<ListHolderResponse<Sprint>> getSprints(
+	public ResponseEntity<ListHolderResponse<Sprint>> getSprints(@AuthenticationPrincipal User currentUser,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		SortValidationUtil.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
 
-		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDbOrCache(project, progress, sort);
+		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDbOrCache(currentUser.getProject(),
+				progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Sprint>(sprints));
 
@@ -77,9 +79,10 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	public ResponseEntity<Sprint> createSprint(@Valid @RequestBody Sprint sprint) {
+	public ResponseEntity<Sprint> createSprint(@AuthenticationPrincipal User currentUser,
+			@Valid @RequestBody Sprint sprint) {
 
-		Project project = SecurityContextUtil.getUserProject();
+		Project project = currentUser.getProject();
 
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -97,17 +100,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintService.findSprintById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
-
-		if (startDateUpdateRequest.getDate().isAfter(sprint.getEndDate()))
-			throw new BadRequestException("End date is before Start date");
-
-		sprintService.updateStartDate(sprint, startDateUpdateRequest.getDate());
+		sprintService.updateStartDate(id, startDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -117,17 +110,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateUpdateRequest endDateUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintService.findSprintById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
-
-		if (endDateUpdateRequest.getDate().isBefore(sprint.getStartDate()))
-			throw new BadRequestException("End date is before Start date");
-
-		sprintService.updateEndDate(sprint,endDateUpdateRequest.getDate());
+		sprintService.updateEndDate(id, endDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -137,14 +120,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintService.findSprintById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to update description of sprints from other projects");
-
-		sprintService.updateDescription(sprint,descriptionUpdateRequest.getDescription());
+		sprintService.updateDescription(id, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -154,14 +130,7 @@ public class SprintController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
 			@PathVariable long id) {
 
-		Sprint sprint = sprintService.findSprintById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
-
-		sprintService.updateProgress(sprint,progressUpdateRequest.getProgress());
+		sprintService.updateProgress(id, progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -170,14 +139,7 @@ public class SprintController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteSprint(@PathVariable long id) {
 
-		Sprint sprint = sprintService.findSprintById(id);
-
-		Project project = SecurityContextUtil.getUserProject();
-
-		if (sprint.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to delete sprints from other projects");
-
-		sprintService.deleteSprint(sprint);
+		sprintService.deleteSprint(id);
 
 		return ResponseEntity.status(204).build();
 	}
