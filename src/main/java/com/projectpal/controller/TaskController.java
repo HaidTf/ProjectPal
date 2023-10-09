@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,16 +27,12 @@ import com.projectpal.dto.request.IdHolderRequest;
 import com.projectpal.dto.request.PriorityUpdateRequest;
 import com.projectpal.dto.request.TaskProgressAndReportUpdateRequest;
 import com.projectpal.dto.response.ListHolderResponse;
-import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
-import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.ForbiddenException;
 import com.projectpal.service.TaskService;
-import com.projectpal.service.UserService;
-import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.SecurityContextUtil;
+import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 
@@ -44,45 +41,34 @@ import jakarta.validation.Valid;
 public class TaskController {
 
 	@Autowired
-	public TaskController(TaskService taskService, UserStoryService userStoryService, UserService userService) {
+	public TaskController(TaskService taskService) {
 		this.taskService = taskService;
-		this.userStoryService = userStoryService;
-		this.userService = userService;
 	}
 
 	private final TaskService taskService;
 
-	private final UserStoryService userStoryService;
-
-	private final UserService userService;
-
 	@GetMapping("/tasks/{taskId}")
-	public ResponseEntity<Task> getTask(@PathVariable long taskId) {
+	public ResponseEntity<Task> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
 		Task task = taskService.findTaskById(taskId);
 
-		if (task.getProject().getId() != project.getId())
-			throw new ForbiddenException("You are not allowed access to other projects");
+		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(currentUser, task);
 
 		return ResponseEntity.ok(task);
 
 	}
 
 	@GetMapping("/{userStoryId}/tasks")
-	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@PathVariable long userStoryId,
+	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@AuthenticationPrincipal User currentUser,
+			@PathVariable long userStoryId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		Project project = SecurityContextUtil.getUserProjectNotNull();
-		
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		if (userStory.getEpic().getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed access to other projects");
-
-		List<Task> tasks = taskService.findTasksByUserStoryAndProgressSet(userStory, progress, sort);
+		List<Task> tasks = taskService.findTasksByUserStoryAndProgressSet(userStoryId, progress, sort);
 
 		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
 	}
@@ -91,12 +77,7 @@ public class TaskController {
 	@PostMapping("/{userStoryId}/tasks")
 	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
 
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		if (userStory.getEpic().getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to acccess other projects");
-
-		taskService.createTask(userStory, task);
+		taskService.createTask(userStoryId, task);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/tasks/" + task.getId()).build();
 		URI location = uriComponents.toUri();
@@ -110,12 +91,7 @@ public class TaskController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
 			@PathVariable long taskId) {
 
-		Task task = taskService.findTaskById(taskId);
-
-		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		taskService.updateDescription(task, descriptionUpdateRequest.getDescription());
+		taskService.updateDescription(taskId, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
 	}
@@ -125,12 +101,7 @@ public class TaskController {
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
 			@PathVariable long taskId) {
 
-		Task task = taskService.findTaskById(taskId);
-
-		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		taskService.updatePriority(task, priorityUpdateRequest.getPriority());
+		taskService.updatePriority(taskId, priorityUpdateRequest.getPriority());
 
 		return ResponseEntity.status(204).build();
 
@@ -142,14 +113,7 @@ public class TaskController {
 			@RequestBody @Valid TaskProgressAndReportUpdateRequest taskProgressAndReportUpdateRequest,
 			@PathVariable long taskId) {
 
-		Task task = taskService.findTaskById(taskId);
-
-		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		User user = SecurityContextUtil.getUser();
-
-		taskService.updateProgressAndReport(user, task, taskProgressAndReportUpdateRequest.getProgress(),
+		taskService.updateProgressAndReport(taskId, taskProgressAndReportUpdateRequest.getProgress(),
 				taskProgressAndReportUpdateRequest.getReport());
 
 		return ResponseEntity.status(204).build();
@@ -160,20 +124,8 @@ public class TaskController {
 	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
 			@PathVariable long taskId) {
 
-		Project project = SecurityContextUtil.getUserProject();
-		
-		Task task = taskService.findTaskById(taskId);
+		taskService.updateAssignedUser(taskId, userIdHolder.getId());
 
-		if (task.getProject().getId() != project.getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		User user = userService.findUserById(userIdHolder.getId());
-
-		if (user.getProject().getId() != project.getId())
-			throw new ForbiddenException("the user must be in the project");
-
-		taskService.updateAssignedUser(task,user);
-		
 		return ResponseEntity.status(204).build();
 	}
 
@@ -181,13 +133,8 @@ public class TaskController {
 	@DeleteMapping("/tasks/{taskId}/assigned-user")
 	public ResponseEntity<Void> removeAssignedUser(@PathVariable long taskId) {
 
-		Task task = taskService.findTaskById(taskId);
+		taskService.removeTaskAssignedUser(taskId);
 
-		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		taskService.removeTaskAssignedUser(task);
-		
 		return ResponseEntity.status(204).build();
 	}
 
@@ -195,12 +142,7 @@ public class TaskController {
 	@DeleteMapping("/tasks/{taskId}")
 	public ResponseEntity<Void> deleteTask(@PathVariable long taskId) {
 
-		Task task = taskService.findTaskById(taskId);
-
-		if (task.getProject().getId() != SecurityContextUtil.getUserProject().getId())
-			throw new ForbiddenException("you are not allowed to access other projects");
-
-		taskService.deleteTask(task);
+		taskService.deleteTask(taskId);
 
 		return ResponseEntity.status(204).build();
 	}
