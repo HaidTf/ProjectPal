@@ -65,7 +65,7 @@ public class SprintService {
 
 			sprints = sprintCacheService.getObjectsFromCache(Sprint.SPRINT_CACHE, project.getId());
 			if (sprints.isEmpty()) {
-				sprints = sprintRepo.findAllByProjectAndProgressList(project, progress);
+				sprints = sprintRepo.findAllByProjectAndProgressIn(project, progress);
 				sprintCacheService.populateCache(Sprint.SPRINT_CACHE, project.getId(), sprints.get());
 			}
 
@@ -87,7 +87,7 @@ public class SprintService {
 			return sprintRepo.findAllByProject(project, sort);
 		}
 		default -> {
-			return sprintRepo.findAllByProjectAndProgressList(project, progress, sort);
+			return sprintRepo.findAllByProjectAndProgressIn(project, progress, sort);
 		}
 
 		}
