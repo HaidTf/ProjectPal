@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
@@ -45,11 +47,13 @@ public class UserService {
 
 	private final ProjectService projectService;
 
+	@Transactional(readOnly = true)
 	public User findUserById(long userId) {
 		return userRepo.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
 	}
 
+	@Transactional(readOnly = true)
 	public Page<User> findAllByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
 
 		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
@@ -57,7 +61,7 @@ public class UserService {
 
 		Pageable pageable = PageRequest.of(page, size);
 
-		if (role == null)
+		if (role != null)
 			return userRepo.findAllByProjectAndRole(project, role, pageable);
 		else {
 			return userRepo.findAllByProject(project, pageable);
@@ -65,11 +69,13 @@ public class UserService {
 
 	}
 
+	@Transactional
 	public void updateUserPassword(User user, String password) {
 		user.setPassword(encoder.encode(password));
 		userRepo.save(user);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateUserProjectRole(User currentUser, long userId, Role role) {
 
 		User user = this.findUserById(userId);
@@ -87,6 +93,7 @@ public class UserService {
 		userRepo.save(user);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void exitUserProject(User currentUser) {
 
 		Project project = currentUser.getProject();
