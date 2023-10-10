@@ -16,7 +16,6 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.utils.SecurityContextUtil;
 
 @RestController
 @RequestMapping("/admin/super")

@@ -18,7 +18,6 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.UserRepository;
-import com.projectpal.utils.SecurityContextUtil;
 
 @RestController
 @RequestMapping("/admin/user")

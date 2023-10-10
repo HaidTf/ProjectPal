@@ -23,22 +23,19 @@ import com.projectpal.repository.TaskAttachmentRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.cache.CacheService;
-import com.projectpal.service.cache.CacheServiceEpicAddOn;
-import com.projectpal.service.cache.CacheServiceProjectAddOn;
-import com.projectpal.service.cache.CacheServiceSprintAddOn;
-import com.projectpal.service.cache.CacheServiceUserStoryAddOn;
+
 
 @RestController
 @RequestMapping("/admin/entities/delete")
 public class DeleteEntitiesAdminController {
 
-	@Autowired
+
+	
+
 	public DeleteEntitiesAdminController(ProjectRepository projectRepo, EpicRepository epicRepo,
 			SprintRepository sprintRepo, UserStoryRepository userStoryRepo, TaskRepository taskRepo,
 			TaskAttachmentRepository taskAttachmentRepo, InvitationRepository invitationRepo,
-			AnnouncementRepository announcementRepo, CacheServiceEpicAddOn cacheServiceEpicAddOn,
-			CacheServiceSprintAddOn cacheServiceSprintAddOn, CacheService cacheService,
-			CacheServiceProjectAddOn cacheServiceProjectAddOn) {
+			AnnouncementRepository announcementRepo, CacheService cacheService) {
 		this.projectRepo = projectRepo;
 		this.epicRepo = epicRepo;
 		this.sprintRepo = sprintRepo;
@@ -47,10 +44,7 @@ public class DeleteEntitiesAdminController {
 		this.taskAttachmentRepo = taskAttachmentRepo;
 		this.invitationRepo = invitationRepo;
 		this.announcementRepo = announcementRepo;
-		this.cacheServiceEpicAddOn = cacheServiceEpicAddOn;
-		this.cacheServiceSprintAddOn = cacheServiceSprintAddOn;
 		this.cacheService = cacheService;
-		this.cacheServiceProjectAddOn = cacheServiceProjectAddOn;
 	}
 
 	private final ProjectRepository projectRepo;
@@ -69,13 +63,8 @@ public class DeleteEntitiesAdminController {
 
 	private final AnnouncementRepository announcementRepo;
 
-	private final CacheServiceEpicAddOn cacheServiceEpicAddOn;
-
-	private final CacheServiceSprintAddOn cacheServiceSprintAddOn;
-
 	private final CacheService cacheService;
 
-	private final CacheServiceProjectAddOn cacheServiceProjectAddOn;
 
 	@DeleteMapping("/project/{id}")
 	@Transactional
