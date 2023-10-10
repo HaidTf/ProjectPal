@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
@@ -41,6 +42,7 @@ public class InvitationService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional(readOnly = true)
 	public Invitation findInvitationById(long invitationId) {
 
 		return invitationRepo.findById(invitationId)
@@ -48,6 +50,7 @@ public class InvitationService {
 
 	}
 
+	@Transactional
 	public Invitation inviteUserToProject(long userId, Project project) {
 
 		User user = userService.findUserById(userId);
@@ -65,6 +68,7 @@ public class InvitationService {
 		return invitation;
 	}
 
+	@Transactional(readOnly = true)
 	public Page<Invitation> findPageByProject(Project project, int page, int size) {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
@@ -73,12 +77,14 @@ public class InvitationService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public List<Invitation> findAllByUser(User user) {
 
 		return invitationRepo.findAllByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
 
 	}
 
+	@Transactional
 	public void userAcceptsInvitation(User user, long invitationId) {
 
 		Invitation invitation = this.findInvitationById(invitationId);
@@ -95,6 +101,7 @@ public class InvitationService {
 
 	}
 
+	@Transactional
 	public void rejectInvitation(long invitationId) {
 
 		Invitation invitation = this.findInvitationById(invitationId);
