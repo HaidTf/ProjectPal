@@ -23,10 +23,10 @@ public interface EpicRepository extends JpaRepository<Epic, Long> {
 
 	Optional<List<Epic>> findAllByProjectIdAndProgressNot(long id, Progress progress);
 
-	Optional<List<Epic>> findAllByProjectAndProgressList(Project project, Set<Progress> progress, Sort sort);
+	Optional<List<Epic>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
 
 	Optional<List<Epic>> findAllByProject(Project project, Sort sort);
 
-	Optional<List<Epic>> findAllByProjectAndProgressList(Project project, Set<Progress> progress);
+	Optional<List<Epic>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
 
 }

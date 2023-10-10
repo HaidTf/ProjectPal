@@ -22,10 +22,10 @@ public interface SprintRepository extends JpaRepository<Sprint,Long>{
 
 	Optional<List<Sprint>> findAllByProjectIdAndProgressNot(long id, Progress progress);
 
-	Optional<List<Sprint>> findAllByProjectAndProgressList(Project project, Set<Progress> progress, Sort sort);
+	Optional<List<Sprint>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
 
 	Optional<List<Sprint>> findAllByProject(Project project, Sort sort);
 
-	Optional<List<Sprint>> findAllByProjectAndProgressList(Project project, Set<Progress> progress);
+	Optional<List<Sprint>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
 	
 }

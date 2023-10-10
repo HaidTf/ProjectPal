@@ -27,16 +27,16 @@ public interface UserStoryRepository extends JpaRepository<UserStory,Long>{
 	
 	int countBySprintId(Long sprintId);
 
-	List<UserStory> findAllByEpicAndProgressList(Epic epic, Set<Progress> progress);
+	List<UserStory> findAllByEpicAndProgressIn(Epic epic, Set<Progress> progress);
 
 	List<UserStory> findAllByEpic(Epic epic, Sort sort);
 
-	List<UserStory> findAllByEpicAndProgressList(Epic epic, Set<Progress> progress, Sort sort);
+	List<UserStory> findAllByEpicAndProgressIn(Epic epic, Set<Progress> progress, Sort sort);
 
 	List<UserStory> findAllBySprint(Sprint sprint, Sort sort);
 
-	List<UserStory> findAllBySprintAndProgressList(Sprint sprint, Set<Progress> progress, Sort sort);
+	List<UserStory> findAllBySprintAndProgressIn(Sprint sprint, Set<Progress> progress, Sort sort);
 
-	List<UserStory> findAllBySprintAndProgressList(Sprint sprint, Set<Progress> progress);
+	List<UserStory> findAllBySprintAndProgressIn(Sprint sprint, Set<Progress> progress);
 	
 }
