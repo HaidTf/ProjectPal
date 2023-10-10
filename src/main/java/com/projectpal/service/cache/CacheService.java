@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.cache;
 
 import java.util.List;
 import java.util.Optional;
