@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
@@ -51,6 +53,7 @@ public class ProjectService {
 
 	private final CacheService<Project> cacheService;
 
+	@Transactional
 	public void createProjectAndSetOwner(Project project, User user) {
 
 		project.setOwner(user);
@@ -64,6 +67,7 @@ public class ProjectService {
 		userRepo.save(user);
 	}
 
+	@Transactional
 	public void updateProjectDescription(Project project, @Nullable String description) {
 
 		project.setDescription(description);
@@ -72,6 +76,7 @@ public class ProjectService {
 
 	}
 
+	@Transactional
 	public void updateProjectLastAccessedDate(Project project) {
 
 		project.setLastAccessedDate(LocalDate.now());
@@ -79,6 +84,7 @@ public class ProjectService {
 		projectRepo.save(project);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void removeUserFromCurrentUserProject(User currentUser, long userId) {
 
 		if (currentUser.getId() == userId)
@@ -96,6 +102,7 @@ public class ProjectService {
 		taskService.exitUserTasks(user);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteProject(Project project) {
 
 		List<User> projectUsers = userRepo.findAllByProject(project).orElse(new ArrayList<User>(0));
@@ -111,6 +118,7 @@ public class ProjectService {
 
 	}
 
+	@Transactional
 	public void cascadeDeleteChildrenOfProjectInCache(Project project) {
 
 		cacheService.evictListFromCache(Epic.EPIC_CACHE, project.getId());
