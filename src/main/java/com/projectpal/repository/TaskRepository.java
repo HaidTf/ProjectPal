@@ -28,10 +28,10 @@ public interface TaskRepository extends JpaRepository<Task,Long>{
 
 	List<Task> findAllByUserStory(UserStory userStory, Sort sort);
 
-	List<Task> findAllByUserStoryAndProgressList(UserStory userStory, Set<Progress> progress, Sort sort);
+	List<Task> findAllByUserStoryAndProgressIn(UserStory userStory, Set<Progress> progress, Sort sort);
 
 	Page<Task> findAllByAssignedUser(User user, Pageable pageable);
 
-	Page<Task> findAllByAssignedUserAndProgressList(User user, Set<Progress> progress, Pageable pageable);
+	Page<Task> findAllByAssignedUserAndProgressIn(User user, Set<Progress> progress, Pageable pageable);
 	
 }
