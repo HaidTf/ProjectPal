@@ -184,7 +184,7 @@ public class UserStoryService {
 			case "priority":
 				currentComparator = Comparator.comparing(UserStory::getPriority);
 				break;
-			case "creation-date":
+			case "creationDate":
 				currentComparator = Comparator.comparing(UserStory::getCreationDate);
 				break;
 			default:
