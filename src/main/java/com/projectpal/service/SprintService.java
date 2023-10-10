@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
@@ -44,10 +46,12 @@ public class SprintService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional(readOnly = true)
 	public Sprint findSprintById(long sprintId) {
 		return sprintRepo.findById(sprintId).orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
 	}
 
+	@Transactional
 	public List<Sprint> findSprintsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress,
 			Sort sort) {
 
@@ -73,6 +77,7 @@ public class SprintService {
 		return sprints.get();
 	}
 
+	@Transactional(readOnly = true)
 	public Optional<List<Sprint>> findSprintsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
 			Sort sort) {
 
@@ -87,6 +92,7 @@ public class SprintService {
 		}
 	}
 
+	@Transactional
 	public void createSprint(Project project, Sprint sprint) {
 
 		if (sprintRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_SPRINTS)
@@ -100,6 +106,7 @@ public class SprintService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateStartDate(long sprintId, LocalDate date) {
 
 		Sprint sprint = this.findSprintById(sprintId);
@@ -118,6 +125,7 @@ public class SprintService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateEndDate(long sprintId, LocalDate date) {
 
 		Sprint sprint = this.findSprintById(sprintId);
@@ -135,6 +143,7 @@ public class SprintService {
 		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long sprintId, String description) {
 
 		Sprint sprint = this.findSprintById(sprintId);
@@ -149,6 +158,7 @@ public class SprintService {
 		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long sprintId, Progress progress) {
 
 		Sprint sprint = this.findSprintById(sprintId);
@@ -163,6 +173,7 @@ public class SprintService {
 		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteSprint(long sprintId) {
 
 		Sprint sprint = this.findSprintById(sprintId);
