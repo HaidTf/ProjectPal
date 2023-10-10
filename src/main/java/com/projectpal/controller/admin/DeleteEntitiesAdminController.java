@@ -22,11 +22,11 @@ import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.TaskAttachmentRepository;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserStoryRepository;
-import com.projectpal.service.CacheService;
-import com.projectpal.service.CacheServiceEpicAddOn;
-import com.projectpal.service.CacheServiceProjectAddOn;
-import com.projectpal.service.CacheServiceSprintAddOn;
-import com.projectpal.service.CacheServiceUserStoryAddOn;
+import com.projectpal.service.cache.CacheService;
+import com.projectpal.service.cache.CacheServiceEpicAddOn;
+import com.projectpal.service.cache.CacheServiceProjectAddOn;
+import com.projectpal.service.cache.CacheServiceSprintAddOn;
+import com.projectpal.service.cache.CacheServiceUserStoryAddOn;
 
 @RestController
 @RequestMapping("/admin/entities/delete")

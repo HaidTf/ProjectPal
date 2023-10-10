@@ -19,7 +19,7 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.ProjectRepository;
-import com.projectpal.service.CacheService;
+import com.projectpal.service.cache.CacheService;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)

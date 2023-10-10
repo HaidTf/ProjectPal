@@ -17,7 +17,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 
 import com.projectpal.entity.Epic;
 import com.projectpal.repository.EpicRepository;
-import com.projectpal.service.CacheService;
+import com.projectpal.service.cache.CacheService;
 
 @ExtendWith(MockitoExtension.class)
 public class CacheServiceUTest {

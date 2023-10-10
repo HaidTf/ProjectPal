@@ -22,6 +22,7 @@ import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service

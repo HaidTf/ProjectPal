@@ -20,6 +20,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 @Service
