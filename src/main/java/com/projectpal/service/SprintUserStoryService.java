@@ -7,6 +7,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.UserStory;
@@ -41,6 +43,7 @@ public class SprintUserStoryService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional
 	public List<UserStory> findUserStoriesBySprintAndProgressListFromDbOrCache(long sprintId, Set<Progress> progress,
 			Sort sort) {
 
@@ -73,6 +76,7 @@ public class SprintUserStoryService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public List<UserStory> findUserStoriesBySprintAndProgressFromDb(Sprint sprint, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -87,6 +91,7 @@ public class SprintUserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void addUserStoryToSprint(long userStoryId, long sprintId) {
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
@@ -111,6 +116,7 @@ public class SprintUserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void removeUserStoryFromSprint(long userStoryId, long sprintId) {
 
 		Sprint sprint = sprintService.findSprintById(sprintId);
