@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.UserStory;
@@ -38,6 +40,7 @@ public class UserStoryService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional(readOnly = true)
 	public UserStory findUserStoryById(long userStoryId) {
 
 		return userStoryRepo.findById(userStoryId)
@@ -45,6 +48,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDbOrCache(long epicId, Set<Progress> progress,
 			Sort sort) {
 
@@ -75,6 +79,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDb(Epic epic, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -89,6 +94,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void createUserStory(long epicId, UserStory userStory) {
 
 		Epic epic = epicService.findEpicById(epicId);
@@ -106,6 +112,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long userStoryId, String description) {
 
 		UserStory userStory = this.findUserStoryById(userStoryId);
@@ -121,6 +128,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long userStoryId, int priority) {
 
 		UserStory userStory = this.findUserStoryById(userStoryId);
@@ -136,6 +144,7 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long userStoryId, Progress progress) {
 
 		UserStory userStory = this.findUserStoryById(userStoryId);
@@ -150,6 +159,7 @@ public class UserStoryService {
 		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteUserStory(long userStoryId) {
 
 		UserStory userStory = this.findUserStoryById(userStoryId);
