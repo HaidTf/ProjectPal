@@ -62,7 +62,7 @@ public class SprintUserStoryService {
 
 			userStories = userStoryCacheService.getObjectsFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
 			if (userStories.isEmpty()) {
-				userStories = Optional.of(userStoryRepo.findAllBySprintAndProgressList(sprint, progress));
+				userStories = Optional.of(userStoryRepo.findAllBySprintAndProgressIn(sprint, progress));
 				userStoryCacheService.populateCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId(),
 						userStories.get());
 			}
@@ -85,7 +85,7 @@ public class SprintUserStoryService {
 			return userStoryRepo.findAllBySprint(sprint, sort);
 		}
 		default -> {
-			return userStoryRepo.findAllBySprintAndProgressList(sprint, progress, sort);
+			return userStoryRepo.findAllBySprintAndProgressIn(sprint, progress, sort);
 		}
 
 		}

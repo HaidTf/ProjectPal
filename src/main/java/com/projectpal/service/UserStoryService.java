@@ -66,7 +66,7 @@ public class UserStoryService {
 
 			userStories = userStoryCacheService.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
 			if (userStories.isEmpty()) {
-				userStories = Optional.of(userStoryRepo.findAllByEpicAndProgressList(epic, progress));
+				userStories = Optional.of(userStoryRepo.findAllByEpicAndProgressIn(epic, progress));
 				userStoryCacheService.populateCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStories.get());
 			}
 
@@ -88,7 +88,7 @@ public class UserStoryService {
 			return userStoryRepo.findAllByEpic(epic, sort);
 		}
 		default -> {
-			return userStoryRepo.findAllByEpicAndProgressList(epic, progress, sort);
+			return userStoryRepo.findAllByEpicAndProgressIn(epic, progress, sort);
 		}
 
 		}

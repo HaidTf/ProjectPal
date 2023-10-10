@@ -64,7 +64,7 @@ public class EpicService {
 
 			epics = epicCacheService.getObjectsFromCache(Epic.EPIC_CACHE, project.getId());
 			if (epics.isEmpty()) {
-				epics = epicRepo.findAllByProjectAndProgressList(project, progress);
+				epics = epicRepo.findAllByProjectAndProgressIn(project, progress);
 				epicCacheService.populateCache(Epic.EPIC_CACHE, project.getId(), epics.get());
 			}
 
@@ -87,7 +87,7 @@ public class EpicService {
 			return epicRepo.findAllByProject(project, sort);
 		}
 		default -> {
-			return epicRepo.findAllByProjectAndProgressList(project, progress, sort);
+			return epicRepo.findAllByProjectAndProgressIn(project, progress, sort);
 		}
 
 		}
@@ -164,7 +164,7 @@ public class EpicService {
 
 		List<UserStory> userStories = userStoryCacheService
 				.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
-						.findAllByEpicAndProgressList(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
+						.findAllByEpicAndProgressIn(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
 
 		for (UserStory userStory : userStories) {
 			if (userStory.getSprint() != null)

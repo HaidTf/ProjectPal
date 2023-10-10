@@ -63,7 +63,7 @@ public class TaskService {
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByUserStory(userStory, sort);
 		else {
-			return taskRepo.findAllByUserStoryAndProgressList(userStory, progress, sort);
+			return taskRepo.findAllByUserStoryAndProgressIn(userStory, progress, sort);
 		}
 
 	}
@@ -79,7 +79,7 @@ public class TaskService {
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByAssignedUser(user, pageable);
 		else {
-			return taskRepo.findAllByAssignedUserAndProgressList(user, progress, pageable);
+			return taskRepo.findAllByAssignedUserAndProgressIn(user, progress, pageable);
 		}
 
 	}
