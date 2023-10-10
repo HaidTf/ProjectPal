@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
@@ -44,10 +46,12 @@ public class EpicService {
 
 	private final CacheService<UserStory> userStoryCacheService;
 
+	@Transactional(readOnly = true)
 	public Epic findEpicById(long epicId) {
 		return epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
 	}
 
+	@Transactional
 	public List<Epic> findEpicsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress, Sort sort) {
 
 		Optional<List<Epic>> epics = Optional.empty();
@@ -73,6 +77,7 @@ public class EpicService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public Optional<List<Epic>> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
 			Sort sort) {
 
@@ -88,6 +93,7 @@ public class EpicService {
 
 	}
 
+	@Transactional
 	public void createEpic(Project project, Epic epic) {
 
 		if (epicRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_EPICS)
@@ -101,6 +107,7 @@ public class EpicService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long epicId, String description) {
 
 		Epic epic = this.findEpicById(epicId);
@@ -115,6 +122,7 @@ public class EpicService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long epicId, int priority) {
 
 		Epic epic = this.findEpicById(epicId);
@@ -128,7 +136,8 @@ public class EpicService {
 		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
 
 	}
-
+	
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long epicId, Progress progress) {
 
 		Epic epic = this.findEpicById(epicId);
@@ -143,6 +152,7 @@ public class EpicService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteEpic(long epicId) {
 
 		Epic epic = this.findEpicById(epicId);
