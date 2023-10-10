@@ -6,6 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
@@ -30,12 +32,14 @@ public class AnnouncementService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional(readOnly = true)
 	public Announcement findAnnouncementById(long announcementId) {
 		return announcementRepo.findById(announcementId)
 				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
 
 	}
 
+	@Transactional
 	public void createAnnouncement(Project project, Announcement announcement) {
 
 		announcement.setProject(project);
@@ -44,6 +48,7 @@ public class AnnouncementService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteAnnouncement(long announcementId) {
 
 		Announcement announcement = this.findAnnouncementById(announcementId);
@@ -54,6 +59,7 @@ public class AnnouncementService {
 		announcementRepo.delete(announcement);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<Announcement> findPageByProject(Project project, int page, int size) {
 
 		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
