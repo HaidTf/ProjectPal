@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
@@ -45,10 +47,12 @@ public class TaskService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
+	@Transactional(readOnly = true)
 	public Task findTaskById(long taskId) {
 		return taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 	}
 
+	@Transactional(readOnly = true)
 	public List<Task> findTasksByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress, Sort sort) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
@@ -64,6 +68,7 @@ public class TaskService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
 		if (pageable.getPageSize() > MaxAllowedUtil.MAX_PAGE_SIZE)
@@ -79,6 +84,7 @@ public class TaskService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void createTask(long userStoryId, Task task) {
 
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
@@ -95,6 +101,7 @@ public class TaskService {
 
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long taskId, String description) {
 
 		Task task = this.findTaskById(taskId);
@@ -107,6 +114,7 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long taskId, int priority) {
 
 		Task task = this.findTaskById(taskId);
@@ -119,6 +127,7 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgressAndReport(long taskId, Progress progress, String report) {
 
 		Task task = this.findTaskById(taskId);
@@ -149,6 +158,7 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateAssignedUser(long taskId, long userId) {
 
 		Task task = this.findTaskById(taskId);
@@ -165,6 +175,7 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void removeTaskAssignedUser(long taskId) {
 
 		Task task = this.findTaskById(taskId);
@@ -176,6 +187,7 @@ public class TaskService {
 		taskRepo.save(task);
 	}
 
+	@Transactional
 	public void exitUserTasks(User user) {
 
 		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
@@ -191,6 +203,7 @@ public class TaskService {
 		}
 	}
 
+	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteTask(long taskId) {
 
 		Task task = this.findTaskById(taskId);
