@@ -20,6 +20,7 @@ import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
+import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.service.cache.CacheService;
@@ -29,13 +30,11 @@ public class ProjectService {
 
 	@Autowired
 	public ProjectService(ProjectRepository projectRepo, UserRepository userRepo, EpicService epicService,
-			SprintService sprintService, CacheService<Project> cacheService, UserService userService,
-			TaskService taskService) {
+			SprintService sprintService, CacheService<Project> cacheService, TaskService taskService) {
 		this.projectRepo = projectRepo;
 		this.userRepo = userRepo;
 		this.epicService = epicService;
 		this.sprintService = sprintService;
-		this.userService = userService;
 		this.taskService = taskService;
 		this.cacheService = cacheService;
 	}
@@ -47,8 +46,6 @@ public class ProjectService {
 	private final EpicService epicService;
 
 	private final SprintService sprintService;
-
-	private final UserService userService;
 
 	private final TaskService taskService;
 
@@ -91,7 +88,7 @@ public class ProjectService {
 		if (currentUser.getId() == userId)
 			throw new BadRequestException("You cant remove yourself from the project through here");
 
-		User user = userService.findUserById(userId);
+		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
 
 		if (user.getProject().getId() != currentUser.getProject().getId())
 			throw new ForbiddenException("the user must be in the project");
