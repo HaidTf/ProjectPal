@@ -28,7 +28,7 @@ public class EpicService {
 
 	public EpicService(EpicRepository epicRepo, UserStoryRepository userStoryRepo,
 			@Qualifier("epicCacheService") CacheService<Epic> epicCacheService,
-			@Qualifier("epicCacheService") CacheService<UserStory> userStoryCacheService,
+			@Qualifier("userStoryCacheService") CacheService<UserStory> userStoryCacheService,
 			AuthenticationContextFacade authenticationContextFacadeImpl) {
 		this.epicRepo = epicRepo;
 		this.userStoryRepo = userStoryRepo;
