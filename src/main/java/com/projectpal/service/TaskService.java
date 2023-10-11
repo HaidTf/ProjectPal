@@ -22,6 +22,7 @@ import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.repository.TaskRepository;
+import com.projectpal.repository.UserRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
@@ -31,11 +32,11 @@ import com.projectpal.utils.UserEntityAccessValidationUtil;
 public class TaskService {
 
 	@Autowired
-	public TaskService(TaskRepository taskRepo, UserStoryService userStoryService, UserService userService,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
+	public TaskService(TaskRepository taskRepo, UserStoryService userStoryService,
+			AuthenticationContextFacade authenticationContextFacadeImpl, UserRepository userRepo) {
 		this.taskRepo = taskRepo;
 		this.userStoryService = userStoryService;
-		this.userService = userService;
+		this.userRepo = userRepo;
 		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
 	}
 
@@ -43,7 +44,7 @@ public class TaskService {
 
 	private final UserStoryService userStoryService;
 
-	private final UserService userService;
+	private final UserRepository userRepo;
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
@@ -166,7 +167,7 @@ public class TaskService {
 		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
 				task);
 
-		User user = userService.findUserById(userId);
+		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
 
 		if (user.getProject().getId() != authenticationContextFacadeImpl.getCurrentUser().getProject().getId())
 			throw new ForbiddenException("The user must be in the project");
