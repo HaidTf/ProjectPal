@@ -1,7 +1,6 @@
 package com.projectpal.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Sort;
@@ -15,13 +14,13 @@ import com.projectpal.entity.enums.Progress;
 @Repository
 public interface UserStoryRepository extends JpaRepository<UserStory,Long>{
 
-	Optional<List<UserStory>> findAllByEpic(Epic epic);
+	List<UserStory> findAllByEpic(Epic epic);
 	
-	Optional<List<UserStory>> findAllBySprint(Sprint sprint);
+	List<UserStory> findAllBySprint(Sprint sprint);
 
-	Optional<List<UserStory>> findAllByEpicId(Long id);
+	List<UserStory> findAllByEpicId(Long id);
 	
-	Optional<List<UserStory>> findAllBySprintId(Long id);
+	List<UserStory> findAllBySprintId(Long id);
 	
 	int countByEpicId(Long projectId);
 	

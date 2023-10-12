@@ -2,6 +2,7 @@ package com.projectpal.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
@@ -55,31 +56,31 @@ public class EpicService {
 	@Transactional
 	public List<Epic> findEpicsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress, Sort sort) {
 
-		Optional<List<Epic>> epics = Optional.empty();
+		List<Epic> epics = new ArrayList<>(0);
 
 		boolean mayBeStoredInCache = (progress.size() == 2 && progress.contains(Progress.TODO)
 				&& progress.contains(Progress.INPROGRESS));
 
 		if (mayBeStoredInCache) {
 
-			epics = epicCacheService.getObjectsFromCache(Epic.EPIC_CACHE, project.getId());
-			if (epics.isEmpty()) {
+			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(Epic.EPIC_CACHE, project.getId());
+			if (cacheEpics.isEmpty()) {
 				epics = epicRepo.findAllByProjectAndProgressIn(project, progress);
-				epicCacheService.populateCache(Epic.EPIC_CACHE, project.getId(), epics.get());
+				epicCacheService.populateCache(Epic.EPIC_CACHE, project.getId(), epics);
 			}
 
-			this.sort(epics.get(), sort);
+			this.sort(epics, sort);
 
 		} else {
 			epics = this.findEpicsByProjectAndProgressFromDb(project, progress, sort);
 		}
 
-		return epics.get();
+		return epics;
 
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<List<Epic>> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
+	public List<Epic> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
 			Sort sort) {
 
 		switch (progress.size()) {

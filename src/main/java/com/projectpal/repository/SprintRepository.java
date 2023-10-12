@@ -1,7 +1,6 @@
 package com.projectpal.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Sort;
@@ -14,18 +13,18 @@ import com.projectpal.entity.enums.Progress;
 @Repository
 public interface SprintRepository extends JpaRepository<Sprint,Long>{
 
-	Optional<List<Sprint>> findAllByProject(Project project);
+	List<Sprint> findAllByProject(Project project);
 
-	Optional<List<Sprint>> findAllByProjectId(Long id);
+	List<Sprint> findAllByProjectId(Long id);
 	
 	int countByProjectId(Long projectId);
 
-	Optional<List<Sprint>> findAllByProjectIdAndProgressNot(long id, Progress progress);
+	List<Sprint> findAllByProjectIdAndProgressNot(long id, Progress progress);
 
-	Optional<List<Sprint>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
+	List<Sprint> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
 
-	Optional<List<Sprint>> findAllByProject(Project project, Sort sort);
+	List<Sprint> findAllByProject(Project project, Sort sort);
 
-	Optional<List<Sprint>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
+	List<Sprint> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
 	
 }

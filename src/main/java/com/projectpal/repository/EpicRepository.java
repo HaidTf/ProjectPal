@@ -1,7 +1,6 @@
 package com.projectpal.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Sort;
@@ -15,18 +14,18 @@ import com.projectpal.entity.enums.Progress;
 @Repository
 public interface EpicRepository extends JpaRepository<Epic, Long> {
 
-	Optional<List<Epic>> findAllByProject(Project project);
+	List<Epic> findAllByProject(Project project);
 	
-	Optional<List<Epic>> findAllByProjectId(Long projectId);
+	List<Epic> findAllByProjectId(Long projectId);
 	
 	int countByProjectId(Long projectId);
 
-	Optional<List<Epic>> findAllByProjectIdAndProgressNot(long id, Progress progress);
+	List<Epic> findAllByProjectIdAndProgressNot(long id, Progress progress);
 
-	Optional<List<Epic>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
+	List<Epic> findAllByProjectAndProgressIn(Project project, Set<Progress> progress, Sort sort);
 
-	Optional<List<Epic>> findAllByProject(Project project, Sort sort);
+	List<Epic> findAllByProject(Project project, Sort sort);
 
-	Optional<List<Epic>> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
+	List<Epic> findAllByProjectAndProgressIn(Project project, Set<Progress> progress);
 
 }

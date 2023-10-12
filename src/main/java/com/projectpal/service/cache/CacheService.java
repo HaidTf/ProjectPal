@@ -41,7 +41,7 @@ public class CacheService<T> {
 			objects = null;
 		}
 
-		return Optional.of(objects);
+		return Optional.ofNullable(objects);
 	}
 
 	public void populateCache(String cacheName, Long cacheKey, List<T> objects) {

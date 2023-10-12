@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -103,7 +102,7 @@ public class ProjectService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteProject(Project project) {
 
-		List<User> projectUsers = userRepo.findAllByProject(project).orElse(new ArrayList<User>(0));
+		List<User> projectUsers = userRepo.findAllByProject(project);
 
 		for (User projectUser : projectUsers) {
 			projectUser.setRole(Role.ROLE_USER);
@@ -122,9 +121,9 @@ public class ProjectService {
 		cacheService.evictListFromCache(Epic.EPIC_CACHE, project.getId());
 		cacheService.evictListFromCache(Sprint.SPRINT_CACHE, project.getId());
 
-		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted()).get();
-		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted())
-				.get();
+		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted());
+		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted());
+				
 
 		epics.forEach((epic) -> cacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()));
 		sprints.forEach((sprint) -> cacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId()));
