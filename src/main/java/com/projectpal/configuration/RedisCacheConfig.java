@@ -42,6 +42,8 @@ public class RedisCacheConfig {
         		.withInitialCacheConfigurations(cacheConfigurations)
                 .build();
 
+        cacheManager.setTransactionAware(true);
+        
         return cacheManager;
     }
 }

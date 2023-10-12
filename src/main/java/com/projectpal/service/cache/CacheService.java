@@ -25,7 +25,6 @@ public class CacheService<T> {
 		} catch (Exception ex) {
 
 		}
-		redis.setTransactionAware(true);
 	}
 
 	private final RedisCacheManager redis;
