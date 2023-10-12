@@ -1,7 +1,6 @@
 package com.projectpal.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -18,11 +17,11 @@ import com.projectpal.entity.enums.Progress;
 @Repository
 public interface TaskRepository extends JpaRepository<Task,Long>{
 
-	Optional<List<Task>> findAllByAssignedUser(User assignedUser);
+	List<Task> findAllByAssignedUser(User assignedUser);
 	
-	Optional<List<Task>> findAllByUserStoryId(long id);
+	List<Task> findAllByUserStoryId(long id);
 	
-	Optional<List<Task>> findAllByAssignedUserAndProgressNot(User assignedUser, Progress progress);
+	List<Task> findAllByAssignedUserAndProgressNot(User assignedUser, Progress progress);
 	
 	int countByUserStoryId(Long userStoryId);
 

@@ -20,9 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findUserByName(String name);
 
-	Optional<List<User>> findAllByProject(Project project);
+	List<User> findAllByProject(Project project);
 
-	Optional<List<User>> findAllByRole(Role role);
+	List<User> findAllByRole(Role role);
 
 	@Modifying
 	@Query("UPDATE User u SET u.email = ?2 WHERE u.id = ?1")

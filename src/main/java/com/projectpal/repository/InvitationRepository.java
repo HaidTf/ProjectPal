@@ -2,7 +2,6 @@ package com.projectpal.repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,9 +16,9 @@ import com.projectpal.entity.User;
 @Repository
 public interface InvitationRepository extends JpaRepository<Invitation,Long> {
 
-	Optional<List<Invitation>> findAllByInvitedUser(User invitedUser);
+	List<Invitation> findAllByInvitedUser(User invitedUser);
 
-	Optional<List<Invitation>> findAllByProject(Project project);
+	List<Invitation> findAllByProject(Project project);
 
 	void deleteByIssueDateBefore(LocalDate xDateAgo);
 
