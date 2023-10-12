@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,11 +190,11 @@ public class TaskService {
 	@Transactional
 	public void exitUserTasks(User user) {
 
-		Optional<List<Task>> tasks = taskRepo.findAllByAssignedUser(user);
+		List<Task> tasks = taskRepo.findAllByAssignedUser(user);
 
-		if (tasks.isPresent() && tasks.get().size() > 0) {
+		if (tasks.size() > 0) {
 
-			for (Task task : tasks.get()) {
+			for (Task task : tasks) {
 
 				task.setAssignedUser(null);
 				taskRepo.save(task);

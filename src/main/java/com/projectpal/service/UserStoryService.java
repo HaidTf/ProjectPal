@@ -2,6 +2,7 @@ package com.projectpal.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,26 +58,26 @@ public class UserStoryService {
 
 		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
 
-		Optional<List<UserStory>> userStories = Optional.empty();
+		List<UserStory> userStories = new ArrayList<UserStory>();
 
 		boolean mayBeStoredInCache = (progress.size() == 2 && progress.contains(Progress.TODO)
 				&& progress.contains(Progress.INPROGRESS));
 
 		if (mayBeStoredInCache) {
 
-			userStories = userStoryCacheService.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
-			if (userStories.isEmpty()) {
-				userStories = Optional.of(userStoryRepo.findAllByEpicAndProgressIn(epic, progress));
-				userStoryCacheService.populateCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStories.get());
+			Optional<List<UserStory>> cacheUserStories = userStoryCacheService.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
+			if (cacheUserStories.isEmpty()) {
+				userStories = userStoryRepo.findAllByEpicAndProgressIn(epic, progress);
+				userStoryCacheService.populateCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
 			}
 
-			this.sort(userStories.get(), sort);
+			this.sort(userStories, sort);
 
 		} else {
-			userStories = Optional.of(this.findUserStoriesByEpicAndProgressFromDb(epic, progress, sort));
+			userStories = this.findUserStoriesByEpicAndProgressFromDb(epic, progress, sort);
 		}
 
-		return userStories.get();
+		return userStories;
 
 	}
 

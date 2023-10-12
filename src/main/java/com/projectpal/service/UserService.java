@@ -1,7 +1,6 @@
 package com.projectpal.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -103,13 +102,13 @@ public class UserService {
 
 		if (currentUser.getRole() == Role.ROLE_USER_PROJECT_OWNER) {
 
-			Optional<List<User>> projectUsers = userRepo.findAllByProject(project);
+			List<User> projectUsers = userRepo.findAllByProject(project);
 
-			if (projectUsers.isPresent() && projectUsers.get().size() > 0) {
+			if (projectUsers.size() > 0) {
 
 				boolean newProjectOwnerIsSet = false;
 
-				for (User projectUser : projectUsers.get()) {
+				for (User projectUser : projectUsers) {
 
 					if (projectUser.getRole() == Role.ROLE_USER_PROJECT_OPERATOR) {
 
@@ -126,7 +125,7 @@ public class UserService {
 
 				if (!newProjectOwnerIsSet) {
 
-					User newProjectOwner = projectUsers.get().get(0);
+					User newProjectOwner = projectUsers.get(0);
 					newProjectOwner.setRole(Role.ROLE_USER_PROJECT_OWNER);
 					userRepo.save(newProjectOwner);
 

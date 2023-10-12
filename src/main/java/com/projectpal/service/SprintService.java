@@ -3,6 +3,7 @@ package com.projectpal.service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,31 +57,31 @@ public class SprintService {
 	public List<Sprint> findSprintsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress,
 			Sort sort) {
 
-		Optional<List<Sprint>> sprints = Optional.empty();
+		List<Sprint> sprints = new ArrayList<Sprint>(0);
 
 		boolean mayBeStoredInCache = (progress.size() == 2 && progress.contains(Progress.TODO)
 				&& progress.contains(Progress.INPROGRESS));
 
 		if (mayBeStoredInCache) {
 
-			sprints = sprintCacheService.getObjectsFromCache(Sprint.SPRINT_CACHE, project.getId());
-			if (sprints.isEmpty()) {
+			Optional<List<Sprint>> cacheSprints = sprintCacheService.getObjectsFromCache(Sprint.SPRINT_CACHE,
+					project.getId());
+			if (cacheSprints.isEmpty()) {
 				sprints = sprintRepo.findAllByProjectAndProgressIn(project, progress);
-				sprintCacheService.populateCache(Sprint.SPRINT_CACHE, project.getId(), sprints.get());
+				sprintCacheService.populateCache(Sprint.SPRINT_CACHE, project.getId(), sprints);
 			}
 
-			this.sort(sprints.get(), sort);
+			this.sort(sprints, sort);
 
 		} else {
 			sprints = this.findSprintsByProjectAndProgressFromDb(project, progress, sort);
 		}
 
-		return sprints.get();
+		return sprints;
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<List<Sprint>> findSprintsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
-			Sort sort) {
+	public List<Sprint> findSprintsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
 		case 0, 3 -> {
