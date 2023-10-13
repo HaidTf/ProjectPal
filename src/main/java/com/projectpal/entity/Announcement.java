@@ -15,11 +15,14 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
+@Getter
+@Setter
 public class Announcement {
 
 	@JsonCreator
@@ -30,63 +33,24 @@ public class Announcement {
 	}
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("issueDate");
-	
+
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
-	
+
 	@NotBlank
-	@Size(min=3,max=60)
+	@Size(min = 3, max = 60)
 	private String title;
 
 	@Nullable
-	@Size(max=300)
+	@Size(max = 300)
 	private String description;
-	
+
 	@Temporal(TemporalType.DATE)
 	private LocalDate issueDate;
-	
+
 	@ManyToOne
 	@JsonIgnore
 	private Project project;
 
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public LocalDate getIssueDate() {
-		return issueDate;
-	}
-
-	public void setIssueDate(LocalDate issueDate) {
-		this.issueDate = issueDate;
-	}
 }

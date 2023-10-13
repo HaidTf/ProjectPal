@@ -3,7 +3,6 @@ package com.projectpal.controller;
 import java.net.URI;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,13 +25,11 @@ import com.projectpal.service.InvitationService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@RestController
-public class InvitationController {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public InvitationController(InvitationService invitationService) {
-		this.invitationService = invitationService;
-	}
+@RestController
+@RequiredArgsConstructor
+public class InvitationController {
 
 	private final InvitationService invitationService;
 

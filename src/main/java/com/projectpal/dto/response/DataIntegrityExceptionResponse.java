@@ -3,6 +3,9 @@ package com.projectpal.dto.response;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import lombok.Getter;
+
+@Getter
 public final class DataIntegrityExceptionResponse {
 
 	public DataIntegrityExceptionResponse(DataIntegrityViolationException ex) {
@@ -21,10 +24,6 @@ public final class DataIntegrityExceptionResponse {
 	private final String constraintViolated;
 
 	private final boolean isConstraintViolation;
-
-	public String getConstraintViolated() {
-		return constraintViolated;
-	}
 
 	public boolean isConstraintViolation() {
 		return isConstraintViolation;

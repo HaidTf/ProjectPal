@@ -24,28 +24,13 @@ import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.service.cache.CacheService;
 
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/admin/entities/delete")
+@RequiredArgsConstructor
 public class DeleteEntitiesAdminController {
-
-
-	
-
-	public DeleteEntitiesAdminController(ProjectRepository projectRepo, EpicRepository epicRepo,
-			SprintRepository sprintRepo, UserStoryRepository userStoryRepo, TaskRepository taskRepo,
-			TaskAttachmentRepository taskAttachmentRepo, InvitationRepository invitationRepo,
-			AnnouncementRepository announcementRepo, CacheService cacheService) {
-		this.projectRepo = projectRepo;
-		this.epicRepo = epicRepo;
-		this.sprintRepo = sprintRepo;
-		this.userStoryRepo = userStoryRepo;
-		this.taskRepo = taskRepo;
-		this.taskAttachmentRepo = taskAttachmentRepo;
-		this.invitationRepo = invitationRepo;
-		this.announcementRepo = announcementRepo;
-		this.cacheService = cacheService;
-	}
 
 	private final ProjectRepository projectRepo;
 

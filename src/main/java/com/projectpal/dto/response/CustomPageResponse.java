@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import lombok.Getter;
+
+@Getter
 public final class CustomPageResponse<T> {
 
 	public CustomPageResponse(Page<T> page) {
@@ -17,38 +20,18 @@ public final class CustomPageResponse<T> {
 	}
 
 	private final List<T> content;
-	
+
 	private final long totalElements;
-	
+
 	private final int totalPages;
-	
+
 	private final int currentPage;
-	
+
 	private final int pageSize;
-	
+
 	private final boolean isFirst;
-	
+
 	private final boolean isLast;
-
-	public List<T> getContent() {
-		return content;
-	}
-
-	public long getTotalElements() {
-		return totalElements;
-	}
-
-	public int getTotalPages() {
-		return totalPages;
-	}
-
-	public int getCurrentPage() {
-		return currentPage;
-	}
-
-	public int getPageSize() {
-		return pageSize;
-	}
 
 	public boolean isFirst() {
 		return isFirst;

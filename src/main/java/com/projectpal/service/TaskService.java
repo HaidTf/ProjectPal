@@ -3,7 +3,6 @@ package com.projectpal.service;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,17 +26,11 @@ import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class TaskService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public TaskService(TaskRepository taskRepo, UserStoryService userStoryService,
-			AuthenticationContextFacade authenticationContextFacadeImpl, UserRepository userRepo) {
-		this.taskRepo = taskRepo;
-		this.userStoryService = userStoryService;
-		this.userRepo = userRepo;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class TaskService {
 
 	private final TaskRepository taskRepo;
 

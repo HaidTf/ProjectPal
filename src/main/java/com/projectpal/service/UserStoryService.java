@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,17 +21,11 @@ import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.UserStoryCacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class UserStoryService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public UserStoryService(UserStoryRepository userStoryRepo, UserStoryCacheService userStoryCacheService,
-			EpicService epicService, AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.userStoryRepo = userStoryRepo;
-		this.epicService = epicService;
-		this.userStoryCacheService = userStoryCacheService;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class UserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 

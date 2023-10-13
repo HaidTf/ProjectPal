@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
+@Getter
 public final class IdHolderRequest {
 
 	@JsonCreator
@@ -15,9 +17,5 @@ public final class IdHolderRequest {
 	@NotNull
 	@JsonAlias({ "userId","userStoryId" })
 	private final long id;
-
-	public long getId() {
-		return id;
-	}
 
 }

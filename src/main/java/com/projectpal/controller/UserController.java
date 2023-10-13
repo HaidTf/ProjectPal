@@ -2,7 +2,6 @@ package com.projectpal.controller;
 
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -27,16 +26,12 @@ import com.projectpal.service.TaskService;
 import com.projectpal.service.UserService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users/me")
+@RequiredArgsConstructor
 public class UserController {
-
-	@Autowired
-	public UserController(TaskService taskService, UserService userService) {
-		this.taskService = taskService;
-		this.userService = userService;
-	}
 
 	private final UserService userService;
 

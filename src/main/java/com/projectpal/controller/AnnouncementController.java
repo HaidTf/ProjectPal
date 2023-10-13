@@ -2,7 +2,6 @@ package com.projectpal.controller;
 
 import java.net.URI;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,15 +25,12 @@ import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/project/announcements")
+@RequiredArgsConstructor
 public class AnnouncementController {
-
-	@Autowired
-	public AnnouncementController(AnnouncementService announcementService) {
-		this.announcementService = announcementService;
-	}
 
 	private final AnnouncementService announcementService;
 

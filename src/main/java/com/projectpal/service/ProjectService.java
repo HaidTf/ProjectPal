@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -24,19 +23,11 @@ import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.service.cache.CacheService;
 
-@Service
-public class ProjectService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public ProjectService(ProjectRepository projectRepo, UserRepository userRepo, EpicService epicService,
-			SprintService sprintService, CacheService<Project> cacheService, TaskService taskService) {
-		this.projectRepo = projectRepo;
-		this.userRepo = userRepo;
-		this.epicService = epicService;
-		this.sprintService = sprintService;
-		this.taskService = taskService;
-		this.cacheService = cacheService;
-	}
+@Service
+@RequiredArgsConstructor
+public class ProjectService {
 
 	private final ProjectRepository projectRepo;
 

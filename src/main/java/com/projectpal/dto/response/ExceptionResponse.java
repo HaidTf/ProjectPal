@@ -1,15 +1,12 @@
 package com.projectpal.dto.response;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public final class ExceptionResponse {
 
-	public ExceptionResponse(String message) {
-		this.message = message;
-	}
-
 	private final String message;
-
-	public String getMessage() {
-		return message;
-	}
 
 }

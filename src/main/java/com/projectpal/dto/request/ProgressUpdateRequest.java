@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.projectpal.entity.enums.Progress;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
+@Getter
 public final class ProgressUpdateRequest {
 
 	@JsonCreator
@@ -14,9 +16,5 @@ public final class ProgressUpdateRequest {
 
 	@NotNull
 	private final Progress progress;
-
-	public Progress getProgress() {
-		return progress;
-	}
 	
 }

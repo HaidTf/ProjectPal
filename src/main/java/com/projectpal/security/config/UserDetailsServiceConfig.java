@@ -1,6 +1,5 @@
 package com.projectpal.security.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,21 +8,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.projectpal.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 public class UserDetailsServiceConfig {
-	
-	@Autowired
-	public UserDetailsServiceConfig(UserRepository repo) {
-		this.userRepo = repo;
-	}
 
 	private final UserRepository userRepo;
 
-    @Bean
-    UserDetailsService userDetailsService() {
+	@Bean
+	UserDetailsService userDetailsService() {
 
-		
-		
 		return new UserDetailsService() {
 
 			@Override

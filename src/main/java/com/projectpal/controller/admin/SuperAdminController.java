@@ -17,15 +17,13 @@ import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/admin/super")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequiredArgsConstructor
 public class SuperAdminController {
-
-	@Autowired
-	public SuperAdminController(UserRepository userRepo) {
-		this.userRepo = userRepo;
-	}
 
 	private final UserRepository userRepo;
 

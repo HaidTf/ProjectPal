@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,19 +19,11 @@ import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.UserStoryCacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class SprintUserStoryService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public SprintUserStoryService(UserStoryRepository userStoryRepo, UserStoryCacheService userStoryCacheService,
-			UserStoryService userStoryService, SprintService sprintService,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.userStoryRepo = userStoryRepo;
-		this.userStoryService = userStoryService;
-		this.sprintService = sprintService;
-		this.userStoryCacheService = userStoryCacheService;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class SprintUserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 

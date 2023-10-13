@@ -21,16 +21,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
+@Getter
+@Setter
 public class Epic implements Serializable {
 
 	@JsonCreator
@@ -49,9 +52,8 @@ public class Epic implements Serializable {
 		this.progress = progress;
 	}
 
-	@Transient
 	private static final long serialVersionUID = 3L;
-	
+
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
 
 	public static final String EPIC_CACHE = "epicListCache";
@@ -63,11 +65,11 @@ public class Epic implements Serializable {
 	private long id;
 
 	@NotBlank
-	@Size(min=3,max=60)
+	@Size(min = 3, max = 60)
 	private String name;
 
 	@Nullable
-	@Size(max=300)
+	@Size(max = 300)
 	private String description;
 
 	@Column(columnDefinition = "TINYINT")
@@ -78,7 +80,7 @@ public class Epic implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	private Progress progress;
-	
+
 	@Temporal(TemporalType.DATE)
 	private LocalDate creationDate;
 
@@ -89,76 +91,6 @@ public class Epic implements Serializable {
 	@OneToMany(mappedBy = "epic", cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private List<UserStory> userStories;
-
-	// Getters and Setters
-
-	public List<UserStory> getUserStories() {
-		return userStories;
-	}
-
-	public void setUserStories(List<UserStory> userStories) {
-		this.userStories = userStories;
-
-	}
-
-	public void addUserStory(UserStory userStory) {
-		this.userStories.add(userStory);
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public int getPriority() {
-		return priority;
-	}
-
-	public void setPriority(int priority) {
-		this.priority = priority;
-	}
-
-	public Progress getProgress() {
-		return progress;
-	}
-
-	public void setProgress(Progress progress) {
-		this.progress = progress;
-	}
-	public LocalDate getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(LocalDate creationDate) {
-		this.creationDate = creationDate;
-	}
 
 	@Override
 	public boolean equals(Object obj) {

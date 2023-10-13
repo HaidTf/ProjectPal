@@ -3,7 +3,6 @@ package com.projectpal.controller;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +26,12 @@ import com.projectpal.service.SprintUserStoryService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/sprints/{sprintId}/userstories")
+@RequiredArgsConstructor
 public class SprintUserStoryController {
-
-	@Autowired
-	public SprintUserStoryController(SprintUserStoryService sprintUserStoryService) {
-		this.sprintUserStoryService = sprintUserStoryService;
-	}
 
 	private final SprintUserStoryService sprintUserStoryService;
 
