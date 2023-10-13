@@ -1,6 +1,5 @@
 package com.projectpal.security.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,19 +23,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.projectpal.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.projectpal.security.filter.JwtAuthenticationFilter;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-
-	@Autowired
-	public SecurityConfig(JwtAuthenticationFilter jwtFilter, UserDetailsService userDetailsService,
-			CustomAuthenticationEntryPoint authenticationEntryPoint) {
-		this.jwtFilter = jwtFilter;
-		this.userDetailsService = userDetailsService;
-		this.authenticationEntryPoint = authenticationEntryPoint;
-
-	}
 
 	private final JwtAuthenticationFilter jwtFilter;
 

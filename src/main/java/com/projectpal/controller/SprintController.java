@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +36,12 @@ import com.projectpal.utils.SortValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/project/sprints")
+@RequiredArgsConstructor
 public class SprintController {
-	@Autowired
-	public SprintController(SprintService sprintService) {
-		this.sprintService = sprintService;
-	}
 
 	private final SprintService sprintService;
 

@@ -19,15 +19,12 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/admin/user")
+@RequiredArgsConstructor
 public class UserEntityAdminController {
-
-	@Autowired
-	public UserEntityAdminController(UserRepository userRepo, PasswordEncoder passwordEncoder) {
-		this.userRepo = userRepo;
-		this.passwordEncoder = passwordEncoder;
-	}
 
 	private final PasswordEncoder passwordEncoder;
 

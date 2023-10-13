@@ -2,7 +2,6 @@ package com.projectpal.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,17 +21,11 @@ import com.projectpal.repository.UserRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class InvitationService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public InvitationService(InvitationRepository invitationRepo, UserRepository userRepo, UserService userService,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.invitationRepo = invitationRepo;
-		this.userRepo = userRepo;
-		this.userService = userService;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class InvitationService {
 
 	private final InvitationRepository invitationRepo;
 

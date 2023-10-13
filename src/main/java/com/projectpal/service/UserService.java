@@ -2,7 +2,6 @@ package com.projectpal.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,18 +22,11 @@ import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.utils.MaxAllowedUtil;
 
-@Service
-public class UserService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public UserService(PasswordEncoder encoder, UserRepository userRepo, ProjectRepository projectRepo,
-			TaskService taskService, ProjectService projectService) {
-		this.encoder = encoder;
-		this.userRepo = userRepo;
-		this.projectRepo = projectRepo;
-		this.taskService = taskService;
-		this.projectService = projectService;
-	}
+@Service
+@RequiredArgsConstructor
+public class UserService {
 
 	private final PasswordEncoder encoder;
 

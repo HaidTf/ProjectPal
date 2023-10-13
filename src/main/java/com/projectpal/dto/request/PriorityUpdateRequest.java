@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.Getter;
 
+@Getter
 public final class PriorityUpdateRequest {
 
 	@JsonCreator
@@ -15,9 +17,5 @@ public final class PriorityUpdateRequest {
 	@Min(1)
 	@Max(255)
 	private final int priority;
-
-	public int getPriority() {
-		return priority;
-	}
 
 }

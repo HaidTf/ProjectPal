@@ -24,14 +24,17 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@NoArgsConstructor
-@Table(name = "users")
 @Entity
+@Table(name = "users")
+@NoArgsConstructor
+@Getter
+@Setter
 public class User implements UserDetails {
 
 	public User(String name, String email, String password) {
@@ -41,7 +44,6 @@ public class User implements UserDetails {
 		this.role = Role.ROLE_USER;
 	}
 
-	@Transient
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -74,74 +76,8 @@ public class User implements UserDetails {
 	@JsonIgnore
 	private List<Invitation> invitations;
 
-	// Getters and Setters
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public LocalDate getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(LocalDate creationDate) {
-		this.creationDate = creationDate;
-	}
-
-	public Role getRole() {
-		return role;
-	}
-
-	public void setRole(Role role) {
-		this.role = role;
-	}
-
 	public Optional<Project> getOptionalOfProject() {
 		return Optional.ofNullable(project);
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public List<Invitation> getInvitations() {
-		return invitations;
-	}
-
-	public void setInvitations(List<Invitation> invitations) {
-		this.invitations = invitations;
-	}
-
-	public void addInvitation(Invitation invite) {
-		this.invitations.add(invite);
 	}
 
 	@Override

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -21,22 +20,15 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
-import com.projectpal.service.cache.CacheService;
+import com.projectpal.service.cache.EpicCacheService;
+import com.projectpal.service.cache.UserStoryCacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class EpicService {
+import lombok.RequiredArgsConstructor;
 
-	public EpicService(EpicRepository epicRepo, UserStoryRepository userStoryRepo,
-			@Qualifier("epicCacheService") CacheService<Epic> epicCacheService,
-			@Qualifier("userStoryCacheService") CacheService<UserStory> userStoryCacheService,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.epicRepo = epicRepo;
-		this.userStoryRepo = userStoryRepo;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-		this.epicCacheService = epicCacheService;
-		this.userStoryCacheService = userStoryCacheService;
-	}
+@Service
+@RequiredArgsConstructor
+public class EpicService {
 
 	private final EpicRepository epicRepo;
 
@@ -44,9 +36,9 @@ public class EpicService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	private final CacheService<Epic> epicCacheService;
+	private final EpicCacheService epicCacheService;
 
-	private final CacheService<UserStory> userStoryCacheService;
+	private final UserStoryCacheService userStoryCacheService;
 
 	@Transactional(readOnly = true)
 	public Epic findEpicById(long epicId) {

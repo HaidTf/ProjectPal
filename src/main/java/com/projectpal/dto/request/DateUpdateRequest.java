@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
+@Getter
 public final class DateUpdateRequest {
 
 	@JsonCreator
@@ -17,9 +19,5 @@ public final class DateUpdateRequest {
 	@NotNull
 	@JsonAlias({ "startDate", "endDate" })
 	private final LocalDate date;
-
-	public LocalDate getDate() {
-		return date;
-	}
 
 }

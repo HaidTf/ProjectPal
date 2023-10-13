@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
@@ -36,15 +35,12 @@ import com.projectpal.utils.SortValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/project/epics")
+@RequiredArgsConstructor
 public class EpicController {
-
-	@Autowired
-	public EpicController(EpicService epicService) {
-		this.epicService = epicService;
-	}
 
 	private final EpicService epicService;
 

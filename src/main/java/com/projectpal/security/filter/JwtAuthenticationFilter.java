@@ -2,7 +2,6 @@ package com.projectpal.security.filter;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,17 +21,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-	@Autowired
-	public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService,
-			CustomAuthenticationEntryPoint authEntryPoint) {
-		this.jwtService = jwtService;
-		this.userDetailsService = userDetailsService;
-		this.authEntryPoint = authEntryPoint;
-	}
 
 	private final JwtService jwtService;
 
@@ -47,14 +40,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		final String authHeader = request.getHeader("Authorization");
 		final String jwt;
 		final String userEmail;
-		
-		
-		if(request.getRequestURI().startsWith("/api/auth/")) {
+
+		if (request.getRequestURI().startsWith("/api/auth/")) {
 			filterChain.doFilter(request, response);
 			return;
-			
+
 		}
-		
+
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
 			authEntryPoint.commence(request, response, new CustomAuthenticationException(
@@ -72,14 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			authEntryPoint.commence(request, response, new CustomAuthenticationException(
 					"Jwt Authentication failed: No Jwt token is in the Authorization header", ex));
 			return;
-			
+
 		} catch (ExpiredJwtException ex) {
 			authEntryPoint.commence(request, response,
 					new CustomAuthenticationException("Jwt Authentication failed: Jwt token is expired", ex));
 			return;
 
 		}
-		
+
 		if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
 			UserDetails userDetails;

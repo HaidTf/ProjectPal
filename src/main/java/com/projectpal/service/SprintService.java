@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -23,28 +21,21 @@ import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
-import com.projectpal.service.cache.CacheService;
+import com.projectpal.service.cache.SprintCacheService;
+import com.projectpal.service.cache.UserStoryCacheService;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class SprintService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public SprintService(SprintRepository sprintRepo,
-			@Qualifier("sprintCacheService") CacheService<Sprint> sprintCacheService,
-			@Qualifier("userStoryCacheService") CacheService<UserStory> userStoryCacheService,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.sprintRepo = sprintRepo;
-		this.sprintCacheService = sprintCacheService;
-		this.userStoryCacheService = userStoryCacheService;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class SprintService {
 
 	private final SprintRepository sprintRepo;
 
-	private final CacheService<Sprint> sprintCacheService;
+	private final SprintCacheService sprintCacheService;
 
-	private final CacheService<UserStory> userStoryCacheService;
+	private final UserStoryCacheService userStoryCacheService;
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 

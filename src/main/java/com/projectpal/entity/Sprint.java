@@ -17,14 +17,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 @Entity
+@Getter
+@Setter
 public class Sprint implements Serializable {
 
 	@JsonCreator
@@ -45,7 +48,6 @@ public class Sprint implements Serializable {
 		this.progress = progress;
 	}
 
-	@Transient
 	private static final long serialVersionUID = 4L;
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "startDate", "endDate");
@@ -83,75 +85,5 @@ public class Sprint implements Serializable {
 	@ManyToOne
 	@JsonIgnore
 	private Project project;
-
-	// Getters and Setters
-
-	public long getId() {
-		return id;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public LocalDate getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-		if (startDate.isBefore(LocalDate.now()))
-			this.setProgress(Progress.INPROGRESS);
-		else
-			this.setProgress(Progress.TODO);
-	}
-
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(LocalDate endDate) {
-		this.endDate = endDate;
-	}
-
-	public Progress getProgress() {
-		return progress;
-	}
-
-	public void setProgress(Progress progress) {
-		this.progress = progress;
-	}
-
-	public LocalDate getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(LocalDate creationDate) {
-		this.creationDate = creationDate;
-	}
 
 }

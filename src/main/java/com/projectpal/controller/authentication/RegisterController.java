@@ -1,6 +1,5 @@
 package com.projectpal.controller.authentication;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,15 +15,12 @@ import com.projectpal.exception.InternalServerErrorException;
 import com.projectpal.service.AuthenticationService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth/register")
+@RequiredArgsConstructor
 public class RegisterController {
-
-	@Autowired
-	public RegisterController(AuthenticationService authService) {
-		this.authService = authService;
-	}
 
 	private final AuthenticationService authService;
 

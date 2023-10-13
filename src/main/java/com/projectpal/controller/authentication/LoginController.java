@@ -1,6 +1,5 @@
 package com.projectpal.controller.authentication;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -16,15 +15,12 @@ import com.projectpal.dto.response.ExceptionResponse;
 import com.projectpal.service.AuthenticationService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth/login")
+@RequiredArgsConstructor
 public class LoginController {
-
-	@Autowired
-	public LoginController(AuthenticationService authService) {
-		this.authService = authService;
-	}
 
 	private final AuthenticationService authService;
 

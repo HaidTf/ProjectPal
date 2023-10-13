@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
@@ -35,15 +34,12 @@ import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/userstories")
+@RequiredArgsConstructor
 public class TaskController {
-
-	@Autowired
-	public TaskController(TaskService taskService) {
-		this.taskService = taskService;
-	}
 
 	private final TaskService taskService;
 

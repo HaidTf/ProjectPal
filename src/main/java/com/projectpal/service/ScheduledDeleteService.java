@@ -2,7 +2,6 @@ package com.projectpal.service;
 
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,16 +10,11 @@ import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.ProjectRepository;
 
-@Service
-public class ScheduledDeleteService {
-	@Autowired
-	public ScheduledDeleteService(AnnouncementRepository announcementRepo, InvitationRepository invitationRepo,
-			ProjectRepository projectRepo) {
+import lombok.RequiredArgsConstructor;
 
-		this.announcementRepo = announcementRepo;
-		this.invitationRepo = invitationRepo;
-		this.projectRepo = projectRepo;
-	}
+@Service
+@RequiredArgsConstructor
+public class ScheduledDeleteService {
 
 	private final AnnouncementRepository announcementRepo;
 

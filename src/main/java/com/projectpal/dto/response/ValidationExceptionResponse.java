@@ -2,15 +2,13 @@ package com.projectpal.dto.response;
 
 import java.util.List;
 
-public final class ValidationExceptionResponse {
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-	public ValidationExceptionResponse(List<String> errors) {
-		this.errors = errors;
-	}
+@Getter
+@RequiredArgsConstructor
+public final class ValidationExceptionResponse {
 
 	private final List<String> errors;
 
-	public List<String> getErrors() {
-		return errors;
-	}
 }

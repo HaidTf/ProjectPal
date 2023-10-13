@@ -1,6 +1,5 @@
 package com.projectpal.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,15 +17,11 @@ import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
 
-@Service
-public class AnnouncementService {
+import lombok.RequiredArgsConstructor;
 
-	@Autowired
-	public AnnouncementService(AnnouncementRepository announcementRepo,
-			AuthenticationContextFacade authenticationContextFacadeImpl) {
-		this.announcementRepo = announcementRepo;
-		this.authenticationContextFacadeImpl = authenticationContextFacadeImpl;
-	}
+@Service
+@RequiredArgsConstructor
+public class AnnouncementService {
 
 	private final AnnouncementRepository announcementRepo;
 

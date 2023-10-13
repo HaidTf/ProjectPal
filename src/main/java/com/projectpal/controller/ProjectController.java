@@ -2,7 +2,6 @@ package com.projectpal.controller;
 
 import java.net.URI;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,16 +29,12 @@ import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/project")
+@RequiredArgsConstructor
 public class ProjectController {
-
-	@Autowired
-	public ProjectController(ProjectService projectService, UserService userService) {
-		this.projectService = projectService;
-		this.userService = userService;
-	}
 
 	private final ProjectService projectService;
 

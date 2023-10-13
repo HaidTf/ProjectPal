@@ -1,7 +1,5 @@
 package com.projectpal.dto.request;
 
-
-
 import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,7 +8,9 @@ import com.projectpal.entity.enums.Progress;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 
+@Getter
 public final class TaskProgressAndReportUpdateRequest {
 
 	@JsonCreator
@@ -24,15 +24,7 @@ public final class TaskProgressAndReportUpdateRequest {
 
 	@Nullable
 	@JsonProperty("report")
-	@Size(max=500)
+	@Size(max = 500)
 	private final String report;
-
-	public Progress getProgress() {
-		return progress;
-	}
-
-	public String getReport() {
-		return report;
-	}
 
 }
