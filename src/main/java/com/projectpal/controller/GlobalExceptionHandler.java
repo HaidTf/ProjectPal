@@ -16,8 +16,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.BindException;
 
-import com.projectpal.dto.response.ExceptionResponse;
-import com.projectpal.dto.response.ValidationExceptionResponse;
+import com.projectpal.dto.response.exception.ExceptionResponse;
+import com.projectpal.dto.response.exception.ValidationExceptionResponse;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
