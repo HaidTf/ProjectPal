@@ -24,9 +24,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.dto.request.DateUpdateRequest;
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.ProgressUpdateRequest;
+import com.projectpal.dto.request.DateDto;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.ProgressDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
@@ -94,7 +94,7 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/start-date")
-	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateUpdateRequest startDateUpdateRequest,
+	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateDto startDateUpdateRequest,
 			@PathVariable long id) {
 
 		sprintService.updateStartDate(id, startDateUpdateRequest.getDate());
@@ -104,7 +104,7 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/end-date")
-	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateUpdateRequest endDateUpdateRequest,
+	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateDto endDateUpdateRequest,
 			@PathVariable long id) {
 
 		sprintService.updateEndDate(id, endDateUpdateRequest.getDate());
@@ -114,7 +114,7 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long id) {
 
 		sprintService.updateDescription(id, descriptionUpdateRequest.getDescription());
@@ -124,7 +124,7 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long id) {
 
 		sprintService.updateProgress(id, progressUpdateRequest.getProgress());

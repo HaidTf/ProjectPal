@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.PriorityUpdateRequest;
-import com.projectpal.dto.request.ProgressUpdateRequest;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.PriorityDto;
+import com.projectpal.dto.request.ProgressDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
@@ -89,7 +89,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long id) {
 
 		epicService.updateDescription(id, descriptionUpdateRequest.getDescription());
@@ -99,7 +99,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/priority")
-	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityHolder,
 			@PathVariable long id) {
 
 		epicService.updatePriority(id, priorityHolder.getPriority());
@@ -110,7 +110,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long id) {
 
 		epicService.updateProgress(id, progressUpdateRequest.getProgress());

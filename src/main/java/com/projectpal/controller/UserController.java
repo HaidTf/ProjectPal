@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.dto.request.PasswordUpdateRequest;
+import com.projectpal.dto.request.PasswordDto;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
@@ -55,7 +55,7 @@ public class UserController {
 	@PreAuthorize("!(hasRole('SUPER_ADMIN'))")
 	@PatchMapping("/password")
 	public ResponseEntity<Void> updatePassword(@AuthenticationPrincipal User user,
-			@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
+			@RequestBody @Valid PasswordDto passwordUpdateRequest) {
 
 		userService.updateUserPassword(user, passwordUpdateRequest.getPassword());
 

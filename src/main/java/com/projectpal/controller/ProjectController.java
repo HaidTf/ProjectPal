@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.RoleUpdateRequest;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.RoleDto;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
@@ -81,7 +81,7 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/description")
 	public ResponseEntity<Void> updateDescription(@AuthenticationPrincipal User currentUser,
-			@RequestBody DescriptionUpdateRequest descriptionUpdateRequest) {
+			@RequestBody DescriptionDto descriptionUpdateRequest) {
 
 		Project project = currentUser.getProject();
 
@@ -94,7 +94,7 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@PatchMapping("/users/{userId}/role")
 	public ResponseEntity<Void> setOtherUserProjectRole(@AuthenticationPrincipal User currentUser,
-			@PathVariable long otherUserId, @RequestBody @Valid RoleUpdateRequest roleUpdateRequest) {
+			@PathVariable long otherUserId, @RequestBody @Valid RoleDto roleUpdateRequest) {
 
 		userService.updateUserProjectRole(currentUser, otherUserId, roleUpdateRequest.getRole());
 
