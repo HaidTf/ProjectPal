@@ -7,8 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.projectpal.dto.request.AuthenticationRequest;
-import com.projectpal.dto.request.RegisterRequest;
+import com.projectpal.dto.request.authentication.AuthenticationRequest;
+import com.projectpal.dto.request.authentication.RegisterRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 
 import com.projectpal.entity.User;
