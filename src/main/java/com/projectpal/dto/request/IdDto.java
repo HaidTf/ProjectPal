@@ -1,20 +1,21 @@
 package com.projectpal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.projectpal.entity.enums.Role;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public final class RoleUpdateRequest {
+public final class IdDto {
 
 	@JsonCreator
-	public RoleUpdateRequest(Role role) {
-		this.role = role;
+	public IdDto(long id) {
+		this.id = id;
 	}
 
 	@NotNull
-	private final Role role;
+	@JsonAlias({ "userId","userStoryId" })
+	private final long id;
 
 }

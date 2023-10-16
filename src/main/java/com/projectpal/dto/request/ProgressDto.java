@@ -7,10 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public final class ProgressUpdateRequest {
+public final class ProgressDto {
 
 	@JsonCreator
-	public ProgressUpdateRequest(Progress progress) {
+	public ProgressDto(Progress progress) {
 		this.progress = progress;
 	}
 

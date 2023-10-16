@@ -9,10 +9,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public final class DateUpdateRequest {
+public final class DateDto {
 
 	@JsonCreator
-	public DateUpdateRequest(LocalDate date) {
+	public DateDto(LocalDate date) {
 		this.date = date;
 	}
 
