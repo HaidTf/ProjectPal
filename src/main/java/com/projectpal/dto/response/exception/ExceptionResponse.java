@@ -1,4 +1,4 @@
-package com.projectpal.dto.response;
+package com.projectpal.dto.response.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
