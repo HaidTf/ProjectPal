@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class InvitationResponseDto {
+public class UserInvitationResponseDto {
 
 	private final long id;
 
