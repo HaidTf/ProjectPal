@@ -1,4 +1,4 @@
-package com.projectpal.dto.response;
+package com.projectpal.dto.response.exception;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;

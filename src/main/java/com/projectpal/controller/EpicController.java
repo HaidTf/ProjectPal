@@ -21,14 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.PriorityUpdateRequest;
-import com.projectpal.dto.request.ProgressUpdateRequest;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.PriorityDto;
+import com.projectpal.dto.request.ProgressDto;
+import com.projectpal.dto.request.entity.EpicCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.mapper.EpicMapper;
 import com.projectpal.service.EpicService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
@@ -43,6 +45,8 @@ import lombok.RequiredArgsConstructor;
 public class EpicController {
 
 	private final EpicService epicService;
+	
+	private final EpicMapper epicMapper;
 
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@AuthenticationPrincipal User currentUser, @PathVariable long epicId) {
@@ -75,10 +79,12 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody Epic epic) {
+	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody EpicCreationDto epicCreationDto) {
 
 		Project project = currentUser.getProject();
 
+		Epic epic = epicMapper.toEpic(epicCreationDto);
+		
 		epicService.createEpic(project, epic);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/epics/" + epic.getId()).build();
@@ -89,7 +95,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long id) {
 
 		epicService.updateDescription(id, descriptionUpdateRequest.getDescription());
@@ -99,7 +105,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/priority")
-	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityHolder,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityHolder,
 			@PathVariable long id) {
 
 		epicService.updatePriority(id, priorityHolder.getPriority());
@@ -110,7 +116,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/progress")
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long id) {
 
 		epicService.updateProgress(id, progressUpdateRequest.getProgress());

@@ -6,7 +6,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -39,10 +38,9 @@ public class Announcement {
 	private long id;
 
 	@NotBlank
-	@Size(min = 3, max = 60)
+	@Size(min = 3, max = 100)
 	private String title;
 
-	@Nullable
 	@Size(max = 300)
 	private String description;
 

@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public final class DescriptionUpdateRequest {
+public final class DescriptionDto {
 
 	@JsonCreator
-	public DescriptionUpdateRequest(String description) {
+	public DescriptionDto(String description) {
 		this.description = description;
 	}
 

@@ -23,9 +23,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.PriorityUpdateRequest;
-import com.projectpal.dto.request.ProgressUpdateRequest;
+import com.projectpal.mapper.UserStoryMapper;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.PriorityDto;
+import com.projectpal.dto.request.ProgressDto;
+import com.projectpal.dto.request.entity.UserStoryCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.User;
 import com.projectpal.service.UserStoryService;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 public class UserStoryController {
 
 	private final UserStoryService userStoryService;
+	
+	private final UserStoryMapper userStoryMapper;
 
 	@GetMapping("/userstories/{userStoryId}")
 	public ResponseEntity<UserStory> getUserStory(@AuthenticationPrincipal User currentUser,
@@ -76,9 +80,11 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{epicId}/userstories")
-	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStory userStory,
+	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStoryCreationDto userStoryCreationDto,
 			@PathVariable long epicId) {
 
+		UserStory userStory = userStoryMapper.toUserStory(userStoryCreationDto);
+		
 		userStoryService.createUserStory(epicId, userStory);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epics/userstories/" + userStory.getId())
@@ -90,7 +96,7 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{UserStoryId}/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		userStoryService.updateDescription(userStoryId, descriptionUpdateRequest.getDescription());
@@ -100,7 +106,7 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/priority")
-	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		userStoryService.updatePriority(userStoryId, priorityUpdateRequest.getPriority());
@@ -111,7 +117,7 @@ public class UserStoryController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/userstories/{userStoryId}/progress")
-	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressUpdateRequest progressUpdateRequest,
+	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long userStoryId) {
 
 		userStoryService.updateProgress(userStoryId, progressUpdateRequest.getProgress());

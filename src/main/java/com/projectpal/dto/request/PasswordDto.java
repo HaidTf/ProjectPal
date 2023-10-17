@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public final class PasswordUpdateRequest {
+public final class PasswordDto {
 
 	@JsonCreator
-	public PasswordUpdateRequest(String password) {
+	public PasswordDto(String password) {
 		this.password = password;
 	}
 

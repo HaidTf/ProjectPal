@@ -21,14 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.projectpal.dto.request.DescriptionUpdateRequest;
-import com.projectpal.dto.request.IdHolderRequest;
-import com.projectpal.dto.request.PriorityUpdateRequest;
-import com.projectpal.dto.request.TaskProgressAndReportUpdateRequest;
+import com.projectpal.dto.request.DescriptionDto;
+import com.projectpal.dto.request.IdDto;
+import com.projectpal.dto.request.PriorityDto;
+import com.projectpal.dto.request.ProgressAndReportDto;
+import com.projectpal.dto.request.entity.TaskCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.mapper.TaskMapper;
 import com.projectpal.service.TaskService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 public class TaskController {
 
 	private final TaskService taskService;
+	
+	private final TaskMapper taskMapper;
 
 	@GetMapping("/tasks/{taskId}")
 	public ResponseEntity<Task> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
@@ -71,8 +75,10 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
-	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
+	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody TaskCreationDto taskCreationDto) {
 
+		Task task = taskMapper.toTask(taskCreationDto);
+		
 		taskService.createTask(userStoryId, task);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/tasks/" + task.getId()).build();
@@ -84,7 +90,7 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/description")
-	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionUpdateRequest descriptionUpdateRequest,
+	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long taskId) {
 
 		taskService.updateDescription(taskId, descriptionUpdateRequest.getDescription());
@@ -94,7 +100,7 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/priority")
-	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityUpdateRequest priorityUpdateRequest,
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityUpdateRequest,
 			@PathVariable long taskId) {
 
 		taskService.updatePriority(taskId, priorityUpdateRequest.getPriority());
@@ -106,7 +112,7 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/tasks/{taskId}/progress")
 	public ResponseEntity<Void> updateProgress(
-			@RequestBody @Valid TaskProgressAndReportUpdateRequest taskProgressAndReportUpdateRequest,
+			@RequestBody @Valid ProgressAndReportDto taskProgressAndReportUpdateRequest,
 			@PathVariable long taskId) {
 
 		taskService.updateProgressAndReport(taskId, taskProgressAndReportUpdateRequest.getProgress(),
@@ -117,7 +123,7 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/assigned-user")
-	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdHolderRequest userIdHolder,
+	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdDto userIdHolder,
 			@PathVariable long taskId) {
 
 		taskService.updateAssignedUser(taskId, userIdHolder.getId());

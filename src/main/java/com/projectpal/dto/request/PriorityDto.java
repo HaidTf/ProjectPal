@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Min;
 import lombok.Getter;
 
 @Getter
-public final class PriorityUpdateRequest {
+public final class PriorityDto {
 
 	@JsonCreator
-	public PriorityUpdateRequest(int priority) {
+	public PriorityDto(int priority) {
 		this.priority = priority;
 	}
 

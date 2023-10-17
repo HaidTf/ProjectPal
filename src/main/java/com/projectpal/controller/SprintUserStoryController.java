@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.dto.request.IdHolderRequest;
+import com.projectpal.dto.request.IdDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -52,7 +52,7 @@ public class SprintUserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
-			@RequestBody @Valid IdHolderRequest userStoryIdHolder) {
+			@RequestBody @Valid IdDto userStoryIdHolder) {
 
 		sprintUserStoryService.addUserStoryToSprint(userStoryIdHolder.getId(), sprintId);
 

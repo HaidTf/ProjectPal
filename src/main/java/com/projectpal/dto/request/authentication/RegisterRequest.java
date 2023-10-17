@@ -1,4 +1,4 @@
-package com.projectpal.dto.request;
+package com.projectpal.dto.request.authentication;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

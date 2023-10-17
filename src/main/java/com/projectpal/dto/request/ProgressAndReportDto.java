@@ -11,10 +11,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public final class TaskProgressAndReportUpdateRequest {
+public final class ProgressAndReportDto {
 
 	@JsonCreator
-	public TaskProgressAndReportUpdateRequest(Progress progress, String report) {
+	public ProgressAndReportDto(Progress progress, String report) {
 		this.progress = progress;
 		this.report = report;
 	}

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.dto.request.AuthenticationRequest;
+import com.projectpal.dto.request.authentication.AuthenticationRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
-import com.projectpal.dto.response.ExceptionResponse;
+import com.projectpal.dto.response.exception.ExceptionResponse;
 import com.projectpal.service.AuthenticationService;
 
 import jakarta.validation.Valid;
