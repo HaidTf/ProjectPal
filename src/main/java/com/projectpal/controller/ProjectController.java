@@ -20,11 +20,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.RoleDto;
+import com.projectpal.dto.request.entity.ProjectCreationDto;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.mapper.ProjectMapper;
 import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
 
@@ -39,6 +41,8 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	private final UserService userService;
+	
+	private final ProjectMapper projectMapper;
 
 	@GetMapping("")
 	public ResponseEntity<Project> getProject(@AuthenticationPrincipal User currentUser) {
@@ -68,8 +72,10 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PostMapping("")
 	public ResponseEntity<Project> createProject(@AuthenticationPrincipal User currentUser,
-			@Valid @RequestBody Project project) {
+			@Valid @RequestBody ProjectCreationDto projectCreationDto) {
 
+		Project project = projectMapper.toProject(projectCreationDto);
+		
 		projectService.createProjectAndSetOwner(project, currentUser);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project").build();

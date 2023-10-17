@@ -27,9 +27,11 @@ import com.projectpal.entity.enums.Progress;
 import com.projectpal.dto.request.DateDto;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.ProgressDto;
+import com.projectpal.dto.request.entity.SprintCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
+import com.projectpal.mapper.SprintMapper;
 import com.projectpal.service.SprintService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
@@ -44,6 +46,8 @@ import lombok.RequiredArgsConstructor;
 public class SprintController {
 
 	private final SprintService sprintService;
+	
+	private final SprintMapper sprintMapper;
 
 	@GetMapping("/{sprintId}")
 	public ResponseEntity<Sprint> getSprint(@AuthenticationPrincipal User currentUser, @PathVariable long sprintId) {
@@ -77,10 +81,12 @@ public class SprintController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	public ResponseEntity<Sprint> createSprint(@AuthenticationPrincipal User currentUser,
-			@Valid @RequestBody Sprint sprint) {
+			@Valid @RequestBody SprintCreationDto sprintCreationDto) {
 
 		Project project = currentUser.getProject();
 
+		Sprint sprint = sprintMapper.toSprint(sprintCreationDto);
+		
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 

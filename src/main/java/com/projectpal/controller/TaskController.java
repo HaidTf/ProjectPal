@@ -25,10 +25,12 @@ import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.IdDto;
 import com.projectpal.dto.request.PriorityDto;
 import com.projectpal.dto.request.ProgressAndReportDto;
+import com.projectpal.dto.request.entity.TaskCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.mapper.TaskMapper;
 import com.projectpal.service.TaskService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 public class TaskController {
 
 	private final TaskService taskService;
+	
+	private final TaskMapper taskMapper;
 
 	@GetMapping("/tasks/{taskId}")
 	public ResponseEntity<Task> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
@@ -71,8 +75,10 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
-	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody Task task) {
+	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody TaskCreationDto taskCreationDto) {
 
+		Task task = taskMapper.toTask(taskCreationDto);
+		
 		taskService.createTask(userStoryId, task);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/tasks/" + task.getId()).build();

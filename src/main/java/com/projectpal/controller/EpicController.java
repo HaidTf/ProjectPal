@@ -24,11 +24,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.PriorityDto;
 import com.projectpal.dto.request.ProgressDto;
+import com.projectpal.dto.request.entity.EpicCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.mapper.EpicMapper;
 import com.projectpal.service.EpicService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
@@ -43,6 +45,8 @@ import lombok.RequiredArgsConstructor;
 public class EpicController {
 
 	private final EpicService epicService;
+	
+	private final EpicMapper epicMapper;
 
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@AuthenticationPrincipal User currentUser, @PathVariable long epicId) {
@@ -75,10 +79,12 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody Epic epic) {
+	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody EpicCreationDto epicCreationDto) {
 
 		Project project = currentUser.getProject();
 
+		Epic epic = epicMapper.toEpic(epicCreationDto);
+		
 		epicService.createEpic(project, epic);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/epics/" + epic.getId()).build();

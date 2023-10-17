@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.request.entity.AnnouncementCreationDto;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.User;
+import com.projectpal.mapper.AnnouncementMapper;
 import com.projectpal.service.AnnouncementService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.UserEntityAccessValidationUtil;
@@ -33,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class AnnouncementController {
 
 	private final AnnouncementService announcementService;
+	
+	private final AnnouncementMapper announcementMapper;
 
 	@GetMapping("/{announcementId}")
 	public ResponseEntity<Announcement> getAnnouncement(@AuthenticationPrincipal User currentUser,
@@ -63,8 +67,10 @@ public class AnnouncementController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
 	public ResponseEntity<Announcement> createAnnouncement(@AuthenticationPrincipal User currentUser,
-			@Valid @RequestBody Announcement announcement) {
+			@Valid @RequestBody AnnouncementCreationDto announcementCreationDto) {
 
+		Announcement announcement = announcementMapper.toAnnouncement(announcementCreationDto);
+		
 		announcementService.createAnnouncement(currentUser.getProject(), announcement);
 
 		UriComponents uriComponents = UriComponentsBuilder
