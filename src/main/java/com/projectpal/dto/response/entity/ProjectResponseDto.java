@@ -14,6 +14,8 @@ public class ProjectResponseDto {
 	private final String name;
 	
 	private final String description;
+	
+	private final String OwnerName;
 
 	private final LocalDate creationDate;
 }
