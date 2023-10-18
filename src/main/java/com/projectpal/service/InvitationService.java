@@ -43,6 +43,22 @@ public class InvitationService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public Invitation findSentInvitationById(long invitationId) {
+
+		return invitationRepo.findSentInvitationById(invitationId)
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+
+	}
+	
+	@Transactional(readOnly = true)
+	public Invitation findReceivedInvitationById(long invitationId) {
+
+		return invitationRepo.findReceivedInvitationById(invitationId)
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+
+	}
+	
 	@Transactional
 	public Invitation inviteUserToProject(long userId, Project project) {
 
