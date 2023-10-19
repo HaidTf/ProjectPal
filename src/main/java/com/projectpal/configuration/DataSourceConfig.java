@@ -3,10 +3,12 @@ package com.projectpal.configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
+@EnableJpaAuditing
 public class DataSourceConfig {
 
 	@Bean

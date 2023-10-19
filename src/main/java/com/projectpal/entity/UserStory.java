@@ -5,7 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.springframework.data.annotation.CreatedDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projectpal.entity.enums.Progress;
 
@@ -26,6 +27,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,13 +38,11 @@ import lombok.Setter;
 @Setter
 public class UserStory implements Serializable {
 
-	@JsonCreator
 	public UserStory(String name, String description, int priority) {
 		this.name = name;
 		this.description = description;
 		this.priority = priority;
 		this.progress = Progress.TODO;
-		this.creationDate = LocalDate.now();
 	}
 
 	public UserStory(String name, String description, int priority, Progress progress) {
@@ -81,9 +81,12 @@ public class UserStory implements Serializable {
 	private int priority;
 
 	@Enumerated(EnumType.STRING)
+	@NotNull
 	private Progress progress;
 
 	@Temporal(TemporalType.DATE)
+	@CreatedDate
+	@Setter(AccessLevel.NONE)
 	private LocalDate creationDate;
 
 	@ManyToOne
