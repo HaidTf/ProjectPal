@@ -52,5 +52,8 @@ public class Announcement {
 	@ManyToOne
 	@JsonIgnore
 	private Project project;
+	
+	@ManyToOne
+	private User announcer;
 
 }
