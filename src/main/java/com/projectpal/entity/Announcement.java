@@ -3,7 +3,8 @@ package com.projectpal.entity;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.springframework.data.annotation.CreatedDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -14,6 +15,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,11 +26,9 @@ import lombok.Setter;
 @Setter
 public class Announcement {
 
-	@JsonCreator
 	public Announcement(String title, String description) {
 		this.title = title;
 		this.description = description;
-		this.issueDate = LocalDate.now();
 	}
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("issueDate");
@@ -45,6 +45,8 @@ public class Announcement {
 	private String description;
 
 	@Temporal(TemporalType.DATE)
+	@CreatedDate
+	@Setter(AccessLevel.NONE)
 	private LocalDate issueDate;
 
 	@ManyToOne

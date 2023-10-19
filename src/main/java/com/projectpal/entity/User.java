@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +27,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,9 +69,12 @@ public class User implements UserDetails {
 	private String password;
 
 	@Temporal(TemporalType.DATE)
+	@CreatedDate
+	@Setter(AccessLevel.NONE)
 	private LocalDate creationDate;
 
 	@ManyToOne
+	@JsonIgnore
 	private Project project;
 
 	@OneToMany(mappedBy = "invitedUser", cascade = CascadeType.REMOVE)

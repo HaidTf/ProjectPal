@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.springframework.data.annotation.CreatedDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.annotation.Nullable;
@@ -19,6 +20,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,12 +31,9 @@ import lombok.Setter;
 @Setter
 public class Project implements Serializable {
 
-	@JsonCreator
 	public Project(String name, String description) {
 		this.name = name;
 		this.description = description;
-		this.lastAccessedDate = LocalDate.now();
-		this.creationDate = LocalDate.now();
 	}
 
 	private static final long serialVersionUID = 2L;
@@ -56,15 +55,12 @@ public class Project implements Serializable {
 	private String description;
 
 	@Temporal(TemporalType.DATE)
-	@JsonIgnore
-	private LocalDate lastAccessedDate;
-
-	@Temporal(TemporalType.DATE)
+	@CreatedDate
+	@Setter(AccessLevel.NONE)
 	private LocalDate creationDate;
 
 	@OneToOne
 	@JoinColumn(name = "owner_id")
-	@JsonIgnore
 	private User owner;
 
 	@OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
