@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 public class AnnouncementResponseDto {
 
-	public AnnouncementResponseDto(long id, LocalDate issueDate, long announcerId, String announcerName, String title,
-			String description) {
+	public AnnouncementResponseDto(long id, String title, String description, LocalDate issueDate, long announcerId,
+			String announcerName) {
 		this.id = id;
 		this.title = title;
 		this.description = description;
