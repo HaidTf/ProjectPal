@@ -1,6 +1,5 @@
 package com.projectpal.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.dto.response.entity.ProjectResponseDto;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
@@ -41,6 +41,13 @@ public class ProjectService {
 
 	private final CacheService<Project> cacheService;
 
+	@Transactional(readOnly = true)
+	public ProjectResponseDto findProjectDtoById(long id) {
+
+		return projectRepo.findProjectDtoById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+	}
+
 	@Transactional
 	public void createProjectAndSetOwner(Project project, User user) {
 
@@ -62,14 +69,6 @@ public class ProjectService {
 
 		projectRepo.save(project);
 
-	}
-
-	@Transactional
-	public void updateProjectLastAccessedDate(Project project) {
-
-		project.setLastAccessedDate(LocalDate.now());
-
-		projectRepo.save(project);
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -114,7 +113,6 @@ public class ProjectService {
 
 		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted());
 		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDb(project, Set.of(), Sort.unsorted());
-				
 
 		epics.forEach((epic) -> cacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()));
 		sprints.forEach((sprint) -> cacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId()));

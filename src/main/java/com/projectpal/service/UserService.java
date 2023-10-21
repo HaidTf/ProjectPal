@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.dto.response.entity.ProjectMemberResponseDto;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
@@ -60,6 +61,22 @@ public class UserService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public Page<ProjectMemberResponseDto> findProjectMembersDtoListByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
+
+		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
+			throw new ConflictException("Page size exceeded size limit");
+
+		Pageable pageable = PageRequest.of(page, size);
+
+		if (role != null)
+			return userRepo.findProjectMembersDtoListByProjectAndRole(project, role, pageable);
+		else {
+			return userRepo.findProjectMembersDtoListByProject(project, pageable);
+		}
+
+	}
+	
 	@Transactional
 	public void updateUserPassword(User user, String password) {
 		user.setPassword(encoder.encode(password));

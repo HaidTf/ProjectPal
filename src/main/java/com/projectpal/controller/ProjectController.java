@@ -22,6 +22,8 @@ import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.RoleDto;
 import com.projectpal.dto.request.entity.ProjectCreationDto;
 import com.projectpal.dto.response.CustomPageResponse;
+import com.projectpal.dto.response.entity.ProjectResponseDto;
+import com.projectpal.dto.response.entity.ProjectMemberResponseDto;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
@@ -41,31 +43,31 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	private final UserService userService;
-	
+
 	private final ProjectMapper projectMapper;
 
 	@GetMapping("")
-	public ResponseEntity<Project> getProject(@AuthenticationPrincipal User currentUser) {
+	public ResponseEntity<ProjectResponseDto> getProject(@AuthenticationPrincipal User currentUser) {
 
 		Project project = currentUser.getOptionalOfProject()
 				.orElseThrow(() -> new ResourceNotFoundException("User is not in a project"));
 
-		projectService.updateProjectLastAccessedDate(project);
-
-		return ResponseEntity.ok(project);
+		return ResponseEntity.ok(projectService.findProjectDtoById(project.getId()));
 	}
 
 	@GetMapping("/users")
-	public ResponseEntity<CustomPageResponse<User>> getProjectMembers(@AuthenticationPrincipal User currentUser,
-			@RequestParam(required = false) Role role, @RequestParam(required = false, defaultValue = "0") int page,
+	public ResponseEntity<CustomPageResponse<ProjectMemberResponseDto>> getProjectMembers(
+			@AuthenticationPrincipal User currentUser, @RequestParam(required = false) Role role,
+			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "20") int size) {
 
 		Project project = currentUser.getOptionalOfProject()
 				.orElseThrow(() -> new ResourceNotFoundException("User is not in a project"));
 
-		Page<User> users = userService.findAllByProjectAndRole(project, role, page, size);
+		Page<ProjectMemberResponseDto> users = userService.findProjectMembersDtoListByProjectAndRole(project, role,
+				page, size);
 
-		return ResponseEntity.ok(new CustomPageResponse<User>(users));
+		return ResponseEntity.ok(new CustomPageResponse<ProjectMemberResponseDto>(users));
 
 	}
 
@@ -75,7 +77,7 @@ public class ProjectController {
 			@Valid @RequestBody ProjectCreationDto projectCreationDto) {
 
 		Project project = projectMapper.toProject(projectCreationDto);
-		
+
 		projectService.createProjectAndSetOwner(project, currentUser);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project").build();

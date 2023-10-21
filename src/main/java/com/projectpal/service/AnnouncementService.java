@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.ConflictException;
@@ -65,4 +66,14 @@ public class AnnouncementService {
 		return announcementRepo.findAllByProject(project, pageable);
 	}
 
+	@Transactional(readOnly = true)
+	public Page<AnnouncementResponseDto> findAnnouncementDtoPageByProject(Project project, int page, int size) {
+
+		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
+			throw new ConflictException("Page size exceeded size limit");
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
+
+		return announcementRepo.findAnnouncementDtoPageByProject(project, pageable);
+	}
 }

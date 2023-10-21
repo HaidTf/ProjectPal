@@ -9,6 +9,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.dto.response.entity.ProjectInvitationResponseDto;
+import com.projectpal.dto.response.entity.UserInvitationResponseDto;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
@@ -78,21 +80,21 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Invitation> findPageByProject(Project project, int page, int size) {
+	public Page<ProjectInvitationResponseDto> findProjectInvitationDtoPageByProject(Project project, int page, int size) {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
-		return invitationRepo.findAllByProject(project, pageable);
+		return invitationRepo.findProjectInvitationDtoPageByProject(project, pageable);
 
 	}
 
 	@Transactional(readOnly = true)
-	public List<Invitation> findAllByUser(User user) {
+	public List<UserInvitationResponseDto> findUserInvitationDtoListByUser(User user) {
 
-		return invitationRepo.findAllByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
+		return invitationRepo.findUserInvitationDtoListByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
 
 	}
-
+	
 	@Transactional
 	public void userAcceptsInvitation(User user, long invitationId) {
 

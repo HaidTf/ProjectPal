@@ -19,6 +19,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.dto.response.ListHolderResponse;
+import com.projectpal.dto.response.entity.ProjectInvitationResponseDto;
+import com.projectpal.dto.response.entity.UserInvitationResponseDto;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.User;
 import com.projectpal.service.InvitationService;
@@ -48,15 +50,15 @@ public class InvitationController {
 	}
 
 	@GetMapping("/project/invitations")
-	public ResponseEntity<CustomPageResponse<Invitation>> getProjectRelatedInvitations(
+	public ResponseEntity<CustomPageResponse<ProjectInvitationResponseDto>> getProjectRelatedInvitations(
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "10") int size) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Page<Invitation> invitations = invitationService.findPageByProject(currentUser.getProject(), page, size);
+		Page<ProjectInvitationResponseDto> invitations = invitationService.findProjectInvitationDtoPageByProject(currentUser.getProject(), page, size);
 
-		return ResponseEntity.ok(new CustomPageResponse<Invitation>(invitations));
+		return ResponseEntity.ok(new CustomPageResponse<ProjectInvitationResponseDto>(invitations));
 	}
 
 	@GetMapping("/users/me/invitations/{invitationId}")
@@ -72,12 +74,12 @@ public class InvitationController {
 	}
 
 	@GetMapping("/users/me/invitations")
-	public ResponseEntity<ListHolderResponse<Invitation>> getReceivedInvitations(
+	public ResponseEntity<ListHolderResponse<UserInvitationResponseDto>> getReceivedInvitations(
 			@AuthenticationPrincipal User currentUser) {
 
-		List<Invitation> invitations = invitationService.findAllByUser(currentUser);
+		List<UserInvitationResponseDto> invitations = invitationService.findUserInvitationDtoListByUser(currentUser);
 
-		return ResponseEntity.ok(new ListHolderResponse<Invitation>(invitations));
+		return ResponseEntity.ok(new ListHolderResponse<UserInvitationResponseDto>(invitations));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
