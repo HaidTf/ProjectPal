@@ -19,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.dto.request.entity.AnnouncementCreationDto;
 import com.projectpal.dto.response.CustomPageResponse;
+import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.User;
 import com.projectpal.mapper.AnnouncementMapper;
@@ -53,15 +54,15 @@ public class AnnouncementController {
 	}
 
 	@GetMapping("")
-	public ResponseEntity<CustomPageResponse<Announcement>> getAnnouncements(@AuthenticationPrincipal User currentUser,
+	public ResponseEntity<CustomPageResponse<AnnouncementResponseDto>> getAnnouncements(@AuthenticationPrincipal User currentUser,
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Page<Announcement> announcements = announcementService.findPageByProject(currentUser.getProject(), page, size);
+		Page<AnnouncementResponseDto> announcements = announcementService.findAnnouncementDtoPageByProject(currentUser.getProject(), page, size);
 
-		return ResponseEntity.ok(new CustomPageResponse<Announcement>(announcements));
+		return ResponseEntity.ok(new CustomPageResponse<AnnouncementResponseDto>(announcements));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
