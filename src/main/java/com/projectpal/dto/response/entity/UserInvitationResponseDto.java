@@ -2,6 +2,8 @@ package com.projectpal.dto.response.entity;
 
 import java.time.LocalDate;
 
+import com.projectpal.dto.response.entity.common.ProjectIdAndNameDto;
+
 import lombok.Getter;
 
 @Getter

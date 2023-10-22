@@ -1,5 +1,7 @@
 package com.projectpal.dto.response.entity;
 
+import com.projectpal.dto.response.entity.common.UserIdAndNameDto;
+
 import lombok.Getter;
 
 @Getter
