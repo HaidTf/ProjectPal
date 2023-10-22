@@ -27,6 +27,7 @@ import com.projectpal.dto.request.PriorityDto;
 import com.projectpal.dto.request.ProgressAndReportDto;
 import com.projectpal.dto.request.entity.TaskCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
+import com.projectpal.dto.response.entity.TaskResponseDto;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
@@ -52,6 +53,8 @@ public class TaskController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
+		//TODO use task projection and find by id and project
+		
 		Task task = taskService.findTaskById(taskId);
 
 		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(currentUser, task);
@@ -61,16 +64,16 @@ public class TaskController {
 	}
 
 	@GetMapping("/{userStoryId}/tasks")
-	public ResponseEntity<ListHolderResponse<Task>> getUserStoryTaskList(@AuthenticationPrincipal User currentUser,
+	public ResponseEntity<ListHolderResponse<TaskResponseDto>> getUserStoryTaskList(@AuthenticationPrincipal User currentUser,
 			@PathVariable long userStoryId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		List<Task> tasks = taskService.findTasksByUserStoryAndProgressSet(userStoryId, progress, sort);
+		List<TaskResponseDto> tasks = taskService.findTaskDtoListByUserStoryAndProgressSet(userStoryId, progress, sort);
 
-		return ResponseEntity.ok(new ListHolderResponse<Task>(tasks));
+		return ResponseEntity.ok(new ListHolderResponse<TaskResponseDto>(tasks));
 	}
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
