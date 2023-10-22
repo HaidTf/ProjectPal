@@ -53,6 +53,8 @@ public class UserStoryController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
+		//TODO find by id and project
+		
 		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
 		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(currentUser, userStory);
@@ -71,6 +73,8 @@ public class UserStoryController {
 
 		SortValidationUtil.validateSortObjectProperties(UserStory.ALLOWED_SORT_PROPERTIES, sort);
 
+		//TODO use epic userstory projection
+		
 		List<UserStory> userStories = userStoryService.findUserStoriesByEpicAndProgressFromDbOrCache(epicId, progress,
 				sort);
 
