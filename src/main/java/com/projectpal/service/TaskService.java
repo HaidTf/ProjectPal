@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.dto.response.entity.TaskResponseDto;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -77,6 +78,23 @@ public class TaskService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public List<TaskResponseDto> findTaskDtoListByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress,
+			Sort sort) {
+		
+		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+
+		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
+				userStory);
+
+		if (progress.size() == 0 || progress.size() == 3)
+			return taskRepo.findTaskDtoListByUserStory(userStory, sort);
+		else {
+			return taskRepo.findTaskDtoListByUserStoryAndProgressIn(userStory, progress, sort);
+		}
+		
+	}
+	
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void createTask(long userStoryId, Task task) {
 
@@ -206,5 +224,7 @@ public class TaskService {
 
 		taskRepo.delete(task);
 	}
+
+
 
 }

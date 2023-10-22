@@ -45,6 +45,8 @@ public class AnnouncementController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
+		//TODO use announcement projection and find by id and project
+		
 		Announcement announcement = announcementService.findAnnouncementById(announcementId);
 
 		UserEntityAccessValidationUtil.verifyUserAccessToAnnouncement(currentUser, announcement);

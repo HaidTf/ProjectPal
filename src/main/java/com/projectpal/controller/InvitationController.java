@@ -41,6 +41,8 @@ public class InvitationController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
+		//TODO use Invitation projection and find by id and project
+		
 		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		UserEntityAccessValidationUtil.verifyUserAccessToProjectInvitation(currentUser, invitation);
@@ -65,6 +67,8 @@ public class InvitationController {
 	public ResponseEntity<Invitation> getReceivedInvitation(@AuthenticationPrincipal User currentUser,
 			@PathVariable long invitationId) {
 
+		//TODO use Invitation projection and find by id and user
+		
 		Invitation invitation = invitationService.findInvitationById(invitationId);
 
 		UserEntityAccessValidationUtil.verifyUserAccessToUserInvitation(currentUser, invitation);
