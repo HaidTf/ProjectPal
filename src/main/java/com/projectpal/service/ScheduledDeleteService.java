@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.repository.InvitationRepository;
-import com.projectpal.repository.ProjectRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +18,6 @@ public class ScheduledDeleteService {
 	private final AnnouncementRepository announcementRepo;
 
 	private final InvitationRepository invitationRepo;
-
-	private final ProjectRepository projectRepo;
 
 	@Scheduled(cron = "0 0 0 * * *")
 	@Transactional
@@ -34,13 +31,6 @@ public class ScheduledDeleteService {
 	public void deleteExpiredAnnouncements() {
 		LocalDate oneMonthAgo = LocalDate.now().minusWeeks(4);
 		announcementRepo.deleteByIssueDateBefore(oneMonthAgo);
-	}
-
-	@Scheduled(cron = "0 0 0 1 * *")
-	@Transactional
-	public void deleteExpiredProjects() {
-		LocalDate threeMonthAgo = LocalDate.now().minusWeeks(12);
-		projectRepo.deleteByLastAccessedDateBefore(threeMonthAgo);
 	}
 
 }
