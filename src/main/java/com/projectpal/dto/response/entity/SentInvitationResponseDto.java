@@ -7,9 +7,9 @@ import com.projectpal.dto.response.entity.common.UserIdAndNameDto;
 import lombok.Getter;
 
 @Getter
-public class ProjectInvitationResponseDto {
+public class SentInvitationResponseDto {
 
-	public ProjectInvitationResponseDto(long id, LocalDate issueDate, long invitedUserId, String invitedUserName) {
+	public SentInvitationResponseDto(long id, LocalDate issueDate, long invitedUserId, String invitedUserName) {
 		this.id = id;
 		this.issueDate = issueDate;
 		this.invitedUser = new UserIdAndNameDto(invitedUserId, invitedUserName);
