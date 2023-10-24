@@ -22,6 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findUserByName(String name);
 
+	Optional<User> findUserByIdAndProject(long userId, Project project);
+	
 	List<User> findAllByProject(Project project);
 
 	List<User> findAllByRole(Role role);
@@ -49,5 +51,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("SELECT new com.projectpal.dto.response.entity.ProjectMemberResponseDto(u.id,u.name,u.role) FROM User u WHERE u.project = :project")
 	Page<ProjectMemberResponseDto> findProjectMembersDtoListByProject(@Param("project") Project project,
 			Pageable pageable);
+
+	
 
 }
