@@ -1,6 +1,7 @@
 package com.projectpal.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,8 @@ import com.projectpal.entity.enums.Progress;
 @Repository
 public interface EpicRepository extends JpaRepository<Epic, Long> {
 
+	Optional<Epic> findByIdAndProject(long epicId,Project project);
+	
 	List<Epic> findAllByProject(Project project);
 	
 	List<Epic> findAllByProjectId(Long projectId);
