@@ -2,6 +2,7 @@ package com.projectpal.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,12 @@ import com.projectpal.entity.Project;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
+
+	Optional<Announcement> findByIdAndProject(long announcementId, Project project);
+
+	@Query("SELECT new com.projectpal.dto.response.entity.AnnouncementResponseDto(a.id,a.title,a.description,a.issueDate,u.id,u.name) FROM Announcement a JOIN a.announcer u WHERE a.id =:id AND a.project = :project")
+	Optional<AnnouncementResponseDto> findAnnouncementDtoByIdAndProject(@Param("id") long id,
+			@Param("project") Project project);
 
 	List<Announcement> findAllByProject(Project project);
 
