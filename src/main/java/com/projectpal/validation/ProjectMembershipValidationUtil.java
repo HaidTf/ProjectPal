@@ -1,4 +1,4 @@
-package com.projectpal.utils;
+package com.projectpal.validation;
 
 import com.projectpal.entity.User;
 import com.projectpal.exception.ResourceNotFoundException;
