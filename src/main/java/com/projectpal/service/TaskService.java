@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.projectpal.controller.APIConstants;
 import com.projectpal.dto.response.entity.TaskResponseDto;
 import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Project;
@@ -27,7 +26,8 @@ import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
-import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.validation.PageValidator;
+import com.projectpal.validation.SortObjectValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -78,10 +78,9 @@ public class TaskService {
 	@Transactional(readOnly = true)
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
-		if (pageable.getPageSize() > APIConstants.MAX_PAGE_SIZE)
-			throw new ConflictException("Page size exceeded size limit");
+		PageValidator.validatePageable(pageable);
 
-		SortValidationUtil.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
+		SortObjectValidator.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByAssignedUser(user, pageable);

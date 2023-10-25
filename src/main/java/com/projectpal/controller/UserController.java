@@ -24,7 +24,7 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.TaskService;
 import com.projectpal.service.UserService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class UserController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@PageableDefault(page = 0, size = 20, sort = "priority", direction = Direction.DESC) Pageable pageable) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(user);
+		ProjectMembershipValidator.verifyUserProjectMembership(user);
 		
 		Page<Task> tasks = taskService.findPageByUserAndProgressSet(user, progress, pageable);
 

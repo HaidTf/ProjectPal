@@ -21,6 +21,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.validation.PageValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,6 +81,8 @@ public class InvitationService {
 	public Page<SentInvitationResponseDto> findSentInvitationDtoPageByProject(Project project, int page,
 			int size) {
 
+		PageValidator.validatePage(page, size);
+		
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
 		return invitationRepo.findSentInvitationDtoPageByProject(project, pageable);

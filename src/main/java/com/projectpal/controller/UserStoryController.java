@@ -31,8 +31,8 @@ import com.projectpal.dto.request.entity.UserStoryCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.User;
 import com.projectpal.service.UserStoryService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
-import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
+import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class UserStoryController {
 	public ResponseEntity<UserStory> getUserStory(@AuthenticationPrincipal User currentUser,
 			@PathVariable long userStoryId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		UserStory userStory = userStoryService.findUserStoryByIdAndEpicProject(userStoryId,currentUser.getProject());
 
@@ -64,9 +64,9 @@ public class UserStoryController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
-		SortValidationUtil.validateSortObjectProperties(UserStory.ALLOWED_SORT_PROPERTIES, sort);
+		SortObjectValidator.validateSortObjectProperties(UserStory.ALLOWED_SORT_PROPERTIES, sort);
 
 		List<UserStory> userStories = userStoryService.findUserStoriesByEpicAndProgressFromDbOrCache(epicId, progress,
 				sort);

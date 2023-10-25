@@ -1,4 +1,4 @@
-package com.projectpal.utils;
+package com.projectpal.validation;
 
 import java.util.Set;
 
@@ -6,7 +6,7 @@ import org.springframework.data.domain.Sort;
 
 import com.projectpal.exception.BadRequestException;
 
-public class SortValidationUtil {
+public class SortObjectValidator {
 
 	public static void validateSortObjectProperties(Set<String> allowedProperties, Sort sort) {
 

@@ -33,8 +33,8 @@ import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.service.SprintService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
-import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
+import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class SprintController {
 	@GetMapping("/{sprintId}")
 	public ResponseEntity<Sprint> getSprint(@AuthenticationPrincipal User currentUser, @PathVariable long sprintId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Sprint sprint = sprintService.findSprintByIdAndproject(sprintId, currentUser.getProject());
 		
@@ -64,9 +64,9 @@ public class SprintController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
-		SortValidationUtil.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
+		SortObjectValidator.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
 
 		List<Sprint> sprints = sprintService.findSprintsByProjectAndProgressFromDbOrCache(currentUser.getProject(),
 				progress, sort);

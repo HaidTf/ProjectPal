@@ -32,8 +32,8 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.EpicService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
-import com.projectpal.utils.SortValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
+import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class EpicController {
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@AuthenticationPrincipal User currentUser, @PathVariable long epicId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Epic epic = epicService.findEpicByIdAndProject(epicId, currentUser.getProject());
 
@@ -63,9 +63,9 @@ public class EpicController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
-		SortValidationUtil.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
+		SortObjectValidator.validateSortObjectProperties(Epic.ALLOWED_SORT_PROPERTIES, sort);
 
 		List<Epic> epics = epicService.findEpicsByProjectAndProgressFromDbOrCache(currentUser.getProject(), progress,
 				sort);

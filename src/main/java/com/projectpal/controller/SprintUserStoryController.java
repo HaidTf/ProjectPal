@@ -23,7 +23,7 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.SprintUserStoryService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class SprintUserStoryController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		List<UserStory> userStories = sprintUserStoryService
 				.findUserStoriesBySprintAndProgressListFromDbOrCache(sprintId, progress, sort);

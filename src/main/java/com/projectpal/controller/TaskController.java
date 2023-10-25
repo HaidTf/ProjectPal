@@ -33,7 +33,7 @@ import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.service.TaskService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class TaskController {
 	@GetMapping("/tasks/{taskId}")
 	public ResponseEntity<TaskResponseDto> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		TaskResponseDto taskDto = taskService.findTaskDtoByIdAndProject(taskId,currentUser.getProject());
 
@@ -64,7 +64,7 @@ public class TaskController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		List<TaskResponseDto> tasks = taskService.findTaskDtoListByUserStoryAndProgressSet(userStoryId, progress, sort);
 
