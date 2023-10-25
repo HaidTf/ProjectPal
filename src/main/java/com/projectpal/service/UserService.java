@@ -62,7 +62,8 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ProjectMemberResponseDto> findProjectMembersDtoListByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
+	public Page<ProjectMemberResponseDto> findProjectMembersDtoListByProjectAndRole(Project project,
+			@Nullable Role role, int page, int size) {
 
 		if (size > MaxAllowedUtil.MAX_PAGE_SIZE)
 			throw new ConflictException("Page size exceeded size limit");
@@ -76,7 +77,7 @@ public class UserService {
 		}
 
 	}
-	
+
 	@Transactional
 	public void updateUserPassword(User user, String password) {
 		user.setPassword(encoder.encode(password));
@@ -86,7 +87,8 @@ public class UserService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateUserProjectRole(User currentUser, long userId, Role role) {
 
-		User user = this.findUserById(userId);
+		User user = userRepo.findUserByIdAndProject(userId, currentUser.getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		if (user.getProject().getId() != currentUser.getProject().getId())
 			throw new ForbiddenException("the user must be in the project");
