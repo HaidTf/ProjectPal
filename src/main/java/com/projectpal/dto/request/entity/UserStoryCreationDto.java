@@ -1,23 +1,25 @@
 package com.projectpal.dto.request.entity;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.projectpal.dto.request.NameAndDescriptionDto;
 import com.projectpal.dto.request.PriorityDto;
 
 import jakarta.validation.Valid;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public class UserStoryCreationDto {
 
-	@JsonUnwrapped
+	@JsonCreator
+	public UserStoryCreationDto(String name, String description, int priority) {
+		this.nameAndDescriptionAttribute = new NameAndDescriptionDto(name, description);
+		this.priorityAttribute = new PriorityDto(priority);
+	}
+
 	@Valid
 	private final NameAndDescriptionDto nameAndDescriptionAttribute;
 
-	@JsonUnwrapped
 	@Valid
 	private final PriorityDto priorityAttribute;
-	
+
 }

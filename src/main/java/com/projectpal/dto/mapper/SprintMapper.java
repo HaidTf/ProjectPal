@@ -1,15 +1,16 @@
-package com.projectpal.mapper;
+package com.projectpal.dto.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.projectpal.dto.request.entity.ProjectCreationDto;
-import com.projectpal.entity.Project;
+import com.projectpal.dto.request.entity.SprintCreationDto;
+import com.projectpal.entity.Sprint;
 
 @Mapper(componentModel = "spring")
-public interface ProjectMapper {
+public interface SprintMapper {
 
 	@Mapping(source = "nameAndDescriptionAttribute.name", target = "name")
 	@Mapping(source = "nameAndDescriptionAttribute.description", target = "description")
-	Project toProject(ProjectCreationDto projectCreationDto);
+	Sprint toSprint(SprintCreationDto sprintCreationDto);
+	
 }

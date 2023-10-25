@@ -23,7 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.mapper.UserStoryMapper;
+import com.projectpal.dto.mapper.UserStoryMapper;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.PriorityDto;
 import com.projectpal.dto.request.ProgressDto;

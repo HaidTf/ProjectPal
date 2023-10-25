@@ -1,4 +1,4 @@
-package com.projectpal.mapper;
+package com.projectpal.dto.mapper;
 
 import org.mapstruct.Mapper;
 

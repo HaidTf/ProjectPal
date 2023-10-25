@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.mapper.EpicMapper;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.PriorityDto;
 import com.projectpal.dto.request.ProgressDto;
@@ -30,7 +31,6 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.mapper.EpicMapper;
 import com.projectpal.service.EpicService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
