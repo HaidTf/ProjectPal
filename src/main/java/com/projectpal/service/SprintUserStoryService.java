@@ -10,14 +10,16 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Sprint;
+import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
+import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.UserStoryCacheService;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,9 +29,9 @@ public class SprintUserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 
-	private final UserStoryService userStoryService;
+	private final SprintRepository sprintRepo;
 
-	private final SprintService sprintService;
+	private final UserStoryService userStoryService;
 
 	private final UserStoryCacheService userStoryCacheService;
 
@@ -39,10 +41,9 @@ public class SprintUserStoryService {
 	public List<UserStory> findUserStoriesBySprintAndProgressListFromDbOrCache(long sprintId, Set<Progress> progress,
 			Sort sort) {
 
-		Sprint sprint = sprintService.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		Optional<List<UserStory>> userStories = Optional.empty();
 
@@ -86,15 +87,14 @@ public class SprintUserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void addUserStoryToSprint(long userStoryId, long sprintId) {
 
-		Sprint sprint = sprintService.findSprintById(sprintId);
+		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo.findByIdAndProject(sprintId, currentUser.getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		if (userStoryRepo.countBySprintId(sprint.getId()) > Sprint.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in a sprint");
@@ -111,18 +111,16 @@ public class SprintUserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void removeUserStoryFromSprint(long userStoryId, long sprintId) {
 
-		Sprint sprint = sprintService.findSprintById(sprintId);
+		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo.findByIdAndProject(sprintId, currentUser.getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		if (userStory.getSprint().getId() != sprint.getId()) {
-
-			UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-					userStory);
-
 			throw new BadRequestException("They userStory is not in the specified sprint");
 		}
 
