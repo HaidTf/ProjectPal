@@ -15,7 +15,7 @@ public final class PriorityDto {
 	}
 
 	@Min(1)
-	@Max(255)
+	@Max(10)
 	private final int priority;
 
 }
