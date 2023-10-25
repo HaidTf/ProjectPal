@@ -24,7 +24,7 @@ import com.projectpal.dto.response.entity.ReceivedInvitationResponseDto;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.User;
 import com.projectpal.service.InvitationService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +38,7 @@ public class InvitationController {
 	public ResponseEntity<SentInvitationResponseDto> getProjectRelatedInvitation(@AuthenticationPrincipal User currentUser,
 			@PathVariable long invitationId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		SentInvitationResponseDto invitationDto = invitationService.findSentInvitationDtoByIdAndProject(invitationId,
 				currentUser.getProject());
@@ -52,7 +52,7 @@ public class InvitationController {
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "10") int size) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Page<SentInvitationResponseDto> invitations = invitationService
 				.findSentInvitationDtoPageByProject(currentUser.getProject(), page, size);

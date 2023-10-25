@@ -24,7 +24,7 @@ import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.User;
 import com.projectpal.service.AnnouncementService;
-import com.projectpal.utils.ProjectMembershipValidationUtil;
+import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class AnnouncementController {
 	public ResponseEntity<AnnouncementResponseDto> getAnnouncement(@AuthenticationPrincipal User currentUser,
 			@PathVariable long announcementId) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		AnnouncementResponseDto announcementDto = announcementService.findAnnouncementDtoByIdAndProject(announcementId,
 				currentUser.getProject());
@@ -56,7 +56,7 @@ public class AnnouncementController {
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
-		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
+		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Page<AnnouncementResponseDto> announcements = announcementService
 				.findAnnouncementDtoPageByProject(currentUser.getProject(), page, size);
