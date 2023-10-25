@@ -55,10 +55,6 @@ public class Sprint implements Serializable {
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "startDate", "endDate");
 
-	public static final String SPRINT_CACHE = "sprintListCache";
-
-	public static final int MAX_NUMBER_OF_USERSTORIES = 30;
-
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
