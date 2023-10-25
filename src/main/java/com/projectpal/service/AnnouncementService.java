@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
+import com.projectpal.entity.User;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
@@ -42,9 +43,11 @@ public class AnnouncementService {
 	}
 
 	@Transactional
-	public void createAnnouncement(Project project, Announcement announcement) {
+	public void createAnnouncement(User currentUser, Announcement announcement) {
 
-		announcement.setProject(project);
+		announcement.setAnnouncer(currentUser);
+
+		announcement.setProject(currentUser.getProject());
 
 		announcementRepo.save(announcement);
 
