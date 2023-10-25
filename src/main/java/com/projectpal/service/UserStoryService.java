@@ -107,6 +107,8 @@ public class UserStoryService {
 		if (userStoryRepo.countBySprintId(epic.getId()) > Epic.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
 
+		userStory.setProgress(Progress.TODO);
+
 		userStory.setEpic(epic);
 
 		userStoryRepo.save(userStory);
