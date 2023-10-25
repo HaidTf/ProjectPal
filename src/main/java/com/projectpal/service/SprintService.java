@@ -96,6 +96,8 @@ public class SprintService {
 		if (sprintRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_SPRINTS)
 			throw new ConflictException("Maximum number of Sprint allowed reached");
 
+		sprint.setProgress(Progress.TODO);
+		
 		sprint.setProject(project);
 
 		sprintRepo.save(sprint);
