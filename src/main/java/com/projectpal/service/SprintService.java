@@ -23,7 +23,6 @@ import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.SprintCacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +41,12 @@ public class SprintService {
 	@Transactional(readOnly = true)
 	public Sprint findSprintById(long sprintId) {
 		return sprintRepo.findById(sprintId).orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
+	}
+
+	@Transactional(readOnly = true)
+	public Sprint findSprintByIdAndproject(long sprintId, Project project) {
+		return sprintRepo.findByIdAndProject(sprintId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 	}
 
 	@Transactional
@@ -102,10 +107,9 @@ public class SprintService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateStartDate(long sprintId, LocalDate date) {
 
-		Sprint sprint = this.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		if (date.isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -120,11 +124,10 @@ public class SprintService {
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateEndDate(long sprintId, LocalDate date) {
-
-		Sprint sprint = this.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		if (date.isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -139,10 +142,9 @@ public class SprintService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long sprintId, String description) {
 
-		Sprint sprint = this.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		sprint.setDescription(description);
 
@@ -154,10 +156,9 @@ public class SprintService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long sprintId, Progress progress) {
 
-		Sprint sprint = this.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		sprint.setProgress(progress);
 
@@ -169,10 +170,9 @@ public class SprintService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteSprint(long sprintId) {
 
-		Sprint sprint = this.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(authenticationContextFacadeImpl.getCurrentUser(),
-				sprint);
+		Sprint sprint = sprintRepo
+				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
 		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
 
