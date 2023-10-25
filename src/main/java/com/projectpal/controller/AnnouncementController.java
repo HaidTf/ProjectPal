@@ -25,7 +25,6 @@ import com.projectpal.entity.User;
 import com.projectpal.mapper.AnnouncementMapper;
 import com.projectpal.service.AnnouncementService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,33 +35,31 @@ import lombok.RequiredArgsConstructor;
 public class AnnouncementController {
 
 	private final AnnouncementService announcementService;
-	
+
 	private final AnnouncementMapper announcementMapper;
 
 	@GetMapping("/{announcementId}")
-	public ResponseEntity<Announcement> getAnnouncement(@AuthenticationPrincipal User currentUser,
+	public ResponseEntity<AnnouncementResponseDto> getAnnouncement(@AuthenticationPrincipal User currentUser,
 			@PathVariable long announcementId) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		//TODO use announcement projection and find by id and project
-		
-		Announcement announcement = announcementService.findAnnouncementById(announcementId);
+		AnnouncementResponseDto announcementDto = announcementService.findAnnouncementDtoByIdAndProject(announcementId,
+				currentUser.getProject());
 
-		UserEntityAccessValidationUtil.verifyUserAccessToAnnouncement(currentUser, announcement);
-
-		return ResponseEntity.ok(announcement);
+		return ResponseEntity.ok(announcementDto);
 
 	}
 
 	@GetMapping("")
-	public ResponseEntity<CustomPageResponse<AnnouncementResponseDto>> getAnnouncements(@AuthenticationPrincipal User currentUser,
-			@RequestParam(required = false, defaultValue = "0") int page,
+	public ResponseEntity<CustomPageResponse<AnnouncementResponseDto>> getAnnouncements(
+			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Page<AnnouncementResponseDto> announcements = announcementService.findAnnouncementDtoPageByProject(currentUser.getProject(), page, size);
+		Page<AnnouncementResponseDto> announcements = announcementService
+				.findAnnouncementDtoPageByProject(currentUser.getProject(), page, size);
 
 		return ResponseEntity.ok(new CustomPageResponse<AnnouncementResponseDto>(announcements));
 	}
@@ -73,7 +70,7 @@ public class AnnouncementController {
 			@Valid @RequestBody AnnouncementCreationDto announcementCreationDto) {
 
 		Announcement announcement = announcementMapper.toAnnouncement(announcementCreationDto);
-		
+
 		announcementService.createAnnouncement(currentUser.getProject(), announcement);
 
 		UriComponents uriComponents = UriComponentsBuilder
