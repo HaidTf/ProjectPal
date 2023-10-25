@@ -27,7 +27,7 @@ import com.projectpal.repository.UserRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.validation.PageValidator;
-import com.projectpal.validation.SortValidationUtil;
+import com.projectpal.validation.SortObjectValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,7 +80,7 @@ public class TaskService {
 
 		PageValidator.validatePageable(pageable);
 
-		SortValidationUtil.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
+		SortObjectValidator.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByAssignedUser(user, pageable);
