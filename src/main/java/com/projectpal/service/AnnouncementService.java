@@ -8,15 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.projectpal.controller.APIConstants;
 import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
-import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.validation.PageValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -66,8 +65,7 @@ public class AnnouncementService {
 	@Transactional(readOnly = true)
 	public Page<Announcement> findPageByProject(Project project, int page, int size) {
 
-		if (size > APIConstants.MAX_PAGE_SIZE)
-			throw new ConflictException("Page size exceeded size limit");
+		PageValidator.validatePage(page, size);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
@@ -77,8 +75,7 @@ public class AnnouncementService {
 	@Transactional(readOnly = true)
 	public Page<AnnouncementResponseDto> findAnnouncementDtoPageByProject(Project project, int page, int size) {
 
-		if (size > APIConstants.MAX_PAGE_SIZE)
-			throw new ConflictException("Page size exceeded size limit");
+		PageValidator.validatePage(page, size);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
