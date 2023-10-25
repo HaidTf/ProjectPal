@@ -34,7 +34,6 @@ import com.projectpal.mapper.EpicMapper;
 import com.projectpal.service.EpicService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 public class EpicController {
 
 	private final EpicService epicService;
-	
+
 	private final EpicMapper epicMapper;
 
 	@GetMapping("/{epicId}")
@@ -53,9 +52,7 @@ public class EpicController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Epic epic = epicService.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(currentUser, epic);
+		Epic epic = epicService.findEpicByIdAndProject(epicId, currentUser.getProject());
 
 		return ResponseEntity.ok(epic);
 
@@ -79,12 +76,13 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("")
-	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser, @Valid @RequestBody EpicCreationDto epicCreationDto) {
+	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser,
+			@Valid @RequestBody EpicCreationDto epicCreationDto) {
 
 		Project project = currentUser.getProject();
 
 		Epic epic = epicMapper.toEpic(epicCreationDto);
-		
+
 		epicService.createEpic(project, epic);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/epics/" + epic.getId()).build();
@@ -105,8 +103,7 @@ public class EpicController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/priority")
-	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityHolder,
-			@PathVariable long id) {
+	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityHolder, @PathVariable long id) {
 
 		epicService.updatePriority(id, priorityHolder.getPriority());
 
