@@ -56,10 +56,6 @@ public class Epic implements Serializable {
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
 
-	public static final String EPIC_CACHE = "epicListCache";
-
-	public static final int MAX_NUMBER_OF_USERSTORIES = 40;
-
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;

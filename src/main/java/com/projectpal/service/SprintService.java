@@ -12,15 +12,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
-import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.SprintCacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
 
@@ -60,11 +61,11 @@ public class SprintService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Sprint>> cacheSprints = sprintCacheService.getObjectsFromCache(Sprint.SPRINT_CACHE,
+			Optional<List<Sprint>> cacheSprints = sprintCacheService.getObjectsFromCache(CacheConstants.SPRINT_CACHE,
 					project.getId());
 			if (cacheSprints.isEmpty()) {
 				sprints = sprintRepo.findAllByProjectAndProgressIn(project, progress);
-				sprintCacheService.populateCache(Sprint.SPRINT_CACHE, project.getId(), sprints);
+				sprintCacheService.populateCache(CacheConstants.SPRINT_CACHE, project.getId(), sprints);
 			}
 
 			this.sort(sprints, sort);
@@ -93,7 +94,7 @@ public class SprintService {
 	@Transactional
 	public void createSprint(Project project, Sprint sprint) {
 
-		if (sprintRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_SPRINTS)
+		if (sprintRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_SPRINTS)
 			throw new ConflictException("Maximum number of Sprint allowed reached");
 
 		sprint.setProgress(Progress.TODO);
@@ -102,7 +103,7 @@ public class SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.addObjectToCache(Sprint.SPRINT_CACHE, project.getId(), sprint);
+		sprintCacheService.addObjectToCache(CacheConstants.SPRINT_CACHE, project.getId(), sprint);
 
 	}
 
@@ -120,7 +121,7 @@ public class SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
 	}
 
@@ -138,7 +139,7 @@ public class SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -152,7 +153,7 @@ public class SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -166,7 +167,7 @@ public class SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -176,9 +177,9 @@ public class SprintService {
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
-		sprintCacheService.evictListFromCache(Sprint.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
-		userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
+		userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 
 		sprintRepo.delete(sprint);
 

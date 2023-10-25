@@ -56,12 +56,6 @@ public class UserStory implements Serializable {
 
 	public static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of("creationDate", "priority");
 
-	public static final String EPIC_USERSTORY_CACHE = "epicUserStoryListCache";
-
-	public static final String SPRINT_USERSTORY_CACHE = "sprintUserStoryListCache";
-
-	public static final int MAX_NUMBER_OF_TASKS = 20;
-
 	@Id
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;

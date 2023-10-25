@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
@@ -20,6 +21,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.EpicCacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
 
@@ -32,7 +34,7 @@ public class EpicService {
 	private final EpicRepository epicRepo;
 
 	private final UserStoryRepository userStoryRepo;
-
+	
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	private final EpicCacheService epicCacheService;
@@ -60,10 +62,10 @@ public class EpicService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(Epic.EPIC_CACHE, project.getId());
+			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(CacheConstants.EPIC_CACHE, project.getId());
 			if (cacheEpics.isEmpty()) {
 				epics = epicRepo.findAllByProjectAndProgressIn(project, progress);
-				epicCacheService.populateCache(Epic.EPIC_CACHE, project.getId(), epics);
+				epicCacheService.populateCache(CacheConstants.EPIC_CACHE, project.getId(), epics);
 			}
 
 			this.sort(epics, sort);
@@ -94,7 +96,7 @@ public class EpicService {
 	@Transactional
 	public void createEpic(Project project, Epic epic) {
 
-		if (epicRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_EPICS)
+		if (epicRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_EPICS)
 			throw new ConflictException("Reached maximum number of epics allowed in a project");
 
 		epic.setProgress(Progress.TODO);
@@ -103,7 +105,7 @@ public class EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.addObjectToCache(Epic.EPIC_CACHE, project.getId(), epic);
+		epicCacheService.addObjectToCache(CacheConstants.EPIC_CACHE, project.getId(), epic);
 
 	}
 
@@ -117,7 +119,7 @@ public class EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -131,7 +133,7 @@ public class EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -145,7 +147,7 @@ public class EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -155,18 +157,18 @@ public class EpicService {
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
-		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 		List<UserStory> userStories = userStoryCacheService
-				.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
+				.getObjectsFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
 						.findAllByEpicAndProgressIn(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
 
 		for (UserStory userStory : userStories) {
 			if (userStory.getSprint() != null)
-				userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE,
+				userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE,
 						userStory.getSprint().getId());
 		}
-		userStoryCacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
+		userStoryCacheService.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
 
 		epicRepo.delete(epic);
 
