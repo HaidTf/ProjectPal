@@ -9,8 +9,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.projectpal.dto.response.entity.ProjectInvitationResponseDto;
-import com.projectpal.dto.response.entity.UserInvitationResponseDto;
+import com.projectpal.dto.response.entity.SentInvitationResponseDto;
+import com.projectpal.dto.response.entity.ReceivedInvitationResponseDto;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
@@ -21,7 +21,6 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,8 +31,6 @@ public class InvitationService {
 	private final InvitationRepository invitationRepo;
 
 	private final UserRepository userRepo;
-
-	private final UserService userService;
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
@@ -46,25 +43,25 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
-	public Invitation findSentInvitationById(long invitationId) {
+	public SentInvitationResponseDto findSentInvitationDtoByIdAndProject(long invitationId, Project project) {
 
-		return invitationRepo.findSentInvitationById(invitationId)
+		return invitationRepo.findSentInvitationDtoByIdAndProject(invitationId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
 
 	}
-	
+
 	@Transactional(readOnly = true)
-	public Invitation findReceivedInvitationById(long invitationId) {
+	public ReceivedInvitationResponseDto findReceivedInvitationDtoByIdAndUser(long invitationId, User invitedUser) {
 
-		return invitationRepo.findReceivedInvitationById(invitationId)
+		return invitationRepo.findReceivedInvitationDtoByIdAndUser(invitationId, invitedUser)
 				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
 
 	}
-	
+
 	@Transactional
 	public Invitation inviteUserToProject(long userId, Project project) {
 
-		User user = userService.findUserById(userId);
+		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		if (authenticationContextFacadeImpl.getCurrentUser().getId() == userId)
 			throw new BadRequestException("you can not send an invitation to yourself");
@@ -80,27 +77,27 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ProjectInvitationResponseDto> findProjectInvitationDtoPageByProject(Project project, int page, int size) {
+	public Page<SentInvitationResponseDto> findSentInvitationDtoPageByProject(Project project, int page,
+			int size) {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
-		return invitationRepo.findProjectInvitationDtoPageByProject(project, pageable);
+		return invitationRepo.findSentInvitationDtoPageByProject(project, pageable);
 
 	}
 
 	@Transactional(readOnly = true)
-	public List<UserInvitationResponseDto> findUserInvitationDtoListByUser(User user) {
+	public List<ReceivedInvitationResponseDto> findReceivedInvitationDtoListByUser(User user) {
 
-		return invitationRepo.findUserInvitationDtoListByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
+		return invitationRepo.findReceivedInvitationDtoListByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
 
 	}
-	
+
 	@Transactional
 	public void userAcceptsInvitation(User user, long invitationId) {
 
-		Invitation invitation = this.findInvitationById(invitationId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserInvitation(user, invitation);
+		Invitation invitation = invitationRepo.findByIdAndInvitedUser(invitationId, user)
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
 
 		user.setProject(invitation.getProject());
 
@@ -115,10 +112,9 @@ public class InvitationService {
 	@Transactional
 	public void rejectInvitation(long invitationId) {
 
-		Invitation invitation = this.findInvitationById(invitationId);
-
-		UserEntityAccessValidationUtil
-				.verifyUserAccessToUserInvitation(authenticationContextFacadeImpl.getCurrentUser(), invitation);
+		Invitation invitation = invitationRepo
+				.findByIdAndInvitedUser(invitationId, authenticationContextFacadeImpl.getCurrentUser())
+				.orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
 
 		invitationRepo.delete(invitation);
 	}
