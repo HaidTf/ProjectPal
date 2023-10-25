@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.mapper.ProjectMapper;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.RoleDto;
 import com.projectpal.dto.request.entity.ProjectCreationDto;
@@ -28,7 +29,6 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.mapper.ProjectMapper;
 import com.projectpal.service.ProjectService;
 import com.projectpal.service.UserService;
 

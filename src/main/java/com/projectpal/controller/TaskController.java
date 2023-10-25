@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.mapper.TaskMapper;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.IdDto;
 import com.projectpal.dto.request.PriorityDto;
@@ -31,7 +32,6 @@ import com.projectpal.dto.response.entity.TaskResponseDto;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.mapper.TaskMapper;
 import com.projectpal.service.TaskService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 

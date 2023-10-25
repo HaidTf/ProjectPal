@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.projectpal.dto.mapper.AnnouncementMapper;
 import com.projectpal.dto.request.entity.AnnouncementCreationDto;
 import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.User;
-import com.projectpal.mapper.AnnouncementMapper;
 import com.projectpal.service.AnnouncementService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 
