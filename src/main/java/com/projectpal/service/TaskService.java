@@ -116,6 +116,8 @@ public class TaskService {
 		if (taskRepo.countByUserStoryId(userStory.getId()) > UserStory.MAX_NUMBER_OF_TASKS)
 			throw new ConflictException("Maximum number of tasks allowed reached");
 
+		task.setProgress(Progress.TODO);
+
 		task.setUserStory(userStory);
 
 		taskRepo.save(task);

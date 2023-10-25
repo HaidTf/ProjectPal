@@ -97,6 +97,8 @@ public class EpicService {
 		if (epicRepo.countByProjectId(project.getId()) > Project.MAX_NUMBER_OF_EPICS)
 			throw new ConflictException("Reached maximum number of epics allowed in a project");
 
+		epic.setProgress(Progress.TODO);
+
 		epic.setProject(project);
 
 		epicRepo.save(epic);

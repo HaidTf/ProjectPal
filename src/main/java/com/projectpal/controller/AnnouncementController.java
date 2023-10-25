@@ -71,7 +71,7 @@ public class AnnouncementController {
 
 		Announcement announcement = announcementMapper.toAnnouncement(announcementCreationDto);
 
-		announcementService.createAnnouncement(currentUser.getProject(), announcement);
+		announcementService.createAnnouncement(currentUser, announcement);
 
 		UriComponents uriComponents = UriComponentsBuilder
 				.fromPath("/api/project/announcements/" + announcement.getId()).build();
