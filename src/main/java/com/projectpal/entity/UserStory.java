@@ -76,7 +76,7 @@ public class UserStory implements Serializable {
 
 	@Column(columnDefinition = "TINYINT")
 	@Min(1)
-	@Max(250)
+	@Max(10)
 	@NotNull
 	private int priority;
 
