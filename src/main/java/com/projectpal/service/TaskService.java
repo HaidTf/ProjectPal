@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.dto.response.entity.TaskResponseDto;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -22,10 +23,10 @@ import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ForbiddenException;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +36,7 @@ public class TaskService {
 
 	private final TaskRepository taskRepo;
 
-	private final UserStoryService userStoryService;
+	private final UserStoryRepository userStoryRepo;
 
 	private final UserRepository userRepo;
 
@@ -47,12 +48,23 @@ public class TaskService {
 	}
 
 	@Transactional(readOnly = true)
+	public Task findTaskByIdAndProject(long taskId, Project project) {
+		return taskRepo.findByIdAndProject(taskId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
+	}
+
+	@Transactional(readOnly = true)
+	public TaskResponseDto findTaskDtoByIdAndProject(long taskId, Project project) {
+		return taskRepo.findTaskDtoByIdAndProject(taskId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
+	}
+
+	@Transactional(readOnly = true)
 	public List<Task> findTasksByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress, Sort sort) {
 
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByUserStory(userStory, sort);
@@ -81,27 +93,25 @@ public class TaskService {
 	@Transactional(readOnly = true)
 	public List<TaskResponseDto> findTaskDtoListByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress,
 			Sort sort) {
-		
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
 
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findTaskDtoListByUserStory(userStory, sort);
 		else {
 			return taskRepo.findTaskDtoListByUserStoryAndProgressIn(userStory, progress, sort);
 		}
-		
+
 	}
-	
+
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void createTask(long userStoryId, Task task) {
 
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
 
 		if (taskRepo.countByUserStoryId(userStory.getId()) > UserStory.MAX_NUMBER_OF_TASKS)
 			throw new ConflictException("Maximum number of tasks allowed reached");
@@ -115,10 +125,8 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long taskId, String description) {
 
-		Task task = this.findTaskById(taskId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
-				task);
+		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		task.setDescription(description);
 
@@ -128,10 +136,8 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long taskId, int priority) {
 
-		Task task = this.findTaskById(taskId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
-				task);
+		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		task.setPriority(priority);
 
@@ -141,11 +147,10 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgressAndReport(long taskId, Progress progress, String report) {
 
-		Task task = this.findTaskById(taskId);
-
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(currentUser, task);
+		Task task = taskRepo.findByIdAndProject(taskId, currentUser.getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		if (task.getProgress() == Progress.DONE)
 			throw new BadRequestException("finished task's progress cant be updated after it is set to DONE");
@@ -172,10 +177,8 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateAssignedUser(long taskId, long userId) {
 
-		Task task = this.findTaskById(taskId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
-				task);
+		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
 
@@ -189,10 +192,8 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void removeTaskAssignedUser(long taskId) {
 
-		Task task = this.findTaskById(taskId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
-				task);
+		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		task.setAssignedUser(null);
 		taskRepo.save(task);
@@ -217,14 +218,10 @@ public class TaskService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteTask(long taskId) {
 
-		Task task = this.findTaskById(taskId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(authenticationContextFacadeImpl.getCurrentUser(),
-				task);
+		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
 		taskRepo.delete(task);
 	}
-
-
 
 }
