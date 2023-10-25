@@ -35,7 +35,6 @@ import com.projectpal.mapper.SprintMapper;
 import com.projectpal.service.SprintService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 public class SprintController {
 
 	private final SprintService sprintService;
-	
+
 	private final SprintMapper sprintMapper;
 
 	@GetMapping("/{sprintId}")
@@ -54,10 +53,8 @@ public class SprintController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		Sprint sprint = sprintService.findSprintById(sprintId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToSprint(currentUser, sprint);
-
+		Sprint sprint = sprintService.findSprintByIdAndproject(sprintId, currentUser.getProject());
+		
 		return ResponseEntity.ok(sprint);
 
 	}
@@ -86,7 +83,7 @@ public class SprintController {
 		Project project = currentUser.getProject();
 
 		Sprint sprint = sprintMapper.toSprint(sprintCreationDto);
-		
+
 		if (sprint.getStartDate().isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
 
@@ -110,8 +107,7 @@ public class SprintController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/{id}/end-date")
-	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateDto endDateUpdateRequest,
-			@PathVariable long id) {
+	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateDto endDateUpdateRequest, @PathVariable long id) {
 
 		sprintService.updateEndDate(id, endDateUpdateRequest.getDate());
 

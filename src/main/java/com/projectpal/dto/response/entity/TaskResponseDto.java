@@ -2,6 +2,7 @@ package com.projectpal.dto.response.entity;
 
 import java.time.LocalDate;
 
+import com.projectpal.dto.response.entity.common.UserIdAndNameDto;
 import com.projectpal.entity.enums.Progress;
 
 import lombok.Getter;
@@ -21,20 +22,20 @@ public class TaskResponseDto {
 		this.assignedUser = new UserIdAndNameDto(userId, userName);
 	}
 
-	private long id;
+	private final long id;
 
-	private String name;
+	private final String name;
 
-	private String description;
+	private final String description;
 
-	private int priority;
+	private final int priority;
 
-	private Progress progress;
+	private final Progress progress;
 
-	private String report;
+	private final String report;
 
-	private LocalDate creationDate;
+	private final LocalDate creationDate;
 
-	private UserIdAndNameDto assignedUser;
+	private final UserIdAndNameDto assignedUser;
 
 }

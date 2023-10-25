@@ -22,7 +22,6 @@ import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.EpicCacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +42,12 @@ public class EpicService {
 	@Transactional(readOnly = true)
 	public Epic findEpicById(long epicId) {
 		return epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
+	}
+
+	@Transactional(readOnly = true)
+	public Epic findEpicByIdAndProject(long epicId, Project project) {
+		return epicRepo.findByIdAndProject(epicId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 	}
 
 	@Transactional
@@ -72,8 +77,7 @@ public class EpicService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<Epic> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress,
-			Sort sort) {
+	public List<Epic> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
 		case 0, 3 -> {
@@ -104,9 +108,8 @@ public class EpicService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long epicId, String description) {
 
-		Epic epic = this.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		epic.setDescription(description);
 
@@ -119,9 +122,8 @@ public class EpicService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long epicId, int priority) {
 
-		Epic epic = this.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		epic.setPriority(priority);
 
@@ -130,13 +132,12 @@ public class EpicService {
 		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
 
 	}
-	
+
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long epicId, Progress progress) {
 
-		Epic epic = this.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		epic.setProgress(progress);
 
@@ -149,9 +150,8 @@ public class EpicService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteEpic(long epicId) {
 
-		Epic epic = this.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		epicCacheService.evictListFromCache(Epic.EPIC_CACHE, epic.getProject().getId());
 

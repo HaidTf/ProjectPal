@@ -12,14 +12,15 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.entity.Epic;
+import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.ConflictException;
 import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.UserStoryCacheService;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ public class UserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 
-	private final EpicService epicService;
+	private final EpicRepository epicRepo;
 
 	private final UserStoryCacheService userStoryCacheService;
 
@@ -43,13 +44,20 @@ public class UserStoryService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public UserStory findUserStoryByIdAndEpicProject(long userStoryId, Project project) {
+
+		return userStoryRepo.findByIdAndEpicProject(userStoryId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+
+	}
+
 	@Transactional
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDbOrCache(long epicId, Set<Progress> progress,
 			Sort sort) {
 
-		Epic epic = epicService.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		List<UserStory> userStories = new ArrayList<UserStory>();
 
@@ -58,7 +66,8 @@ public class UserStoryService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<UserStory>> cacheUserStories = userStoryCacheService.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
+			Optional<List<UserStory>> cacheUserStories = userStoryCacheService
+					.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
 			if (cacheUserStories.isEmpty()) {
 				userStories = userStoryRepo.findAllByEpicAndProgressIn(epic, progress);
 				userStoryCacheService.populateCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
@@ -92,9 +101,8 @@ public class UserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void createUserStory(long epicId, UserStory userStory) {
 
-		Epic epic = epicService.findEpicById(epicId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToEpic(authenticationContextFacadeImpl.getCurrentUser(), epic);
+		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
 		if (userStoryRepo.countBySprintId(epic.getId()) > Epic.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
@@ -110,10 +118,9 @@ public class UserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateDescription(long userStoryId, String description) {
 
-		UserStory userStory = this.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		userStory.setDescription(description);
 
@@ -126,10 +133,9 @@ public class UserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updatePriority(long userStoryId, int priority) {
 
-		UserStory userStory = this.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		userStory.setPriority(priority);
 
@@ -142,10 +148,9 @@ public class UserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void updateProgress(long userStoryId, Progress progress) {
 
-		UserStory userStory = this.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		userStory.setProgress(progress);
 
@@ -157,10 +162,9 @@ public class UserStoryService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteUserStory(long userStoryId) {
 
-		UserStory userStory = this.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(authenticationContextFacadeImpl.getCurrentUser(),
-				userStory);
+		UserStory userStory = userStoryRepo
+				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
 		userStoryRepo.delete(userStory);
 

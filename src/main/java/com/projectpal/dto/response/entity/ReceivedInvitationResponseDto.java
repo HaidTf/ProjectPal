@@ -2,12 +2,14 @@ package com.projectpal.dto.response.entity;
 
 import java.time.LocalDate;
 
+import com.projectpal.dto.response.entity.common.ProjectIdAndNameDto;
+
 import lombok.Getter;
 
 @Getter
-public class UserInvitationResponseDto {
+public class ReceivedInvitationResponseDto {
 
-	public UserInvitationResponseDto(long id, LocalDate issueDate, long projectId, String name) {
+	public ReceivedInvitationResponseDto(long id, LocalDate issueDate, long projectId, String name) {
 		this.id = id;
 		this.issueDate = issueDate;
 		this.project = new ProjectIdAndNameDto(projectId, name);

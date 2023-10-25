@@ -1,11 +1,11 @@
-package com.projectpal.dto.response.entity;
+package com.projectpal.dto.response.entity.common;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-class ProjectIdAndNameDto {
+public class ProjectIdAndNameDto {
 
 	private final long id;
 

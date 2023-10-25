@@ -34,7 +34,6 @@ import com.projectpal.entity.enums.Progress;
 import com.projectpal.mapper.TaskMapper;
 import com.projectpal.service.TaskService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,17 +48,13 @@ public class TaskController {
 	private final TaskMapper taskMapper;
 
 	@GetMapping("/tasks/{taskId}")
-	public ResponseEntity<Task> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
+	public ResponseEntity<TaskResponseDto> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		//TODO use task projection and find by id and project
-		
-		Task task = taskService.findTaskById(taskId);
+		TaskResponseDto taskDto = taskService.findTaskDtoByIdAndProject(taskId,currentUser.getProject());
 
-		UserEntityAccessValidationUtil.verifyUserAccessToProjectTask(currentUser, task);
-
-		return ResponseEntity.ok(task);
+		return ResponseEntity.ok(taskDto);
 
 	}
 

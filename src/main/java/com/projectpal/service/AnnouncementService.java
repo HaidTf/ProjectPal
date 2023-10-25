@@ -16,7 +16,6 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.utils.MaxAllowedUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +34,13 @@ public class AnnouncementService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public AnnouncementResponseDto findAnnouncementDtoByIdAndProject(long announcementId, Project project) {
+		return announcementRepo.findAnnouncementDtoByIdAndProject(announcementId, project)
+				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
+
+	}
+
 	@Transactional
 	public void createAnnouncement(Project project, Announcement announcement) {
 
@@ -47,10 +53,9 @@ public class AnnouncementService {
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
 	public void deleteAnnouncement(long announcementId) {
 
-		Announcement announcement = this.findAnnouncementById(announcementId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToAnnouncement(authenticationContextFacadeImpl.getCurrentUser(),
-				announcement);
+		Announcement announcement = announcementRepo
+				.findByIdAndProject(announcementId, authenticationContextFacadeImpl.getCurrentUser().getProject())
+				.orElseThrow(() -> new ResourceNotFoundException("Announcement not found"));
 
 		announcementRepo.delete(announcement);
 	}

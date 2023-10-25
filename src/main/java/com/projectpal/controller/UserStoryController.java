@@ -33,7 +33,6 @@ import com.projectpal.entity.User;
 import com.projectpal.service.UserStoryService;
 import com.projectpal.utils.ProjectMembershipValidationUtil;
 import com.projectpal.utils.SortValidationUtil;
-import com.projectpal.utils.UserEntityAccessValidationUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +52,7 @@ public class UserStoryController {
 
 		ProjectMembershipValidationUtil.verifyUserProjectMembership(currentUser);
 
-		//TODO find by id and project
-		
-		UserStory userStory = userStoryService.findUserStoryById(userStoryId);
-
-		UserEntityAccessValidationUtil.verifyUserAccessToUserStory(currentUser, userStory);
+		UserStory userStory = userStoryService.findUserStoryByIdAndEpicProject(userStoryId,currentUser.getProject());
 
 		return ResponseEntity.ok(userStory);
 
@@ -73,8 +68,6 @@ public class UserStoryController {
 
 		SortValidationUtil.validateSortObjectProperties(UserStory.ALLOWED_SORT_PROPERTIES, sort);
 
-		//TODO use epic userstory projection
-		
 		List<UserStory> userStories = userStoryService.findUserStoriesByEpicAndProgressFromDbOrCache(epicId, progress,
 				sort);
 
