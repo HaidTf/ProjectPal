@@ -3,7 +3,7 @@ package com.projectpal.validation;
 import com.projectpal.entity.User;
 import com.projectpal.exception.ResourceNotFoundException;
 
-public class ProjectMembershipValidationUtil {
+public class ProjectMembershipValidator {
 
 	public static void verifyUserProjectMembership(User user) {
 		
