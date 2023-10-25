@@ -70,7 +70,7 @@ public class Task implements Serializable {
 
 	@Column(columnDefinition = "TINYINT")
 	@Min(1)
-	@Max(250)
+	@Max(10)
 	@NotNull
 	private int priority;
 
@@ -92,6 +92,7 @@ public class Task implements Serializable {
 	private UserStory userStory;
 
 	@ManyToOne
+	@JsonIgnore
 	private User assignedUser;
 
 	@ManyToOne
