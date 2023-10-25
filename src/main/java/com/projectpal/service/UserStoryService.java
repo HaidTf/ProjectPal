@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
@@ -20,6 +21,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.UserStoryCacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -67,10 +69,10 @@ public class UserStoryService {
 		if (mayBeStoredInCache) {
 
 			Optional<List<UserStory>> cacheUserStories = userStoryCacheService
-					.getObjectsFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId());
+					.getObjectsFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
 			if (cacheUserStories.isEmpty()) {
 				userStories = userStoryRepo.findAllByEpicAndProgressIn(epic, progress);
-				userStoryCacheService.populateCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
+				userStoryCacheService.populateCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
 			}
 
 			this.sort(userStories, sort);
@@ -104,7 +106,7 @@ public class UserStoryService {
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
-		if (userStoryRepo.countBySprintId(epic.getId()) > Epic.MAX_NUMBER_OF_USERSTORIES)
+		if (userStoryRepo.countBySprintId(epic.getId()) > DBConstants.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
 
 		userStory.setProgress(Progress.TODO);
@@ -113,7 +115,7 @@ public class UserStoryService {
 
 		userStoryRepo.save(userStory);
 
-		userStoryCacheService.addObjectToCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
+		userStoryCacheService.addObjectToCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
 
 	}
 

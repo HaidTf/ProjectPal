@@ -12,7 +12,6 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
-import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.BadRequestException;
 import com.projectpal.exception.ForbiddenException;
@@ -21,6 +20,7 @@ import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.CacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -107,14 +107,15 @@ public class ProjectService {
 	@Transactional
 	public void cascadeDeleteChildrenOfProjectInCache(Project project) {
 
-		cacheService.evictListFromCache(Epic.EPIC_CACHE, project.getId());
-		cacheService.evictListFromCache(Sprint.SPRINT_CACHE, project.getId());
+		cacheService.evictListFromCache(CacheConstants.EPIC_CACHE, project.getId());
+		cacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, project.getId());
 
 		List<Epic> epics = epicRepo.findAllByProject(project);
 		List<Sprint> sprints = sprintRepo.findAllByProject(project);
 
-		epics.forEach((epic) -> cacheService.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, epic.getId()));
-		sprints.forEach((sprint) -> cacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId()));
+		epics.forEach((epic) -> cacheService.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()));
+		sprints.forEach(
+				(sprint) -> cacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId()));
 	}
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
@@ -19,6 +20,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
+import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.UserStoryCacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -52,10 +54,10 @@ public class SprintUserStoryService {
 
 		if (mayBeStoredInCache) {
 
-			userStories = userStoryCacheService.getObjectsFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
+			userStories = userStoryCacheService.getObjectsFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 			if (userStories.isEmpty()) {
 				userStories = Optional.of(userStoryRepo.findAllBySprintAndProgressIn(sprint, progress));
-				userStoryCacheService.populateCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId(),
+				userStoryCacheService.populateCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(),
 						userStories.get());
 			}
 
@@ -96,7 +98,7 @@ public class SprintUserStoryService {
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
 
-		if (userStoryRepo.countBySprintId(sprint.getId()) > Sprint.MAX_NUMBER_OF_USERSTORIES)
+		if (userStoryRepo.countBySprintId(sprint.getId()) > DBConstants.MAX_NUMBER_OF_USERSTORIES)
 			throw new ConflictException("Reached maximum number of userstories allowed in a sprint");
 
 		userStory.setSprint(sprint);
@@ -104,7 +106,7 @@ public class SprintUserStoryService {
 		userStoryRepo.save(userStory);
 
 		if (userStory.getProgress() == Progress.TODO || userStory.getProgress() == Progress.INPROGRESS)
-			userStoryCacheService.addObjectToCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId(), userStory);
+			userStoryCacheService.addObjectToCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(), userStory);
 
 	}
 
@@ -129,7 +131,7 @@ public class SprintUserStoryService {
 		userStoryRepo.save(userStory);
 
 		if (userStory.getProgress() == Progress.TODO || userStory.getProgress() == Progress.INPROGRESS)
-			userStoryCacheService.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, sprint.getId());
+			userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 
 	}
 

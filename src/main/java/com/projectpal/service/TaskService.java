@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.projectpal.controller.APIConstants;
 import com.projectpal.dto.response.entity.TaskResponseDto;
+import com.projectpal.entity.DBConstants;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
@@ -25,7 +27,6 @@ import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
-import com.projectpal.utils.MaxAllowedUtil;
 import com.projectpal.utils.SortValidationUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -77,7 +78,7 @@ public class TaskService {
 	@Transactional(readOnly = true)
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
-		if (pageable.getPageSize() > MaxAllowedUtil.MAX_PAGE_SIZE)
+		if (pageable.getPageSize() > APIConstants.MAX_PAGE_SIZE)
 			throw new ConflictException("Page size exceeded size limit");
 
 		SortValidationUtil.validateSortObjectProperties(Task.ALLOWED_SORT_PROPERTIES, pageable.getSort());
@@ -113,7 +114,7 @@ public class TaskService {
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
 
-		if (taskRepo.countByUserStoryId(userStory.getId()) > UserStory.MAX_NUMBER_OF_TASKS)
+		if (taskRepo.countByUserStoryId(userStory.getId()) > DBConstants.MAX_NUMBER_OF_TASKS)
 			throw new ConflictException("Maximum number of tasks allowed reached");
 
 		task.setProgress(Progress.TODO);

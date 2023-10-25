@@ -16,10 +16,10 @@ public class UserStoryCacheService extends CacheService<UserStory> {
 
 	public void evictCachesWhereUserStoryIsPresent(UserStory userStory) {
 		
-		this.evictListFromCache(UserStory.EPIC_USERSTORY_CACHE, userStory.getEpic().getId());
+		this.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, userStory.getEpic().getId());
 
 		if (userStory.getSprint() != null)
-			this.evictListFromCache(UserStory.SPRINT_USERSTORY_CACHE, userStory.getSprint().getId());
+			this.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, userStory.getSprint().getId());
 		
 	}
 
