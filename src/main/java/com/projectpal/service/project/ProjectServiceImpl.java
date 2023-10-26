@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ProjectService {
+public class ProjectServiceImpl implements ProjectService {
 
 	private final ProjectRepository projectRepo;
 
@@ -43,12 +43,14 @@ public class ProjectService {
 	private final CacheService<Project> cacheService;
 
 	@Transactional(readOnly = true)
+	@Override
 	public ProjectResponseDto findProjectDtoById(long id) {
 
 		return projectRepo.findProjectDtoById(id).orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 	}
 
 	@Transactional
+	@Override
 	public void createProjectAndSetOwner(Project project, User user) {
 
 		project.setOwner(user);
@@ -63,6 +65,7 @@ public class ProjectService {
 	}
 
 	@Transactional
+	@Override
 	public void updateProjectDescription(Project project, @Nullable String description) {
 
 		project.setDescription(description);
@@ -72,6 +75,7 @@ public class ProjectService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void removeUserFromCurrentUserProject(User currentUser, long userId) {
 
 		if (currentUser.getId() == userId)
@@ -90,6 +94,7 @@ public class ProjectService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteProject(Project project) {
 
 		List<User> projectUsers = userRepo.findAllByProject(project);
@@ -106,6 +111,7 @@ public class ProjectService {
 	}
 
 	@Transactional
+	@Override
 	public void cascadeDeleteChildrenOfProjectInCache(Project project) {
 
 		cacheService.evictListFromCache(CacheConstants.EPIC_CACHE, project.getId());
