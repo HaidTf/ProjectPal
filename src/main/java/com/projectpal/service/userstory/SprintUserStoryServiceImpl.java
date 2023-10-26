@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SprintUserStoryService {
+public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 
@@ -40,6 +40,7 @@ public class SprintUserStoryService {
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional
+	@Override
 	public List<UserStory> findUserStoriesBySprintAndProgressListFromDbOrCache(long sprintId, Set<Progress> progress,
 			Sort sort) {
 
@@ -72,6 +73,7 @@ public class SprintUserStoryService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<UserStory> findUserStoriesBySprintAndProgressFromDb(Sprint sprint, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -87,6 +89,7 @@ public class SprintUserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void addUserStoryToSprint(long userStoryId, long sprintId) {
 
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
@@ -111,6 +114,7 @@ public class SprintUserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void removeUserStoryFromSprint(long userStoryId, long sprintId) {
 
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
