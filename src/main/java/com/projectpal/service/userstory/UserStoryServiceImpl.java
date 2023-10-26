@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserStoryService {
+public class UserStoryServiceImpl implements UserStoryService {
 
 	private final UserStoryRepository userStoryRepo;
 
@@ -39,6 +39,7 @@ public class UserStoryService {
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional(readOnly = true)
+	@Override
 	public UserStory findUserStoryById(long userStoryId) {
 
 		return userStoryRepo.findById(userStoryId)
@@ -47,6 +48,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public UserStory findUserStoryByIdAndEpicProject(long userStoryId, Project project) {
 
 		return userStoryRepo.findByIdAndEpicProject(userStoryId, project)
@@ -55,6 +57,7 @@ public class UserStoryService {
 	}
 
 	@Transactional
+	@Override
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDbOrCache(long epicId, Set<Progress> progress,
 			Sort sort) {
 
@@ -86,6 +89,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDb(Epic epic, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -101,6 +105,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void createUserStory(long epicId, UserStory userStory) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -120,6 +125,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateDescription(long userStoryId, String description) {
 
 		UserStory userStory = userStoryRepo
@@ -135,6 +141,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updatePriority(long userStoryId, int priority) {
 
 		UserStory userStory = userStoryRepo
@@ -150,6 +157,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateProgress(long userStoryId, Progress progress) {
 
 		UserStory userStory = userStoryRepo
@@ -164,6 +172,7 @@ public class UserStoryService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteUserStory(long userStoryId) {
 
 		UserStory userStory = userStoryRepo
@@ -175,7 +184,8 @@ public class UserStoryService {
 		userStoryCacheService.evictCachesWhereUserStoryIsPresent(userStory);
 	}
 
-	protected void sort(List<UserStory> userStories, Sort sort) {
+	@Override
+	public void sort(List<UserStory> userStories, Sort sort) {
 
 		Comparator<UserStory> combinedComparator = null;
 
