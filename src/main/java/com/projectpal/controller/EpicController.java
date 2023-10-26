@@ -31,7 +31,7 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.service.EpicService;
+import com.projectpal.service.epic.EpicService;
 import com.projectpal.validation.ProjectMembershipValidator;
 import com.projectpal.validation.SortObjectValidator;
 

@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.authentication;
 
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class AuthenticationServiceImpl implements AuthenticationService {
 
 	private final UserRepository repo;
 
@@ -29,6 +29,7 @@ public class AuthenticationService {
 
 	private final AuthenticationManager authManager;
 
+	@Override
 	public AuthenticationResponse register(RegisterRequest req) {
 
 		User user = new User(req.getName(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
@@ -43,6 +44,7 @@ public class AuthenticationService {
 
 	}
 
+	@Override
 	public AuthenticationResponse authenticate(AuthenticationRequest req) {
 
 		authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));

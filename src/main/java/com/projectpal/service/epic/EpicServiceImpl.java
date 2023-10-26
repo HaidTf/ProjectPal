@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.epic;
 
 import java.util.Comparator;
 import java.util.List;
@@ -29,12 +29,12 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class EpicService {
+public class EpicServiceImpl implements EpicService {
 
 	private final EpicRepository epicRepo;
 
 	private final UserStoryRepository userStoryRepo;
-	
+
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	private final EpicCacheService epicCacheService;
@@ -42,17 +42,20 @@ public class EpicService {
 	private final UserStoryCacheService userStoryCacheService;
 
 	@Transactional(readOnly = true)
+	@Override
 	public Epic findEpicById(long epicId) {
 		return epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Epic findEpicByIdAndProject(long epicId, Project project) {
 		return epicRepo.findByIdAndProject(epicId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 	}
 
 	@Transactional
+	@Override
 	public List<Epic> findEpicsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress, Sort sort) {
 
 		List<Epic> epics = new ArrayList<>(0);
@@ -62,7 +65,8 @@ public class EpicService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(CacheConstants.EPIC_CACHE, project.getId());
+			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(CacheConstants.EPIC_CACHE,
+					project.getId());
 			if (cacheEpics.isEmpty()) {
 				epics = epicRepo.findAllByProjectAndProgressIn(project, progress);
 				epicCacheService.populateCache(CacheConstants.EPIC_CACHE, project.getId(), epics);
@@ -79,6 +83,7 @@ public class EpicService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<Epic> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -94,6 +99,7 @@ public class EpicService {
 	}
 
 	@Transactional
+	@Override
 	public void createEpic(Project project, Epic epic) {
 
 		if (epicRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_EPICS)
@@ -110,6 +116,7 @@ public class EpicService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateDescription(long epicId, String description) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -124,6 +131,7 @@ public class EpicService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updatePriority(long epicId, int priority) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -138,6 +146,7 @@ public class EpicService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateProgress(long epicId, Progress progress) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -152,6 +161,7 @@ public class EpicService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteEpic(long epicId) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -174,7 +184,8 @@ public class EpicService {
 
 	}
 
-	protected void sort(List<Epic> epics, Sort sort) {
+	@Override
+	public void sort(List<Epic> epics, Sort sort) {
 
 		Comparator<Epic> combinedComparator = null;
 

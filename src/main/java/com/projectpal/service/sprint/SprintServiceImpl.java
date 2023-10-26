@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.sprint;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SprintService {
+public class SprintServiceImpl implements SprintService {
 
 	private final SprintRepository sprintRepo;
 
@@ -40,17 +40,20 @@ public class SprintService {
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional(readOnly = true)
+	@Override
 	public Sprint findSprintById(long sprintId) {
 		return sprintRepo.findById(sprintId).orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Sprint findSprintByIdAndproject(long sprintId, Project project) {
 		return sprintRepo.findByIdAndProject(sprintId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 	}
 
 	@Transactional
+	@Override
 	public List<Sprint> findSprintsByProjectAndProgressFromDbOrCache(Project project, Set<Progress> progress,
 			Sort sort) {
 
@@ -78,6 +81,7 @@ public class SprintService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<Sprint> findSprintsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 
 		switch (progress.size()) {
@@ -92,13 +96,14 @@ public class SprintService {
 	}
 
 	@Transactional
+	@Override
 	public void createSprint(Project project, Sprint sprint) {
 
 		if (sprintRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_SPRINTS)
 			throw new ConflictException("Maximum number of Sprint allowed reached");
 
 		sprint.setProgress(Progress.TODO);
-		
+
 		sprint.setProject(project);
 
 		sprintRepo.save(sprint);
@@ -108,6 +113,7 @@ public class SprintService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateStartDate(long sprintId, LocalDate date) {
 
 		Sprint sprint = sprintRepo
@@ -126,8 +132,9 @@ public class SprintService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateEndDate(long sprintId, LocalDate date) {
-		
+
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
@@ -143,6 +150,7 @@ public class SprintService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateDescription(long sprintId, String description) {
 
 		Sprint sprint = sprintRepo
@@ -157,6 +165,7 @@ public class SprintService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateProgress(long sprintId, Progress progress) {
 
 		Sprint sprint = sprintRepo
@@ -171,6 +180,7 @@ public class SprintService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteSprint(long sprintId) {
 
 		Sprint sprint = sprintRepo
@@ -185,7 +195,8 @@ public class SprintService {
 
 	}
 
-	protected void sort(List<Sprint> sprints, Sort sort) {
+	@Override
+	public void sort(List<Sprint> sprints, Sort sort) {
 
 		Comparator<Sprint> combinedComparator = null;
 

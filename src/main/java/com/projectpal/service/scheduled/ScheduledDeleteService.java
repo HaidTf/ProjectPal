@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.scheduled;
 
 import java.time.LocalDate;
 

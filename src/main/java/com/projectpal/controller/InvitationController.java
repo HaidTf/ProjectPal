@@ -23,7 +23,7 @@ import com.projectpal.dto.response.entity.SentInvitationResponseDto;
 import com.projectpal.dto.response.entity.ReceivedInvitationResponseDto;
 import com.projectpal.entity.Invitation;
 import com.projectpal.entity.User;
-import com.projectpal.service.InvitationService;
+import com.projectpal.service.invitation.InvitationService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import lombok.RequiredArgsConstructor;

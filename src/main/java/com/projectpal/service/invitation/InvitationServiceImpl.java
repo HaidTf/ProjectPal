@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.invitation;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class InvitationService {
+public class InvitationServiceImpl implements InvitationService {
 
 	private final InvitationRepository invitationRepo;
 
@@ -36,6 +36,7 @@ public class InvitationService {
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional(readOnly = true)
+	@Override
 	public Invitation findInvitationById(long invitationId) {
 
 		return invitationRepo.findById(invitationId)
@@ -44,6 +45,7 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public SentInvitationResponseDto findSentInvitationDtoByIdAndProject(long invitationId, Project project) {
 
 		return invitationRepo.findSentInvitationDtoByIdAndProject(invitationId, project)
@@ -52,6 +54,7 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public ReceivedInvitationResponseDto findReceivedInvitationDtoByIdAndUser(long invitationId, User invitedUser) {
 
 		return invitationRepo.findReceivedInvitationDtoByIdAndUser(invitationId, invitedUser)
@@ -60,6 +63,7 @@ public class InvitationService {
 	}
 
 	@Transactional
+	@Override
 	public Invitation inviteUserToProject(long userId, Project project) {
 
 		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -78,11 +82,11 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<SentInvitationResponseDto> findSentInvitationDtoPageByProject(Project project, int page,
-			int size) {
+	@Override
+	public Page<SentInvitationResponseDto> findSentInvitationDtoPageByProject(Project project, int page, int size) {
 
 		PageValidator.validatePage(page, size);
-		
+
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("issueDate")));
 
 		return invitationRepo.findSentInvitationDtoPageByProject(project, pageable);
@@ -90,6 +94,7 @@ public class InvitationService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<ReceivedInvitationResponseDto> findReceivedInvitationDtoListByUser(User user) {
 
 		return invitationRepo.findReceivedInvitationDtoListByInvitedUser(user, Sort.by(Sort.Order.desc("issueDate")));
@@ -97,6 +102,7 @@ public class InvitationService {
 	}
 
 	@Transactional
+	@Override
 	public void userAcceptsInvitation(User user, long invitationId) {
 
 		Invitation invitation = invitationRepo.findByIdAndInvitedUser(invitationId, user)
@@ -113,6 +119,7 @@ public class InvitationService {
 	}
 
 	@Transactional
+	@Override
 	public void rejectInvitation(long invitationId) {
 
 		Invitation invitation = invitationRepo

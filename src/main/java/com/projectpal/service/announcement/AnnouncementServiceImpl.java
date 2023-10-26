@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.announcement;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,13 +21,14 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AnnouncementService {
+public class AnnouncementServiceImpl implements AnnouncementService {
 
 	private final AnnouncementRepository announcementRepo;
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional(readOnly = true)
+	@Override
 	public Announcement findAnnouncementById(long announcementId) {
 		return announcementRepo.findById(announcementId)
 				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
@@ -35,6 +36,7 @@ public class AnnouncementService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public AnnouncementResponseDto findAnnouncementDtoByIdAndProject(long announcementId, Project project) {
 		return announcementRepo.findAnnouncementDtoByIdAndProject(announcementId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
@@ -42,6 +44,7 @@ public class AnnouncementService {
 	}
 
 	@Transactional
+	@Override
 	public void createAnnouncement(User currentUser, Announcement announcement) {
 
 		announcement.setAnnouncer(currentUser);
@@ -53,6 +56,7 @@ public class AnnouncementService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteAnnouncement(long announcementId) {
 
 		Announcement announcement = announcementRepo
@@ -63,6 +67,7 @@ public class AnnouncementService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Page<Announcement> findPageByProject(Project project, int page, int size) {
 
 		PageValidator.validatePage(page, size);
@@ -73,6 +78,7 @@ public class AnnouncementService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Page<AnnouncementResponseDto> findAnnouncementDtoPageByProject(Project project, int page, int size) {
 
 		PageValidator.validatePage(page, size);

@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
+import com.projectpal.service.userstory.UserStoryService;
 import com.projectpal.dto.mapper.UserStoryMapper;
 import com.projectpal.dto.request.DescriptionDto;
 import com.projectpal.dto.request.PriorityDto;
@@ -30,7 +31,6 @@ import com.projectpal.dto.request.ProgressDto;
 import com.projectpal.dto.request.entity.UserStoryCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.User;
-import com.projectpal.service.UserStoryService;
 import com.projectpal.validation.ProjectMembershipValidator;
 import com.projectpal.validation.SortObjectValidator;
 

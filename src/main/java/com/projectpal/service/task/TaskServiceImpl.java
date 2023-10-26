@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.task;
 
 import java.util.List;
 import java.util.Set;
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TaskService {
+public class TaskServiceImpl implements TaskService {
 
 	private final TaskRepository taskRepo;
 
@@ -44,23 +44,27 @@ public class TaskService {
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
 	@Transactional(readOnly = true)
+	@Override
 	public Task findTaskById(long taskId) {
 		return taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Task findTaskByIdAndProject(long taskId, Project project) {
 		return taskRepo.findByIdAndProject(taskId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public TaskResponseDto findTaskDtoByIdAndProject(long taskId, Project project) {
 		return taskRepo.findTaskDtoByIdAndProject(taskId, project)
 				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<Task> findTasksByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress, Sort sort) {
 
 		UserStory userStory = userStoryRepo
@@ -76,6 +80,7 @@ public class TaskService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
 		PageValidator.validatePageable(pageable);
@@ -91,6 +96,7 @@ public class TaskService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<TaskResponseDto> findTaskDtoListByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress,
 			Sort sort) {
 
@@ -107,6 +113,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void createTask(long userStoryId, Task task) {
 
 		UserStory userStory = userStoryRepo
@@ -125,6 +132,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateDescription(long taskId, String description) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -136,6 +144,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updatePriority(long taskId, int priority) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -147,6 +156,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateProgressAndReport(long taskId, Progress progress, String report) {
 
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
@@ -177,6 +187,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateAssignedUser(long taskId, long userId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -192,6 +203,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void removeTaskAssignedUser(long taskId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
@@ -202,6 +214,7 @@ public class TaskService {
 	}
 
 	@Transactional
+	@Override
 	public void exitUserTasks(User user) {
 
 		List<Task> tasks = taskRepo.findAllByAssignedUser(user);
@@ -218,6 +231,7 @@ public class TaskService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void deleteTask(long taskId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())

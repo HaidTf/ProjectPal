@@ -32,7 +32,7 @@ import com.projectpal.dto.response.entity.TaskResponseDto;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.service.TaskService;
+import com.projectpal.service.task.TaskService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;

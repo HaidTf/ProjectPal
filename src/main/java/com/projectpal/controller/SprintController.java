@@ -32,7 +32,7 @@ import com.projectpal.dto.request.entity.SprintCreationDto;
 import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.Project;
 import com.projectpal.exception.BadRequestException;
-import com.projectpal.service.SprintService;
+import com.projectpal.service.sprint.SprintService;
 import com.projectpal.validation.ProjectMembershipValidator;
 import com.projectpal.validation.SortObjectValidator;
 

@@ -23,7 +23,7 @@ import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.User;
-import com.projectpal.service.AnnouncementService;
+import com.projectpal.service.announcement.AnnouncementService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
