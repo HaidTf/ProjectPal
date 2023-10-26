@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CacheService<T> {
+public class RedisCacheServiceImpl<T> implements CacheService<T> {
 
 	@PostConstruct
 	private void clearCacheAndSetTransactionAware() {
@@ -25,6 +25,7 @@ public class CacheService<T> {
 
 	private final RedisCacheManager redis;
 
+	@Override
 	public Optional<List<T>> getObjectsFromCache(String cacheName, Long cacheKey) {
 
 		List<T> objects;
@@ -39,6 +40,7 @@ public class CacheService<T> {
 		return Optional.ofNullable(objects);
 	}
 
+	@Override
 	public void populateCache(String cacheName, Long cacheKey, List<T> objects) {
 		try {
 			redis.getCache(cacheName).put(cacheKey, objects);
@@ -46,6 +48,7 @@ public class CacheService<T> {
 		}
 	}
 
+	@Override
 	public void addObjectToCache(String cacheName, Long cacheKey, T object) {
 
 		List<T> objects;
@@ -66,6 +69,7 @@ public class CacheService<T> {
 		}
 	}
 
+	@Override
 	public void evictListFromCache(String cacheName, Long cacheKey) {
 		Cache cache = redis.getCache(cacheName);
 		if (cache != null)
