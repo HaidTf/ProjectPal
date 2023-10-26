@@ -22,8 +22,8 @@ import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.Task;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.service.TaskService;
-import com.projectpal.service.UserService;
+import com.projectpal.service.task.TaskService;
+import com.projectpal.service.user.UserService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;

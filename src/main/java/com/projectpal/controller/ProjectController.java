@@ -29,8 +29,8 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.service.ProjectService;
-import com.projectpal.service.UserService;
+import com.projectpal.service.project.ProjectService;
+import com.projectpal.service.user.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

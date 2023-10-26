@@ -22,7 +22,7 @@ import com.projectpal.dto.response.ListHolderResponse;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.service.SprintUserStoryService;
+import com.projectpal.service.userstory.SprintUserStoryService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;

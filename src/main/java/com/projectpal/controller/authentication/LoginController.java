@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectpal.dto.request.authentication.AuthenticationRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.dto.response.exception.ExceptionResponse;
-import com.projectpal.service.AuthenticationService;
+import com.projectpal.service.authentication.AuthenticationService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
