@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserServiceImpl implements UserService {
 
 	private final PasswordEncoder encoder;
 
@@ -41,12 +41,14 @@ public class UserService {
 	private final ProjectService projectService;
 
 	@Transactional(readOnly = true)
+	@Override
 	public User findUserById(long userId) {
 		return userRepo.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Page<User> findAllByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
 
 		PageValidator.validatePage(page, size);
@@ -62,6 +64,7 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public Page<ProjectMemberResponseDto> findProjectMembersDtoListByProjectAndRole(Project project,
 			@Nullable Role role, int page, int size) {
 
@@ -78,12 +81,14 @@ public class UserService {
 	}
 
 	@Transactional
+	@Override
 	public void updateUserPassword(User user, String password) {
 		user.setPassword(encoder.encode(password));
 		userRepo.save(user);
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void updateUserProjectRole(User currentUser, long userId, Role role) {
 
 		User user = userRepo.findUserByIdAndProject(userId, currentUser.getProject())
@@ -103,6 +108,7 @@ public class UserService {
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
+	@Override
 	public void exitUserProject(User currentUser) {
 
 		Project project = currentUser.getProject();
