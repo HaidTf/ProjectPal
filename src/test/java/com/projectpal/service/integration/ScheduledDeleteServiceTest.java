@@ -18,7 +18,7 @@ import com.projectpal.entity.Invitation;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.ProjectRepository;
-import com.projectpal.service.ScheduledDeleteService;
+import com.projectpal.service.scheduled.ScheduledDeleteService;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
