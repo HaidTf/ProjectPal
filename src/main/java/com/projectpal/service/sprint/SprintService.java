@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.sprint;
 
 import java.time.LocalDate;
 import java.util.Comparator;

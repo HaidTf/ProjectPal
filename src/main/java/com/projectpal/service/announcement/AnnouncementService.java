@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.announcement;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

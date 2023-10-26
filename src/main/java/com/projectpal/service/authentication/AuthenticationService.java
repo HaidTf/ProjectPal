@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.authentication;
 
 
 import org.springframework.security.authentication.AuthenticationManager;

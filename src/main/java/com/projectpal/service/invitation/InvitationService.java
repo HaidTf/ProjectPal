@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.invitation;
 
 import java.util.List;
 

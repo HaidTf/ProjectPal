@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.userstory;
 
 import java.util.List;
 import java.util.Optional;

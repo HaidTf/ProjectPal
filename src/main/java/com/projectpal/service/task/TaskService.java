@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.task;
 
 import java.util.List;
 import java.util.Set;

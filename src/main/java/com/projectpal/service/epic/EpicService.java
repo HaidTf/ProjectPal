@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.epic;
 
 import java.util.Comparator;
 import java.util.List;

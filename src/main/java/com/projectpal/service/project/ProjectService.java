@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.project;
 
 import java.util.List;
 
@@ -22,6 +22,7 @@ import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.service.cache.CacheConstants;
 import com.projectpal.service.cache.CacheService;
+import com.projectpal.service.task.TaskService;
 
 import lombok.RequiredArgsConstructor;
 

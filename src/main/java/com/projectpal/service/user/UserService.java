@@ -1,4 +1,4 @@
-package com.projectpal.service;
+package com.projectpal.service.user;
 
 import java.util.List;
 
@@ -20,6 +20,8 @@ import com.projectpal.exception.ForbiddenException;
 import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
+import com.projectpal.service.project.ProjectService;
+import com.projectpal.service.task.TaskService;
 import com.projectpal.validation.PageValidator;
 
 import lombok.RequiredArgsConstructor;
