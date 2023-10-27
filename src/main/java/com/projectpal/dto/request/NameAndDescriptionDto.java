@@ -16,12 +16,12 @@ public class NameAndDescriptionDto {
 		this.description = description;
 	}
 
-	@NotBlank
-	@Size(min = 3, max = 60)
+	@NotBlank(message = "name must not be blank")
+	@Size(min = 3, max = 60, message = "name must be within the 3-60 character range")
 	private final String name;
 
 	@Nullable
-	@Size(max = 300)
+	@Size(max = 300, message = "description must be less than 300 character")
 	private final String description;
 
 }

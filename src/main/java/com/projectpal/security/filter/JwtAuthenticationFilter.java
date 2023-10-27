@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.projectpal.exception.CustomAuthenticationException;
+import com.projectpal.exception.client.CustomAuthenticationException;
 import com.projectpal.security.entrypoint.CustomAuthenticationEntryPoint;
 import com.projectpal.security.token.JwtService;
 

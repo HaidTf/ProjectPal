@@ -14,9 +14,9 @@ import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ConflictException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.EntityCountLimitException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
@@ -46,7 +46,7 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		Optional<List<UserStory>> userStories = Optional.empty();
 
@@ -95,21 +95,22 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
 		Sprint sprint = sprintRepo.findByIdAndProject(sprintId, currentUser.getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		if (userStoryRepo.countBySprintId(sprint.getId()) > DBConstants.MAX_NUMBER_OF_USERSTORIES)
-			throw new ConflictException("Reached maximum number of userstories allowed in a sprint");
+			throw new EntityCountLimitException(UserStory.class);
 
 		userStory.setSprint(sprint);
 
 		userStoryRepo.save(userStory);
 
 		if (userStory.getProgress() == Progress.TODO || userStory.getProgress() == Progress.INPROGRESS)
-			userStoryCacheService.addObjectToListInCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(), userStory);
+			userStoryCacheService.addObjectToListInCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(),
+					userStory);
 
 	}
 
@@ -120,11 +121,11 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
 		Sprint sprint = sprintRepo.findByIdAndProject(sprintId, currentUser.getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		if (userStory.getSprint().getId() != sprint.getId()) {
 			throw new BadRequestException("They userStory is not in the specified sprint");

@@ -13,9 +13,9 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.EntityNotFoundException;
+import com.projectpal.exception.client.ForbiddenException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.SprintRepository;
@@ -46,7 +46,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public ProjectResponseDto findProjectDtoById(long id) {
 
-		return projectRepo.findProjectDtoById(id).orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+		return projectRepo.findProjectDtoById(id).orElseThrow(() -> new EntityNotFoundException(Project.class));
 	}
 
 	@Transactional
@@ -81,7 +81,7 @@ public class ProjectServiceImpl implements ProjectService {
 		if (currentUser.getId() == userId)
 			throw new BadRequestException("You cant remove yourself from the project through here");
 
-		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
+		User user = userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException(User.class));
 
 		if (user.getProject().getId() != currentUser.getProject().getId())
 			throw new ForbiddenException("the user must be in the project");

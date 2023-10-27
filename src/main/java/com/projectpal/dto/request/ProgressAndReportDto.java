@@ -19,12 +19,12 @@ public final class ProgressAndReportDto {
 		this.report = report;
 	}
 
-	@NotNull
+	@NotNull(message = "progress must not be null")
 	private final Progress progress;
 
 	@Nullable
 	@JsonProperty("report")
-	@Size(max = 500)
+	@Size(max = 500, message = "report must be less than 500 character")
 	private final String report;
 
 }

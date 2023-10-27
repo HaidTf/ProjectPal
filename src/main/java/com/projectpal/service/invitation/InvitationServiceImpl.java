@@ -15,9 +15,10 @@ import com.projectpal.entity.Invitation;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ConflictException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.ConflictException;
+import com.projectpal.exception.client.EntityNotFoundException;
+import com.projectpal.exception.client.ResourceNotFoundException;
 import com.projectpal.repository.InvitationRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
@@ -39,8 +40,7 @@ public class InvitationServiceImpl implements InvitationService {
 	@Override
 	public Invitation findInvitationById(long invitationId) {
 
-		return invitationRepo.findById(invitationId)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+		return invitationRepo.findById(invitationId).orElseThrow(() -> new EntityNotFoundException(Invitation.class));
 
 	}
 
@@ -49,7 +49,7 @@ public class InvitationServiceImpl implements InvitationService {
 	public SentInvitationResponseDto findSentInvitationDtoByIdAndProject(long invitationId, Project project) {
 
 		return invitationRepo.findSentInvitationDtoByIdAndProject(invitationId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(Invitation.class));
 
 	}
 
@@ -58,7 +58,7 @@ public class InvitationServiceImpl implements InvitationService {
 	public ReceivedInvitationResponseDto findReceivedInvitationDtoByIdAndUser(long invitationId, User invitedUser) {
 
 		return invitationRepo.findReceivedInvitationDtoByIdAndUser(invitationId, invitedUser)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(Invitation.class));
 
 	}
 
@@ -106,7 +106,7 @@ public class InvitationServiceImpl implements InvitationService {
 	public void userAcceptsInvitation(User user, long invitationId) {
 
 		Invitation invitation = invitationRepo.findByIdAndInvitedUser(invitationId, user)
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Invitation.class));
 
 		user.setProject(invitation.getProject());
 
@@ -124,7 +124,7 @@ public class InvitationServiceImpl implements InvitationService {
 
 		Invitation invitation = invitationRepo
 				.findByIdAndInvitedUser(invitationId, authenticationContextFacadeImpl.getCurrentUser())
-				.orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Invitation.class));
 
 		invitationRepo.delete(invitation);
 	}

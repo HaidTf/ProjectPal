@@ -16,7 +16,7 @@ public final class DateDto {
 		this.date = date;
 	}
 
-	@NotNull
+	@NotNull(message = "date must not be null")
 	@JsonAlias({ "startDate", "endDate" })
 	private final LocalDate date;
 

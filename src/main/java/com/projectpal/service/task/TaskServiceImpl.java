@@ -18,10 +18,10 @@ import com.projectpal.entity.User;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.ResourceNotFoundException;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ConflictException;
-import com.projectpal.exception.ForbiddenException;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.EntityCountLimitException;
+import com.projectpal.exception.client.EntityNotFoundException;
+import com.projectpal.exception.client.ForbiddenException;
 import com.projectpal.repository.TaskRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.repository.UserStoryRepository;
@@ -46,21 +46,20 @@ public class TaskServiceImpl implements TaskService {
 	@Transactional(readOnly = true)
 	@Override
 	public Task findTaskById(long taskId) {
-		return taskRepo.findById(taskId).orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
+		return taskRepo.findById(taskId).orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public Task findTaskByIdAndProject(long taskId, Project project) {
-		return taskRepo.findByIdAndProject(taskId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
+		return taskRepo.findByIdAndProject(taskId, project).orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public TaskResponseDto findTaskDtoByIdAndProject(long taskId, Project project) {
 		return taskRepo.findTaskDtoByIdAndProject(taskId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("Task does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
 	@Transactional(readOnly = true)
@@ -69,7 +68,7 @@ public class TaskServiceImpl implements TaskService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findAllByUserStory(userStory, sort);
@@ -102,7 +101,7 @@ public class TaskServiceImpl implements TaskService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		if (progress.size() == 0 || progress.size() == 3)
 			return taskRepo.findTaskDtoListByUserStory(userStory, sort);
@@ -118,10 +117,10 @@ public class TaskServiceImpl implements TaskService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory not found"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		if (taskRepo.countByUserStoryId(userStory.getId()) > DBConstants.MAX_NUMBER_OF_TASKS)
-			throw new ConflictException("Maximum number of tasks allowed reached");
+			throw new EntityCountLimitException(Task.class);
 
 		task.setProgress(Progress.TODO);
 
@@ -136,7 +135,7 @@ public class TaskServiceImpl implements TaskService {
 	public void updateDescription(long taskId, String description) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		task.setDescription(description);
 
@@ -148,7 +147,7 @@ public class TaskServiceImpl implements TaskService {
 	public void updatePriority(long taskId, int priority) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		task.setPriority(priority);
 
@@ -162,7 +161,7 @@ public class TaskServiceImpl implements TaskService {
 		User currentUser = authenticationContextFacadeImpl.getCurrentUser();
 
 		Task task = taskRepo.findByIdAndProject(taskId, currentUser.getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		if (task.getProgress() == Progress.DONE)
 			throw new BadRequestException("finished task's progress cant be updated after it is set to DONE");
@@ -191,9 +190,9 @@ public class TaskServiceImpl implements TaskService {
 	public void updateAssignedUser(long taskId, long userId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
-		User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
+		User user = userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException(User.class));
 
 		if (user.getProject().getId() != authenticationContextFacadeImpl.getCurrentUser().getProject().getId())
 			throw new ForbiddenException("The user must be in the project");
@@ -207,7 +206,7 @@ public class TaskServiceImpl implements TaskService {
 	public void removeTaskAssignedUser(long taskId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		task.setAssignedUser(null);
 		taskRepo.save(task);
@@ -235,7 +234,7 @@ public class TaskServiceImpl implements TaskService {
 	public void deleteTask(long taskId) {
 
 		Task task = taskRepo.findByIdAndProject(taskId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 
 		taskRepo.delete(task);
 	}

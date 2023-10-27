@@ -15,7 +15,7 @@ public final class DescriptionDto {
 	}
 
 	@Nullable
-	@Size(max = 300)
+	@Size(max = 300, message = "description must be less than 300 character")
 	private final String description;
 
 }

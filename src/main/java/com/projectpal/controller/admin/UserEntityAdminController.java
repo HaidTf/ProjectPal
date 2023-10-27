@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.ForbiddenException;
+import com.projectpal.exception.client.ResourceNotFoundException;
 import com.projectpal.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;

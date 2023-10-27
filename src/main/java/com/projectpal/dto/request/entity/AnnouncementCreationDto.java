@@ -9,11 +9,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AnnouncementCreationDto {
 
-	@NotBlank
-	@Size(min = 3, max = 100)
+	@NotBlank(message = "title must not be null")
+	@Size(min = 3, max = 100, message = "title must be within the 3-100 character range")
 	private final String title;
 
-	@Size(max = 300)
+	@Size(max = 300, message = "description must be less than 300 character")
 	private final String description;
 
 }

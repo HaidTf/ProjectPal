@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.springframework.data.domain.Sort;
 
-import com.projectpal.exception.BadRequestException;
+import com.projectpal.exception.client.BadRequestException;
 
 public class SortObjectValidator {
 

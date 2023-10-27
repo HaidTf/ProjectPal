@@ -16,8 +16,8 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.ConflictException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.EntityCountLimitException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
@@ -42,8 +42,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 	@Override
 	public UserStory findUserStoryById(long userStoryId) {
 
-		return userStoryRepo.findById(userStoryId)
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+		return userStoryRepo.findById(userStoryId).orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 	}
 
@@ -52,7 +51,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 	public UserStory findUserStoryByIdAndEpicProject(long userStoryId, Project project) {
 
 		return userStoryRepo.findByIdAndEpicProject(userStoryId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 	}
 
@@ -62,7 +61,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 			Sort sort) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		List<UserStory> userStories = new ArrayList<UserStory>();
 
@@ -109,10 +108,10 @@ public class UserStoryServiceImpl implements UserStoryService {
 	public void createUserStory(long epicId, UserStory userStory) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		if (userStoryRepo.countBySprintId(epic.getId()) > DBConstants.MAX_NUMBER_OF_USERSTORIES)
-			throw new ConflictException("Reached maximum number of userstories allowed in an epic ");
+			throw new EntityCountLimitException(UserStory.class);
 
 		userStory.setProgress(Progress.TODO);
 
@@ -130,7 +129,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		userStory.setDescription(description);
 
@@ -146,7 +145,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		userStory.setPriority(priority);
 
@@ -162,7 +161,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		userStory.setProgress(progress);
 
@@ -177,7 +176,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 		UserStory userStory = userStoryRepo
 				.findByIdAndEpicProject(userStoryId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("UserStory does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(UserStory.class));
 
 		userStoryRepo.delete(userStory);
 
