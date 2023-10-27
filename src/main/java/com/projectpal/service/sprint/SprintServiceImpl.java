@@ -66,11 +66,11 @@ public class SprintServiceImpl implements SprintService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Sprint>> cacheSprints = sprintCacheService.getObjectsFromCache(CacheConstants.SPRINT_CACHE,
+			Optional<List<Sprint>> cacheSprints = sprintCacheService.getListFromCache(CacheConstants.SPRINT_CACHE,
 					project.getId());
 			if (cacheSprints.isEmpty()) {
 				sprints = sprintRepo.findAllByProjectAndProgressIn(project, progress);
-				sprintCacheService.populateCache(CacheConstants.SPRINT_CACHE, project.getId(), sprints);
+				sprintCacheService.putListInCache(CacheConstants.SPRINT_CACHE, project.getId(), sprints);
 			}
 
 			this.sort(sprints, sort);
@@ -110,7 +110,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.addObjectToCache(CacheConstants.SPRINT_CACHE, project.getId(), sprint);
+		sprintCacheService.addObjectToListInCache(CacheConstants.SPRINT_CACHE, project.getId(), sprint);
 
 	}
 
@@ -129,7 +129,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
 	}
 
@@ -148,7 +148,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -163,7 +163,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -178,7 +178,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -189,9 +189,9 @@ public class SprintServiceImpl implements SprintService {
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
-		userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
+		userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 
 		sprintRepo.delete(sprint);
 
