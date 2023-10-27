@@ -8,7 +8,7 @@ import com.projectpal.entity.UserStory;
 
 @Service
 @Qualifier("userStoryCacheService")
-public class UserStoryCacheService extends CacheService<UserStory> {
+public class UserStoryCacheService extends RedisCacheServiceImpl<UserStory> {
 
 	public UserStoryCacheService(RedisCacheManager redis) {
 		super(redis);
@@ -16,10 +16,10 @@ public class UserStoryCacheService extends CacheService<UserStory> {
 
 	public void evictCachesWhereUserStoryIsPresent(UserStory userStory) {
 		
-		this.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, userStory.getEpic().getId());
+		this.evictCache(CacheConstants.EPIC_USERSTORY_CACHE, userStory.getEpic().getId());
 
 		if (userStory.getSprint() != null)
-			this.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, userStory.getSprint().getId());
+			this.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, userStory.getSprint().getId());
 		
 	}
 
