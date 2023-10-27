@@ -16,8 +16,8 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.exception.client.ForbiddenException;
-import com.projectpal.exception.client.ResourceNotFoundException;
 import com.projectpal.repository.ProjectRepository;
 import com.projectpal.repository.UserRepository;
 import com.projectpal.service.project.ProjectService;
@@ -43,8 +43,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional(readOnly = true)
 	@Override
 	public User findUserById(long userId) {
-		return userRepo.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("no user with this id is found"));
+		return userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException(User.class));
 	}
 
 	@Transactional(readOnly = true)
@@ -92,7 +91,7 @@ public class UserServiceImpl implements UserService {
 	public void updateUserProjectRole(User currentUser, long userId, Role role) {
 
 		User user = userRepo.findUserByIdAndProject(userId, currentUser.getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+				.orElseThrow(() -> new EntityNotFoundException(User.class));
 
 		if (user.getProject().getId() != currentUser.getProject().getId())
 			throw new ForbiddenException("the user must be in the project");

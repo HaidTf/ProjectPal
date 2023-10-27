@@ -17,7 +17,8 @@ import com.projectpal.entity.Epic;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.UserStory;
 import com.projectpal.entity.enums.Progress;
-import com.projectpal.exception.client.ConflictException;
+import com.projectpal.exception.client.EntityCountLimitException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.exception.client.ResourceNotFoundException;
 import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
@@ -46,7 +47,7 @@ public class EpicServiceImpl implements EpicService {
 	@Transactional(readOnly = true)
 	@Override
 	public Epic findEpicById(long epicId) {
-		return epicRepo.findById(epicId).orElseThrow(() -> new ResourceNotFoundException("Epic does not exist"));
+		return epicRepo.findById(epicId).orElseThrow(() -> new EntityNotFoundException(Epic.class));
 	}
 
 	@Transactional(readOnly = true)
@@ -105,7 +106,7 @@ public class EpicServiceImpl implements EpicService {
 	public void createEpic(Project project, Epic epic) {
 
 		if (epicRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_EPICS)
-			throw new ConflictException("Reached maximum number of epics allowed in a project");
+			throw new EntityCountLimitException(Epic.class);
 
 		epic.setProgress(Progress.TODO);
 
@@ -122,7 +123,7 @@ public class EpicServiceImpl implements EpicService {
 	public void updateDescription(long epicId, String description) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		epic.setDescription(description);
 
@@ -137,7 +138,7 @@ public class EpicServiceImpl implements EpicService {
 	public void updatePriority(long epicId, int priority) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		epic.setPriority(priority);
 
@@ -152,7 +153,7 @@ public class EpicServiceImpl implements EpicService {
 	public void updateProgress(long epicId, Progress progress) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		epic.setProgress(progress);
 
@@ -167,7 +168,7 @@ public class EpicServiceImpl implements EpicService {
 	public void deleteEpic(long epicId) {
 
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Epic.class));
 
 		epicCacheService.evictCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
@@ -177,8 +178,7 @@ public class EpicServiceImpl implements EpicService {
 
 		for (UserStory userStory : userStories) {
 			if (userStory.getSprint() != null)
-				userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE,
-						userStory.getSprint().getId());
+				userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, userStory.getSprint().getId());
 		}
 		userStoryCacheService.evictCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
 

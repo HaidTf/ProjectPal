@@ -12,7 +12,7 @@ import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
-import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.validation.PageValidator;
@@ -31,7 +31,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	public Announcement findAnnouncementById(long announcementId) {
 		return announcementRepo.findById(announcementId)
-				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(Announcement.class));
 
 	}
 
@@ -39,7 +39,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	public AnnouncementResponseDto findAnnouncementDtoByIdAndProject(long announcementId, Project project) {
 		return announcementRepo.findAnnouncementDtoByIdAndProject(announcementId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("Announcement does not exist"));
+				.orElseThrow(() -> new EntityNotFoundException(Announcement.class));
 
 	}
 
@@ -61,7 +61,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 		Announcement announcement = announcementRepo
 				.findByIdAndProject(announcementId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Announcement not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Announcement.class));
 
 		announcementRepo.delete(announcement);
 	}

@@ -18,8 +18,8 @@ import com.projectpal.entity.Project;
 import com.projectpal.entity.Sprint;
 import com.projectpal.entity.enums.Progress;
 import com.projectpal.exception.client.BadRequestException;
-import com.projectpal.exception.client.ConflictException;
-import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.client.EntityCountLimitException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.CacheConstants;
@@ -44,14 +44,14 @@ public class SprintServiceImpl implements SprintService {
 	@Transactional(readOnly = true)
 	@Override
 	public Sprint findSprintById(long sprintId) {
-		return sprintRepo.findById(sprintId).orElseThrow(() -> new ResourceNotFoundException("Sprint does not exist"));
+		return sprintRepo.findById(sprintId).orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public Sprint findSprintByIdAndproject(long sprintId, Project project) {
 		return sprintRepo.findByIdAndProject(sprintId, project)
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 	}
 
 	@Transactional
@@ -102,7 +102,7 @@ public class SprintServiceImpl implements SprintService {
 	public void createSprint(Project project, Sprint sprint) {
 
 		if (sprintRepo.countByProjectId(project.getId()) > DBConstants.MAX_NUMBER_OF_SPRINTS)
-			throw new ConflictException("Maximum number of Sprint allowed reached");
+			throw new EntityCountLimitException(Sprint.class);
 
 		sprint.setProgress(Progress.TODO);
 
@@ -120,7 +120,7 @@ public class SprintServiceImpl implements SprintService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		if (date.isAfter(sprint.getEndDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -139,7 +139,7 @@ public class SprintServiceImpl implements SprintService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		if (date.isBefore(sprint.getStartDate()))
 			throw new BadRequestException("End date is before Start date");
@@ -157,7 +157,7 @@ public class SprintServiceImpl implements SprintService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		sprint.setDescription(description);
 
@@ -172,7 +172,7 @@ public class SprintServiceImpl implements SprintService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		sprint.setProgress(progress);
 
@@ -187,7 +187,7 @@ public class SprintServiceImpl implements SprintService {
 
 		Sprint sprint = sprintRepo
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
-				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
+				.orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 
 		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
