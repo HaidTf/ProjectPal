@@ -43,7 +43,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 	@Override
 	public void putListInCache(String cacheName, Long cacheKey, List<T> objects) {
 		try {
-			redis.getCache(cacheName).put(cacheKey, objects);
+			redis.getCache(cacheName).putIfAbsent(cacheKey, objects);
 		} catch (Exception ex) {
 		}
 	}
@@ -58,7 +58,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 
 			if (objects != null && !objects.isEmpty()) {
 				objects.add(object);
-				redis.getCache(cacheName).put(cacheKey, objects);
+				redis.getCache(cacheName).putIfAbsent(cacheKey, objects);
 			}
 
 		} catch (Exception ex) {
