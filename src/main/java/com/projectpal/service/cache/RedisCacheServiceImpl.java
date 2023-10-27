@@ -26,7 +26,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 	private final RedisCacheManager redis;
 
 	@Override
-	public Optional<List<T>> getObjectsFromCache(String cacheName, Long cacheKey) {
+	public Optional<List<T>> getListFromCache(String cacheName, Long cacheKey) {
 
 		List<T> objects;
 
@@ -41,7 +41,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 	}
 
 	@Override
-	public void populateCache(String cacheName, Long cacheKey, List<T> objects) {
+	public void putListInCache(String cacheName, Long cacheKey, List<T> objects) {
 		try {
 			redis.getCache(cacheName).put(cacheKey, objects);
 		} catch (Exception ex) {
@@ -49,7 +49,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 	}
 
 	@Override
-	public void addObjectToCache(String cacheName, Long cacheKey, T object) {
+	public void addObjectToListInCache(String cacheName, Long cacheKey, T object) {
 
 		List<T> objects;
 
@@ -70,7 +70,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 	}
 
 	@Override
-	public void evictListFromCache(String cacheName, Long cacheKey) {
+	public void evictCache(String cacheName, Long cacheKey) {
 		Cache cache = redis.getCache(cacheName);
 		if (cache != null)
 			cache.evictIfPresent(cacheKey);
