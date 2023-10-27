@@ -1,4 +1,4 @@
-package com.projectpal.controller;
+package com.projectpal.exception;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -18,9 +18,6 @@ import org.springframework.validation.BindException;
 
 import com.projectpal.dto.response.exception.ExceptionResponse;
 import com.projectpal.dto.response.exception.ValidationExceptionResponse;
-import com.projectpal.exception.BadRequestException;
-import com.projectpal.exception.ForbiddenException;
-import com.projectpal.exception.ResourceNotFoundException;
 
 @ControllerAdvice({"com.projectpal.controller","com.projectpal.service"})
 public class GlobalExceptionHandler {
