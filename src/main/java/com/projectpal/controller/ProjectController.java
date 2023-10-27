@@ -28,7 +28,7 @@ import com.projectpal.dto.response.entity.ProjectMemberResponseDto;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
 import com.projectpal.entity.enums.Role;
-import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.client.EntityNotFoundException;
 import com.projectpal.service.project.ProjectService;
 import com.projectpal.service.user.UserService;
 
@@ -50,7 +50,7 @@ public class ProjectController {
 	public ResponseEntity<ProjectResponseDto> getProject(@AuthenticationPrincipal User currentUser) {
 
 		Project project = currentUser.getOptionalOfProject()
-				.orElseThrow(() -> new ResourceNotFoundException("User is not in a project"));
+				.orElseThrow(() -> new EntityNotFoundException(Project.class));
 
 		return ResponseEntity.ok(projectService.findProjectDtoById(project.getId()));
 	}
@@ -62,7 +62,7 @@ public class ProjectController {
 			@RequestParam(required = false, defaultValue = "20") int size) {
 
 		Project project = currentUser.getOptionalOfProject()
-				.orElseThrow(() -> new ResourceNotFoundException("User is not in a project"));
+				.orElseThrow(() -> new EntityNotFoundException(Project.class));
 
 		Page<ProjectMemberResponseDto> users = userService.findProjectMembersDtoListByProjectAndRole(project, role,
 				page, size);
