@@ -67,11 +67,11 @@ public class EpicServiceImpl implements EpicService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Epic>> cacheEpics = epicCacheService.getObjectsFromCache(CacheConstants.EPIC_CACHE,
+			Optional<List<Epic>> cacheEpics = epicCacheService.getListFromCache(CacheConstants.EPIC_CACHE,
 					project.getId());
 			if (cacheEpics.isEmpty()) {
 				epics = epicRepo.findAllByProjectAndProgressIn(project, progress);
-				epicCacheService.populateCache(CacheConstants.EPIC_CACHE, project.getId(), epics);
+				epicCacheService.putListInCache(CacheConstants.EPIC_CACHE, project.getId(), epics);
 			}
 
 			this.sort(epics, sort);
@@ -113,7 +113,7 @@ public class EpicServiceImpl implements EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.addObjectToCache(CacheConstants.EPIC_CACHE, project.getId(), epic);
+		epicCacheService.addObjectToListInCache(CacheConstants.EPIC_CACHE, project.getId(), epic);
 
 	}
 
@@ -128,7 +128,7 @@ public class EpicServiceImpl implements EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -143,7 +143,7 @@ public class EpicServiceImpl implements EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -158,7 +158,7 @@ public class EpicServiceImpl implements EpicService {
 
 		epicRepo.save(epic);
 
-		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 	}
 
@@ -169,18 +169,18 @@ public class EpicServiceImpl implements EpicService {
 		Epic epic = epicRepo.findByIdAndProject(epicId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Epic not found"));
 
-		epicCacheService.evictListFromCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
+		epicCacheService.evictCache(CacheConstants.EPIC_CACHE, epic.getProject().getId());
 
 		List<UserStory> userStories = userStoryCacheService
-				.getObjectsFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
+				.getListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()).orElseGet(() -> userStoryRepo
 						.findAllByEpicAndProgressIn(epic, Set.of(Progress.TODO, Progress.INPROGRESS)));
 
 		for (UserStory userStory : userStories) {
 			if (userStory.getSprint() != null)
-				userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE,
+				userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE,
 						userStory.getSprint().getId());
 		}
-		userStoryCacheService.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
+		userStoryCacheService.evictCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
 
 		epicRepo.delete(epic);
 
