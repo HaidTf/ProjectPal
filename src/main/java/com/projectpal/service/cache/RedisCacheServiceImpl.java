@@ -34,7 +34,7 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 			objects = redis.getCache(cacheName).get(cacheKey, List.class);
 
 		} catch (Exception ex) {
-			objects = null;
+			return Optional.empty();
 		}
 
 		return Optional.ofNullable(objects);
