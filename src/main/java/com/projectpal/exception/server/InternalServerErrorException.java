@@ -1,4 +1,4 @@
-package com.projectpal.exception;
+package com.projectpal.exception.server;
 
 public class InternalServerErrorException extends RuntimeException {
 	private static final long serialVersionUID = 4L;
