@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,7 +23,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.CacheConstants;
-import com.projectpal.service.cache.SprintCacheService;
+import com.projectpal.service.cache.CacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,8 @@ public class SprintServiceImpl implements SprintService {
 
 	private final SprintRepository sprintRepo;
 
-	private final SprintCacheService sprintCacheService;
+	@Qualifier("sprintCacheService")
+	private final CacheService<Sprint> sprintCacheService;
 
 	private final UserStoryCacheService userStoryCacheService;
 
