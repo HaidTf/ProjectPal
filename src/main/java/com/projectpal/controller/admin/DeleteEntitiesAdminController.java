@@ -48,7 +48,6 @@ public class DeleteEntitiesAdminController {
 
 	private final AnnouncementRepository announcementRepo;
 
-	private final CacheService cacheService;
 
 
 	@DeleteMapping("/project/{id}")
