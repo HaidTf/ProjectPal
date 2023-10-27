@@ -1,4 +1,4 @@
-package com.projectpal.exception;
+package com.projectpal.exception.client;
 
 import org.springframework.security.core.AuthenticationException;
 
