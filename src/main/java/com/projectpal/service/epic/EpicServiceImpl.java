@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,7 +23,7 @@ import com.projectpal.repository.EpicRepository;
 import com.projectpal.repository.UserStoryRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.CacheConstants;
-import com.projectpal.service.cache.EpicCacheService;
+import com.projectpal.service.cache.CacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,8 @@ public class EpicServiceImpl implements EpicService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	private final EpicCacheService epicCacheService;
+	@Qualifier("epicCacheService")
+	private final CacheService<Epic> epicCacheService;
 
 	private final UserStoryCacheService userStoryCacheService;
 
