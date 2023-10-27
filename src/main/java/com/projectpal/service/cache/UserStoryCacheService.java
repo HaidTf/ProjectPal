@@ -1,13 +1,11 @@
 package com.projectpal.service.cache;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
 
 import com.projectpal.entity.UserStory;
 
 @Service
-@Qualifier("userStoryCacheService")
 public class UserStoryCacheService extends RedisCacheServiceImpl<UserStory> {
 
 	public UserStoryCacheService(RedisCacheManager redis) {
