@@ -72,10 +72,10 @@ public class UserStoryServiceImpl implements UserStoryService {
 		if (mayBeStoredInCache) {
 
 			Optional<List<UserStory>> cacheUserStories = userStoryCacheService
-					.getObjectsFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
+					.getListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId());
 			if (cacheUserStories.isEmpty()) {
 				userStories = userStoryRepo.findAllByEpicAndProgressIn(epic, progress);
-				userStoryCacheService.populateCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
+				userStoryCacheService.putListInCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStories);
 			}
 
 			this.sort(userStories, sort);
@@ -120,7 +120,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 		userStoryRepo.save(userStory);
 
-		userStoryCacheService.addObjectToCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
+		userStoryCacheService.addObjectToListInCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId(), userStory);
 
 	}
 

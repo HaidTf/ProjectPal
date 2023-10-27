@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,7 +23,7 @@ import com.projectpal.exception.ResourceNotFoundException;
 import com.projectpal.repository.SprintRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.service.cache.CacheConstants;
-import com.projectpal.service.cache.SprintCacheService;
+import com.projectpal.service.cache.CacheService;
 import com.projectpal.service.cache.UserStoryCacheService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,8 @@ public class SprintServiceImpl implements SprintService {
 
 	private final SprintRepository sprintRepo;
 
-	private final SprintCacheService sprintCacheService;
+	@Qualifier("sprintCacheService")
+	private final CacheService<Sprint> sprintCacheService;
 
 	private final UserStoryCacheService userStoryCacheService;
 
@@ -64,11 +66,11 @@ public class SprintServiceImpl implements SprintService {
 
 		if (mayBeStoredInCache) {
 
-			Optional<List<Sprint>> cacheSprints = sprintCacheService.getObjectsFromCache(CacheConstants.SPRINT_CACHE,
+			Optional<List<Sprint>> cacheSprints = sprintCacheService.getListFromCache(CacheConstants.SPRINT_CACHE,
 					project.getId());
 			if (cacheSprints.isEmpty()) {
 				sprints = sprintRepo.findAllByProjectAndProgressIn(project, progress);
-				sprintCacheService.populateCache(CacheConstants.SPRINT_CACHE, project.getId(), sprints);
+				sprintCacheService.putListInCache(CacheConstants.SPRINT_CACHE, project.getId(), sprints);
 			}
 
 			this.sort(sprints, sort);
@@ -108,7 +110,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.addObjectToCache(CacheConstants.SPRINT_CACHE, project.getId(), sprint);
+		sprintCacheService.addObjectToListInCache(CacheConstants.SPRINT_CACHE, project.getId(), sprint);
 
 	}
 
@@ -127,7 +129,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
 	}
 
@@ -146,7 +148,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -161,7 +163,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -176,7 +178,7 @@ public class SprintServiceImpl implements SprintService {
 
 		sprintRepo.save(sprint);
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 	}
 
 	@Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -187,9 +189,9 @@ public class SprintServiceImpl implements SprintService {
 				.findByIdAndProject(sprintId, authenticationContextFacadeImpl.getCurrentUser().getProject())
 				.orElseThrow(() -> new ResourceNotFoundException("Sprint not found"));
 
-		sprintCacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
+		sprintCacheService.evictCache(CacheConstants.SPRINT_CACHE, sprint.getProject().getId());
 
-		userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
+		userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 
 		sprintRepo.delete(sprint);
 

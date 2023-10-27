@@ -11,7 +11,11 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
+import com.projectpal.entity.Epic;
+import com.projectpal.entity.Sprint;
 import com.projectpal.service.cache.CacheConstants;
+import com.projectpal.service.cache.CacheService;
+import com.projectpal.service.cache.RedisCacheServiceImpl;
 
 @Configuration
 @EnableCaching
@@ -40,5 +44,15 @@ public class RedisCacheConfig {
 		cacheManager.setTransactionAware(true);
 
 		return cacheManager;
+	}
+
+	@Bean(name = "epicCacheService")
+	public CacheService<Epic> epicCacheService(RedisCacheManager redisCacheManager) {
+		return new RedisCacheServiceImpl<>(redisCacheManager);
+	}
+
+	@Bean(name = "sprintCacheService")
+	public CacheService<Sprint> sprintCacheService(RedisCacheManager redisCacheManager) {
+		return new RedisCacheServiceImpl<>(redisCacheManager);
 	}
 }

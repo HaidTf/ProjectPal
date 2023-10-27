@@ -114,15 +114,15 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public void cascadeDeleteChildrenOfProjectInCache(Project project) {
 
-		cacheService.evictListFromCache(CacheConstants.EPIC_CACHE, project.getId());
-		cacheService.evictListFromCache(CacheConstants.SPRINT_CACHE, project.getId());
+		cacheService.evictCache(CacheConstants.EPIC_CACHE, project.getId());
+		cacheService.evictCache(CacheConstants.SPRINT_CACHE, project.getId());
 
 		List<Epic> epics = epicRepo.findAllByProject(project);
 		List<Sprint> sprints = sprintRepo.findAllByProject(project);
 
-		epics.forEach((epic) -> cacheService.evictListFromCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()));
+		epics.forEach((epic) -> cacheService.evictCache(CacheConstants.EPIC_USERSTORY_CACHE, epic.getId()));
 		sprints.forEach(
-				(sprint) -> cacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId()));
+				(sprint) -> cacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId()));
 	}
 
 }

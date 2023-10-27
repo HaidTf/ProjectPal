@@ -55,10 +55,10 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 
 		if (mayBeStoredInCache) {
 
-			userStories = userStoryCacheService.getObjectsFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
+			userStories = userStoryCacheService.getListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 			if (userStories.isEmpty()) {
 				userStories = Optional.of(userStoryRepo.findAllBySprintAndProgressIn(sprint, progress));
-				userStoryCacheService.populateCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(),
+				userStoryCacheService.putListInCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(),
 						userStories.get());
 			}
 
@@ -109,7 +109,7 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 		userStoryRepo.save(userStory);
 
 		if (userStory.getProgress() == Progress.TODO || userStory.getProgress() == Progress.INPROGRESS)
-			userStoryCacheService.addObjectToCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(), userStory);
+			userStoryCacheService.addObjectToListInCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId(), userStory);
 
 	}
 
@@ -135,7 +135,7 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 		userStoryRepo.save(userStory);
 
 		if (userStory.getProgress() == Progress.TODO || userStory.getProgress() == Progress.INPROGRESS)
-			userStoryCacheService.evictListFromCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
+			userStoryCacheService.evictCache(CacheConstants.SPRINT_USERSTORY_CACHE, sprint.getId());
 
 	}
 
