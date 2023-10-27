@@ -1,10 +1,10 @@
 package com.projectpal.service.authentication;
 
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projectpal.dto.request.authentication.AuthenticationRequest;
 import com.projectpal.dto.request.authentication.RegisterRequest;
@@ -30,6 +30,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	private final AuthenticationManager authManager;
 
 	@Override
+	@Transactional
 	public AuthenticationResponse register(RegisterRequest req) {
 
 		User user = new User(req.getName(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
@@ -45,11 +46,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public AuthenticationResponse authenticate(AuthenticationRequest req) {
 
-		authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
-
-		User user = repo.findUserByEmail(req.getEmail()).orElseThrow();
+		User user = (User) authManager
+				.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()))
+				.getPrincipal();
 
 		String jwtToken = jwtService.generateToken(user);
 
