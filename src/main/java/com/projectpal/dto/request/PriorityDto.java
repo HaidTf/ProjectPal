@@ -14,8 +14,8 @@ public final class PriorityDto {
 		this.priority = priority;
 	}
 
-	@Min(1)
-	@Max(10)
+	@Min(value = 1, message = "priority must be greater or equal to 1")
+	@Max(value = 10, message = "priority must be less than or equal to 10")
 	private final int priority;
 
 }

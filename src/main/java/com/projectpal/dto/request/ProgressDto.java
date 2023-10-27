@@ -14,7 +14,7 @@ public final class ProgressDto {
 		this.progress = progress;
 	}
 
-	@NotNull
+	@NotNull(message = "progress must not be null")
 	private final Progress progress;
-	
+
 }

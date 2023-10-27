@@ -22,10 +22,10 @@ public class SprintCreationDto {
 	@Valid
 	private final NameAndDescriptionDto nameAndDescriptionAttribute;
 
-	@NotNull
+	@NotNull(message = "start date must not be null")
 	private final LocalDate startDate;
 
-	@NotNull
+	@NotNull(message = "end date must not be null")
 	private final LocalDate endDate;
 
 }

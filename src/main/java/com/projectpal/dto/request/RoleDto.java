@@ -14,7 +14,7 @@ public final class RoleDto {
 		this.role = role;
 	}
 
-	@NotNull
+	@NotNull(message = "role must not be null")
 	private final Role role;
 
 }

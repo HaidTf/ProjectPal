@@ -14,8 +14,8 @@ public final class IdDto {
 		this.id = id;
 	}
 
-	@NotNull
-	@JsonAlias({ "userId","userStoryId" })
+	@NotNull(message = "id must not be null")
+	@JsonAlias({ "userId", "userStoryId" })
 	private final long id;
 
 }
