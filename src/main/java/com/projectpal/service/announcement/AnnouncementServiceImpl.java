@@ -12,7 +12,7 @@ import com.projectpal.dto.response.entity.AnnouncementResponseDto;
 import com.projectpal.entity.Announcement;
 import com.projectpal.entity.Project;
 import com.projectpal.entity.User;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.ResourceNotFoundException;
 import com.projectpal.repository.AnnouncementRepository;
 import com.projectpal.security.context.AuthenticationContextFacade;
 import com.projectpal.validation.PageValidator;

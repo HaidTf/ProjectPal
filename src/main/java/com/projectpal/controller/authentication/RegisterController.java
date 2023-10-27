@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectpal.dto.request.authentication.RegisterRequest;
 import com.projectpal.dto.response.AuthenticationResponse;
 import com.projectpal.dto.response.exception.DataIntegrityExceptionResponse;
-import com.projectpal.exception.InternalServerErrorException;
+import com.projectpal.exception.server.InternalServerErrorException;
 import com.projectpal.service.authentication.AuthenticationService;
 
 import jakarta.validation.Valid;

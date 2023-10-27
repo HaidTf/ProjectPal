@@ -3,7 +3,7 @@ package com.projectpal.validation;
 import org.springframework.data.domain.Pageable;
 
 import com.projectpal.controller.APIConstants;
-import com.projectpal.exception.ConflictException;
+import com.projectpal.exception.client.ConflictException;
 
 public class PageValidator {
 

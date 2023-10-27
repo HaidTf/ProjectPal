@@ -4,8 +4,8 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectpal.exception.InternalServerErrorException;
-import com.projectpal.exception.ResourceNotFoundException;
+import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.server.InternalServerErrorException;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;

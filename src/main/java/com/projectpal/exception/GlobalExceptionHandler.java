@@ -18,6 +18,9 @@ import org.springframework.validation.BindException;
 
 import com.projectpal.dto.response.exception.ExceptionResponse;
 import com.projectpal.dto.response.exception.ValidationExceptionResponse;
+import com.projectpal.exception.client.BadRequestException;
+import com.projectpal.exception.client.ForbiddenException;
+import com.projectpal.exception.client.ResourceNotFoundException;
 
 @ControllerAdvice({"com.projectpal.controller","com.projectpal.service"})
 public class GlobalExceptionHandler {
