@@ -72,7 +72,7 @@ public class SprintUserStoryServiceImpl implements SprintUserStoryService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<UserStory> findUserStoriesBySprintAndProgressFromDb(Sprint sprint, Set<Progress> progress, Sort sort) {
 

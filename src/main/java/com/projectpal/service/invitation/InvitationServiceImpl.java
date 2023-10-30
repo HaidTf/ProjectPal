@@ -36,7 +36,7 @@ public class InvitationServiceImpl implements InvitationService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Invitation findInvitationById(long invitationId) {
 
@@ -44,7 +44,7 @@ public class InvitationServiceImpl implements InvitationService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public SentInvitationResponseDto findSentInvitationDtoByIdAndProject(long invitationId, Project project) {
 
@@ -53,7 +53,7 @@ public class InvitationServiceImpl implements InvitationService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public ReceivedInvitationResponseDto findReceivedInvitationDtoByIdAndUser(long invitationId, User invitedUser) {
 
@@ -81,7 +81,7 @@ public class InvitationServiceImpl implements InvitationService {
 		return invitation;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<SentInvitationResponseDto> findSentInvitationDtoPageByProject(Project project, int page, int size) {
 
@@ -93,7 +93,7 @@ public class InvitationServiceImpl implements InvitationService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<ReceivedInvitationResponseDto> findReceivedInvitationDtoListByUser(User user) {
 

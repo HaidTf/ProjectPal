@@ -40,13 +40,13 @@ public class UserServiceImpl implements UserService {
 
 	private final ProjectService projectService;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public User findUserById(long userId) {
 		return userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException(User.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<User> findAllByProjectAndRole(Project project, @Nullable Role role, int page, int size) {
 
@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<ProjectMemberResponseDto> findProjectMembersDtoListByProjectAndRole(Project project,
 			@Nullable Role role, int page, int size) {

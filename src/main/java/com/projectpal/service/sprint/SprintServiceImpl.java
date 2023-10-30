@@ -41,13 +41,13 @@ public class SprintServiceImpl implements SprintService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Sprint findSprintById(long sprintId) {
 		return sprintRepo.findById(sprintId).orElseThrow(() -> new EntityNotFoundException(Sprint.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Sprint findSprintByIdAndproject(long sprintId, Project project) {
 		return sprintRepo.findByIdAndProject(sprintId, project)
@@ -82,7 +82,7 @@ public class SprintServiceImpl implements SprintService {
 		return sprints;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<Sprint> findSprintsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 
