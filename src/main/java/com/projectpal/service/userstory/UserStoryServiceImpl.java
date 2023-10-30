@@ -38,7 +38,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public UserStory findUserStoryById(long userStoryId) {
 
@@ -46,7 +46,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public UserStory findUserStoryByIdAndEpicProject(long userStoryId, Project project) {
 
@@ -87,7 +87,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<UserStory> findUserStoriesByEpicAndProgressFromDb(Epic epic, Set<Progress> progress, Sort sort) {
 

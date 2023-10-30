@@ -43,26 +43,26 @@ public class TaskServiceImpl implements TaskService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Task findTaskById(long taskId) {
 		return taskRepo.findById(taskId).orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Task findTaskByIdAndProject(long taskId, Project project) {
 		return taskRepo.findByIdAndProject(taskId, project).orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public TaskResponseDto findTaskDtoByIdAndProject(long taskId, Project project) {
 		return taskRepo.findTaskDtoByIdAndProject(taskId, project)
 				.orElseThrow(() -> new EntityNotFoundException(Task.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<Task> findTasksByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress, Sort sort) {
 
@@ -78,7 +78,7 @@ public class TaskServiceImpl implements TaskService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<Task> findPageByUserAndProgressSet(User user, Set<Progress> progress, Pageable pageable) {
 
@@ -94,7 +94,7 @@ public class TaskServiceImpl implements TaskService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<TaskResponseDto> findTaskDtoListByUserStoryAndProgressSet(long userStoryId, Set<Progress> progress,
 			Sort sort) {

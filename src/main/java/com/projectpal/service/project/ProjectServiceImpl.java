@@ -42,7 +42,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private final CacheService<Project> cacheService;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public ProjectResponseDto findProjectDtoById(long id) {
 

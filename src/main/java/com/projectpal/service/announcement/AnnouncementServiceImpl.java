@@ -27,7 +27,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	private final AuthenticationContextFacade authenticationContextFacadeImpl;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Announcement findAnnouncementById(long announcementId) {
 		return announcementRepo.findById(announcementId)
@@ -35,7 +35,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public AnnouncementResponseDto findAnnouncementDtoByIdAndProject(long announcementId, Project project) {
 		return announcementRepo.findAnnouncementDtoByIdAndProject(announcementId, project)
@@ -66,7 +66,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		announcementRepo.delete(announcement);
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<Announcement> findPageByProject(Project project, int page, int size) {
 
@@ -77,7 +77,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		return announcementRepo.findAllByProject(project, pageable);
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Page<AnnouncementResponseDto> findAnnouncementDtoPageByProject(Project project, int page, int size) {
 

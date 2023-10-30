@@ -44,13 +44,13 @@ public class EpicServiceImpl implements EpicService {
 
 	private final UserStoryCacheService userStoryCacheService;
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Epic findEpicById(long epicId) {
 		return epicRepo.findById(epicId).orElseThrow(() -> new EntityNotFoundException(Epic.class));
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public Epic findEpicByIdAndProject(long epicId, Project project) {
 		return epicRepo.findByIdAndProject(epicId, project)
@@ -85,7 +85,7 @@ public class EpicServiceImpl implements EpicService {
 
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	@Override
 	public List<Epic> findEpicsByProjectAndProgressFromDb(Project project, Set<Progress> progress, Sort sort) {
 

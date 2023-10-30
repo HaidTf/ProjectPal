@@ -46,7 +46,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = Exception.class)
 	public AuthenticationResponse authenticate(AuthenticationRequest req) {
 
 		User user = (User) authManager
