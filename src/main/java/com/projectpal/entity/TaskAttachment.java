@@ -1,6 +1,9 @@
 package com.projectpal.entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+
+import org.springframework.data.annotation.CreatedDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -8,18 +11,27 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
 public class TaskAttachment implements Serializable {
 
-	public TaskAttachment(String fileName) {
+	public TaskAttachment(String fileName, long fileSize, String mimeType) {
 		this.fileName = fileName;
+		this.fileSize = fileSize;
+		this.mimeType = mimeType;
 	}
-	
+
 	@Transient
 	private static final long serialVersionUID = 7L;
 
@@ -30,34 +42,17 @@ public class TaskAttachment implements Serializable {
 	@NotBlank
 	private String fileName;
 
+	private long fileSize;
+
+	private String mimeType;
+
+	@Temporal(TemporalType.DATE)
+	@CreatedDate
+	@Setter(AccessLevel.NONE)
+	private LocalDate creationDate;
+
 	@ManyToOne
 	@JsonIgnore
 	private Task task;
-
-	// Getters and Setters
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public void setFileName(String name) {
-		this.fileName = name;
-	}
-
-	public Task getTask() {
-		return task;
-	}
-
-	public void setTask(Task task) {
-		this.task = task;
-	}
 
 }
