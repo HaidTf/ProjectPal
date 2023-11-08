@@ -16,6 +16,6 @@ public final class IdDto {
 
 	@NotNull(message = "id must not be null")
 	@JsonAlias({ "userId", "userStoryId" })
-	private final long id;
+	private final Long id;
 
 }
