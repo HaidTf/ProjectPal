@@ -22,7 +22,7 @@ import com.projectpal.exception.client.BadRequestException;
 import com.projectpal.exception.client.ForbiddenException;
 import com.projectpal.exception.client.ResourceNotFoundException;
 
-@ControllerAdvice({"com.projectpal.controller","com.projectpal.service"})
+@ControllerAdvice({"com.projectpal.controller"})
 public class GlobalExceptionHandler {
 
 	// Default Exception Object

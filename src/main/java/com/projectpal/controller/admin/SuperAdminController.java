@@ -1,22 +1,26 @@
 package com.projectpal.controller.admin;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projectpal.dto.request.IdDto;
+import com.projectpal.dto.response.CustomPageResponse;
 import com.projectpal.entity.User;
-import com.projectpal.entity.enums.Role;
 import com.projectpal.exception.client.BadRequestException;
-import com.projectpal.repository.UserRepository;
+import com.projectpal.service.admin.user.SuperAdminUserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,34 +29,36 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SuperAdminController {
 
-	private final UserRepository userRepo;
+	private final SuperAdminUserService userService;
 
-	@GetMapping("/list/admin")
-	public ResponseEntity<List<User>> getListOfAdmins(){
-		return ResponseEntity.ok(userRepo.findAllByRole(Role.ROLE_ADMIN).orElse(null));
+	@GetMapping("/admins")
+	public ResponseEntity<CustomPageResponse<User>> getAllAdmins(
+			@PageableDefault(page = 0, size = 20, sort = "name", direction = Direction.DESC) Pageable pageable) {
+
+		Page<User> admins = userService.findAllAdmins(pageable);
+
+		return ResponseEntity.ok(new CustomPageResponse<User>(admins));
 	}
-	
-	@PatchMapping("/update/promotetoadmin")
-	@Transactional
-	public ResponseEntity<Void> promoteToAdmin(@RequestBody Long id) {
-		
-		if (SecurityContextUtil.getUser().getId() == id)
-			throw new BadRequestException("you cant promote yourself");
-		
-		userRepo.updateRoleById(id,Role.ROLE_ADMIN);
-		
+
+	@PostMapping("/admins")
+	public ResponseEntity<Void> promoteUserToAdmin(@Valid IdDto userIdHolder,
+			@AuthenticationPrincipal User superAdmin) {
+
+		if (superAdmin.getId() == userIdHolder.getId())
+			throw new BadRequestException("Super admin is not allowed to be modified");
+
+		userService.promoteUserToAdmin(userIdHolder.getId());
+
+		return ResponseEntity.status(204).build();
+
+	}
+
+	@DeleteMapping("/admins/{adminId}")
+	public ResponseEntity<Void> demoteAdmin(@PathVariable Long adminId) {
+
+		userService.demoteAdmin(adminId);
+
 		return ResponseEntity.status(204).build();
 	}
 
-	@PatchMapping("/update/demotetouser")
-	@Transactional
-	public ResponseEntity<Void> demoteToUser(@RequestBody Long id) {
-		
-		if (SecurityContextUtil.getUser().getId() == id)
-			throw new BadRequestException("you cant demote yourself");
-		
-		userRepo.updateRoleById(id,Role.ROLE_USER);
-		
-		return ResponseEntity.status(204).build();
-	}
 }
