@@ -52,25 +52,28 @@ public class User implements UserDetails {
 	@GeneratedValue(generator = "ID_GENERATOR")
 	private long id;
 
-	@Column(unique = true)
 	@NotBlank
+	@Column(unique = true, columnDefinition = "VARCHAR(20)", nullable = false)
 	private String name;
 
-	@Column(unique = true)
 	@NotBlank
+	@Column(unique = true, columnDefinition = "VARCHAR(320)", nullable = false)
 	private String email;
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
+	@Column(nullable = false)
 	private Role role;
 
 	@NotBlank
 	@JsonIgnore
+	@Column(nullable = false, columnDefinition = "VARCHAR(127)")
 	private String password;
 
 	@Temporal(TemporalType.DATE)
 	@CreatedDate
 	@Setter(AccessLevel.NONE)
+	@Column(nullable = false)
 	private LocalDate creationDate;
 
 	@ManyToOne
