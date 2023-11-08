@@ -62,25 +62,29 @@ public class Epic implements Serializable {
 
 	@NotBlank
 	@Size(min = 3, max = 60)
+	@Column(columnDefinition = "VARCHAR(60)", nullable = false)
 	private String name;
 
 	@Nullable
 	@Size(max = 300)
+	@Column(columnDefinition = "VARCHAR(300)")
 	private String description;
 
-	@Column(columnDefinition = "TINYINT")
 	@Min(1)
 	@Max(10)
 	@NotNull
+	@Column(columnDefinition = "TINYINT", nullable = false)
 	private int priority;
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
+	@Column(nullable = false)
 	private Progress progress;
 
 	@Temporal(TemporalType.DATE)
 	@CreatedDate
 	@Setter(AccessLevel.NONE)
+	@Column(nullable = false)
 	private LocalDate creationDate;
 
 	@ManyToOne
