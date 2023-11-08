@@ -7,6 +7,8 @@ import org.springframework.data.annotation.CreatedDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.annotation.Nullable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -39,20 +41,24 @@ public class Announcement {
 
 	@NotBlank
 	@Size(min = 3, max = 100)
+	@Column(columnDefinition = "VARCHAR(100)", nullable = false)
 	private String title;
 
+	@Nullable
 	@Size(max = 300)
+	@Column(columnDefinition = "VARCHAR(300)")
 	private String description;
 
 	@Temporal(TemporalType.DATE)
 	@CreatedDate
 	@Setter(AccessLevel.NONE)
+	@Column(nullable = false)
 	private LocalDate issueDate;
 
 	@ManyToOne
 	@JsonIgnore
 	private Project project;
-	
+
 	@ManyToOne
 	private User announcer;
 

@@ -28,7 +28,7 @@ public final class RegisterRequest {
 	private final String email;
 
 	@NotBlank(message = "password must not be blank")
-	@Size(min = 6, max = 127, message = "password must be within the 6-320 character range")
+	@Size(min = 6, max = 127, message = "password must be within the 6-127 character range")
 	@Pattern(regexp = "^[^\\s]*$", message = "password must not contain spaces")
 	private final String password;
 
