@@ -4,7 +4,7 @@ ProjectPal is a powerful project and team management application optimized for a
 
 Built with Java, Spring Boot, MySQL, Spring Data JPA with Hibernate, Redis, Spring Security, and utilizing REST API architecture, ProjectPal ensures a secure and reliable platform for seamless collaboration within agile development environments.  
 
-Note: This project is not finalized and is still under development.  
+Note: This project is still under active development.  
 
 Upcoming: Unit and Integration testing for controllers
 
@@ -23,9 +23,6 @@ Plan and organize sprints effectively by defining sprint duration, goals, and ba
 
 + Task Tracking:   
 Break down user stories into individual tasks and track their progress throughout the sprint.
-
-+ Progress Monitoring:   
-Gain insights into project progress through visualizations and metrics, ensuring transparency and accountability.
 
 #### Technical Features:
 
