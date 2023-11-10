@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="FILETRACE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>src\main\resources\logs\production\trace.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>logs/trace.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILEINFO"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>src\main\resources\logs\production\info.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>logs/info.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILEWARN"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>src\main\resources\logs\production\warn.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>logs/warn.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILEERROR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>src\main\resources\logs\production\error.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>logs/error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="DEVCONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="DEVFILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>src\main\resources\logs\development\common.log</file>
+		<append>true</append>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>logs/info.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%n</pattern>
+		</encoder>
+	</appender>
+
+
+	<!-- Loggers config-->
+
+
+	<!-- Production profile loggers-->
+
+	<springProfile name="production">
+
+
+		<logger name="com.projectpal" level="INFO">
+			<appender-ref ref="FILEINFO" />
+		</logger>
+
+		<logger name="com.projectpal" level="WARN">
+			<appender-ref ref="FILEWARN" />
+		</logger>
+
+		<logger name="com.projectpal" level="ERROR">
+			<appender-ref ref="FILEERROR" />
+		</logger>
+
+
+		<root level="INFO">
+			<appender-ref ref="FILEINFO" />
+		</root>
+
+	</springProfile>
+
+
+	<!-- Development  profile loggers-->
+
+	<springProfile name="development">
+
+		<Logger name="com.projectpal" level="TRACE">
+			<appender-ref ref="DEVCONSOLE" />
+			<appender-ref ref="DEVFILE" />
+		</Logger>
+
+		<root level="INFO">
+			<appender-ref ref="DEVCONSOLE" />
+			<appender-ref ref="DEVFILE" />
+		</root>
+
+	</springProfile>
+
+</configuration>
