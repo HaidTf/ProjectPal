@@ -66,7 +66,7 @@ public class SprintController {
 	@GetMapping("")
 	public ResponseEntity<ListHolderResponse<Sprint>> getSprints(@AuthenticationPrincipal User currentUser,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
-			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
+			@SortDefault(sort = "startDate", direction = Sort.Direction.DESC) Sort sort) {
 
 		log.debug("API:GET/api/project/sprints invoked");
 		
