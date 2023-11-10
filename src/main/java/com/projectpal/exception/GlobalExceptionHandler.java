@@ -21,22 +21,41 @@ import com.projectpal.dto.response.exception.ValidationExceptionResponse;
 import com.projectpal.exception.client.BadRequestException;
 import com.projectpal.exception.client.ForbiddenException;
 import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.server.InternalServerErrorException;
 
-@ControllerAdvice({"com.projectpal.controller"})
+import lombok.extern.slf4j.Slf4j;
+
+@ControllerAdvice({ "com.projectpal.controller" })
+@Slf4j
 public class GlobalExceptionHandler {
 
 	// Default Exception Object
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
-		ex.printStackTrace(System.out);
+
+		log.error("Uknown error occured: {}, intervention required", ex.getMessage());
+
 		return ResponseEntity.status(500).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised when null request is received into a @RequestBody annotated method
 	// parameter
 
-	@ExceptionHandler({HttpMessageNotReadableException.class,HttpMediaTypeNotSupportedException.class})
+	@ExceptionHandler({ HttpMessageNotReadableException.class, HttpMediaTypeNotSupportedException.class })
 	public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(Exception ex) {
+
+		log.debug("@RequestBody body not found Error: {}", ex.getMessage());
+
+		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
+	}
+
+	// Raised when content type not supported
+
+	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+	public ResponseEntity<ExceptionResponse> handleHttpMediaTypeNotSupportedException(Exception ex) {
+
+		log.debug("Http Content type Error: {}", ex.getMessage());
+
 		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
@@ -54,13 +73,20 @@ public class GlobalExceptionHandler {
 		for (ObjectError err : errors)
 			stringErrors.add(err.getCodes()[0] + " " + err.getDefaultMessage());
 
-		return ResponseEntity.status(400).body(new ValidationExceptionResponse(stringErrors));
+		ValidationExceptionResponse response = new ValidationExceptionResponse(stringErrors);
+
+		log.debug("Validation error: {}", response.getErrors());
+
+		return ResponseEntity.status(400).body(response);
 	}
 
-	//Raised by @RequestParam when request parameter is missing or null
-	
+	// Raised by @RequestParam when request parameter is missing or null
+
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<ExceptionResponse> handleException(MissingServletRequestParameterException ex) {
+
+		log.debug("@RequestParam null parameter error: {}", ex.getMessage());
+
 		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
@@ -68,13 +94,29 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException ex) {
+
+		log.debug("@PreAuthorize annotation access denial error: {}", ex.getMessage());
+
 		return ResponseEntity.status(403).body(new ExceptionResponse(ex.getMessage()));
+	}
+
+	// Raised Explicitly
+
+	@ExceptionHandler(InternalServerErrorException.class)
+	public ResponseEntity<ExceptionResponse> handleException(InternalServerErrorException ex) {
+
+		log.debug("InternalServerErrorException: {}", ex.getMessage());
+
+		return ResponseEntity.status(500).body(new ExceptionResponse(ex.getMessage()));
 	}
 
 	// Raised Explicitly
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ExceptionResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+
+		log.trace("ResourceNotFoundException: {}", ex.getMessage());
+
 		return ResponseEntity.status(404).body(new ExceptionResponse(ex.getMessage()));
 	}
 
@@ -82,6 +124,9 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<ExceptionResponse> handleBadRequestException(BadRequestException ex) {
+		
+		log.trace("BadRequestException: {}", ex.getMessage());
+		
 		return ResponseEntity.status(400).body(new ExceptionResponse(ex.getMessage()));
 	}
 
@@ -89,6 +134,9 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(ForbiddenException.class)
 	public ResponseEntity<ExceptionResponse> handleForbiddenException(ForbiddenException ex) {
+		
+		log.trace("ForbiddenException: {}", ex.getMessage());
+		
 		return ResponseEntity.status(403).body(new ExceptionResponse(ex.getMessage()));
 	}
 

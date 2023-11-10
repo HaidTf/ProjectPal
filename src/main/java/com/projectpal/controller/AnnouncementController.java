@@ -28,10 +28,12 @@ import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/project/announcements")
 @RequiredArgsConstructor
+@Slf4j
 public class AnnouncementController {
 
 	private final AnnouncementService announcementService;
@@ -41,6 +43,8 @@ public class AnnouncementController {
 	@GetMapping("/{announcementId}")
 	public ResponseEntity<AnnouncementResponseDto> getAnnouncement(@AuthenticationPrincipal User currentUser,
 			@PathVariable long announcementId) {
+
+		log.debug("API:GET/api/project/announcements/{} invoked", announcementId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -56,6 +60,8 @@ public class AnnouncementController {
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "5") int size) {
 
+		log.debug("API:GET/api/project/announcements invoked");
+
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Page<AnnouncementResponseDto> announcements = announcementService
@@ -68,6 +74,8 @@ public class AnnouncementController {
 	@PostMapping("")
 	public ResponseEntity<Announcement> createAnnouncement(@AuthenticationPrincipal User currentUser,
 			@Valid @RequestBody AnnouncementCreationDto announcementCreationDto) {
+
+		log.debug("API:POST/api/project/announcements invoked");
 
 		Announcement announcement = announcementMapper.toAnnouncement(announcementCreationDto);
 
@@ -84,6 +92,8 @@ public class AnnouncementController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/{AnnouncementId}")
 	public ResponseEntity<Void> deleteAnnouncement(@PathVariable long announcementId) {
+
+		log.debug("API:DELETE/api/project/announcements/{} invoked", announcementId);
 
 		announcementService.deleteAnnouncement(announcementId);
 

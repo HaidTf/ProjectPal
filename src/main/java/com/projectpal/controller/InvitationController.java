@@ -27,16 +27,20 @@ import com.projectpal.service.invitation.InvitationService;
 import com.projectpal.validation.ProjectMembershipValidator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class InvitationController {
 
 	private final InvitationService invitationService;
 
 	@GetMapping("/project/invitations/{invitationId}")
-	public ResponseEntity<SentInvitationResponseDto> getProjectRelatedInvitation(@AuthenticationPrincipal User currentUser,
-			@PathVariable long invitationId) {
+	public ResponseEntity<SentInvitationResponseDto> getProjectRelatedInvitation(
+			@AuthenticationPrincipal User currentUser, @PathVariable long invitationId) {
+
+		log.debug("API:GET/api/project/invitations/{} invoked", invitationId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -52,6 +56,8 @@ public class InvitationController {
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "10") int size) {
 
+		log.debug("API:GET/api/project/invitations invoked");
+
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Page<SentInvitationResponseDto> invitations = invitationService
@@ -61,10 +67,13 @@ public class InvitationController {
 	}
 
 	@GetMapping("/users/me/invitations/{invitationId}")
-	public ResponseEntity<ReceivedInvitationResponseDto> getReceivedInvitation(@AuthenticationPrincipal User currentUser,
-			@PathVariable long invitationId) {
+	public ResponseEntity<ReceivedInvitationResponseDto> getReceivedInvitation(
+			@AuthenticationPrincipal User currentUser, @PathVariable long invitationId) {
 
-		ReceivedInvitationResponseDto invitationDto = invitationService.findReceivedInvitationDtoByIdAndUser(invitationId,currentUser);
+		log.debug("API:GET/api/users/me/invitations/{} invoked", invitationId);
+
+		ReceivedInvitationResponseDto invitationDto = invitationService
+				.findReceivedInvitationDtoByIdAndUser(invitationId, currentUser);
 
 		return ResponseEntity.ok(invitationDto);
 
@@ -74,7 +83,10 @@ public class InvitationController {
 	public ResponseEntity<ListHolderResponse<ReceivedInvitationResponseDto>> getReceivedInvitations(
 			@AuthenticationPrincipal User currentUser) {
 
-		List<ReceivedInvitationResponseDto> invitations = invitationService.findReceivedInvitationDtoListByUser(currentUser);
+		log.debug("API:GET/api/users/me/invitations invoked");
+
+		List<ReceivedInvitationResponseDto> invitations = invitationService
+				.findReceivedInvitationDtoListByUser(currentUser);
 
 		return ResponseEntity.ok(new ListHolderResponse<ReceivedInvitationResponseDto>(invitations));
 	}
@@ -83,6 +95,8 @@ public class InvitationController {
 	@PostMapping("/users/{userId}/invitations")
 	public ResponseEntity<Invitation> invite(@AuthenticationPrincipal User currentUser, @PathVariable long userId) {
 
+		log.debug("API:POST/api/users/{}/invitations invoked", userId);
+		
 		Invitation invitation = invitationService.inviteUserToProject(userId, currentUser.getProject());
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/project/invitations/" + invitation.getId())
@@ -97,6 +111,8 @@ public class InvitationController {
 	public ResponseEntity<Void> acceptInvitation(@AuthenticationPrincipal User currentUser,
 			@PathVariable long invitationId) {
 
+		log.debug("API:PATCH/api/users/me/invitations/{} invoked", invitationId);
+		
 		invitationService.userAcceptsInvitation(currentUser, invitationId);
 
 		return ResponseEntity.status(204).build();
@@ -106,6 +122,8 @@ public class InvitationController {
 	@DeleteMapping("/users/me/invitations/{invitationId}")
 	public ResponseEntity<Void> rejectInvitation(@PathVariable long invitationId) {
 
+		log.debug("API:DELETE/api/users/me/invitations/{} invoked", invitationId);
+		
 		invitationService.rejectInvitation(invitationId);
 
 		return ResponseEntity.status(204).build();

@@ -34,10 +34,12 @@ import com.projectpal.service.user.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/project")
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectController {
 
 	private final ProjectService projectService;
@@ -48,6 +50,8 @@ public class ProjectController {
 
 	@GetMapping("")
 	public ResponseEntity<ProjectResponseDto> getProject(@AuthenticationPrincipal User currentUser) {
+
+		log.debug("API:GET/api/project invoked by User(id:{})", currentUser.getId());
 
 		Project project = currentUser.getOptionalOfProject()
 				.orElseThrow(() -> new EntityNotFoundException(Project.class));
@@ -60,6 +64,8 @@ public class ProjectController {
 			@AuthenticationPrincipal User currentUser, @RequestParam(required = false) Role role,
 			@RequestParam(required = false, defaultValue = "0") int page,
 			@RequestParam(required = false, defaultValue = "20") int size) {
+
+		log.debug("API:GET/api/project invoked by User(id:{})", currentUser.getId());
 
 		Project project = currentUser.getOptionalOfProject()
 				.orElseThrow(() -> new EntityNotFoundException(Project.class));
@@ -76,6 +82,8 @@ public class ProjectController {
 	public ResponseEntity<Project> createProject(@AuthenticationPrincipal User currentUser,
 			@Valid @RequestBody ProjectCreationDto projectCreationDto) {
 
+		log.debug("API:POST/api/project invoked by User(id:{})", currentUser.getId());
+
 		Project project = projectMapper.toProject(projectCreationDto);
 
 		projectService.createProjectAndSetOwner(project, currentUser);
@@ -91,6 +99,8 @@ public class ProjectController {
 	public ResponseEntity<Void> updateDescription(@AuthenticationPrincipal User currentUser,
 			@RequestBody DescriptionDto descriptionUpdateRequest) {
 
+		log.debug("API:PATCH/api/project/description invoked by User(id:{})", currentUser.getId());
+
 		Project project = currentUser.getProject();
 
 		projectService.updateProjectDescription(project, descriptionUpdateRequest.getDescription());
@@ -104,6 +114,8 @@ public class ProjectController {
 	public ResponseEntity<Void> setOtherUserProjectRole(@AuthenticationPrincipal User currentUser,
 			@PathVariable long otherUserId, @RequestBody @Valid RoleDto roleUpdateRequest) {
 
+		log.debug("API:PATCH/api/project/users/{}/role invoked by User(id:{})", otherUserId, currentUser.getId());
+
 		userService.updateUserProjectRole(currentUser, otherUserId, roleUpdateRequest.getRole());
 
 		return ResponseEntity.status(204).build();
@@ -115,6 +127,9 @@ public class ProjectController {
 	public ResponseEntity<Void> removeOtherUserFromProject(@AuthenticationPrincipal User currentUser,
 			@PathVariable long otherUserId) {
 
+		log.debug("API:DELETE/api/project/users/{}/membership invoked by User(id:{})", otherUserId,
+				currentUser.getId());
+
 		projectService.removeUserFromCurrentUserProject(currentUser, otherUserId);
 
 		return ResponseEntity.status(204).build();
@@ -123,6 +138,8 @@ public class ProjectController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','ADMIN')")
 	@DeleteMapping("")
 	public ResponseEntity<Void> deleteProject(@AuthenticationPrincipal User currentUser) {
+
+		log.debug("API:DELETE/api/project invoked by User(id:{})", currentUser.getId());
 
 		Project project = currentUser.getProject();
 

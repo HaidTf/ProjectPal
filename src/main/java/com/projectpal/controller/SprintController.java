@@ -38,10 +38,12 @@ import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/project/sprints")
 @RequiredArgsConstructor
+@Slf4j
 public class SprintController {
 
 	private final SprintService sprintService;
@@ -51,10 +53,12 @@ public class SprintController {
 	@GetMapping("/{sprintId}")
 	public ResponseEntity<Sprint> getSprint(@AuthenticationPrincipal User currentUser, @PathVariable long sprintId) {
 
+		log.debug("API:GET/api/project/sprints/{} invoked", sprintId);
+
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		Sprint sprint = sprintService.findSprintByIdAndproject(sprintId, currentUser.getProject());
-		
+
 		return ResponseEntity.ok(sprint);
 
 	}
@@ -64,6 +68,8 @@ public class SprintController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "start-date", direction = Sort.Direction.DESC) Sort sort) {
 
+		log.debug("API:GET/api/project/sprints invoked");
+		
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
 		SortObjectValidator.validateSortObjectProperties(Sprint.ALLOWED_SORT_PROPERTIES, sort);
@@ -80,6 +86,8 @@ public class SprintController {
 	public ResponseEntity<Sprint> createSprint(@AuthenticationPrincipal User currentUser,
 			@Valid @RequestBody SprintCreationDto sprintCreationDto) {
 
+		log.debug("API:POST/api/project/sprints invoked");
+		
 		Project project = currentUser.getProject();
 
 		Sprint sprint = sprintMapper.toSprint(sprintCreationDto);
@@ -100,6 +108,8 @@ public class SprintController {
 	public ResponseEntity<Void> updateStartDate(@RequestBody @Valid DateDto startDateUpdateRequest,
 			@PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/sprints/{}/start-date invoked", id);
+		
 		sprintService.updateStartDate(id, startDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
@@ -109,6 +119,8 @@ public class SprintController {
 	@PatchMapping("/{id}/end-date")
 	public ResponseEntity<Void> updateEndDate(@RequestBody @Valid DateDto endDateUpdateRequest, @PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/sprints/{}/end-date invoked", id);
+		
 		sprintService.updateEndDate(id, endDateUpdateRequest.getDate());
 
 		return ResponseEntity.status(204).build();
@@ -119,6 +131,8 @@ public class SprintController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/sprints/{}/description invoked", id);
+		
 		sprintService.updateDescription(id, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
@@ -129,6 +143,8 @@ public class SprintController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/sprints/{}/progress invoked", id);
+		
 		sprintService.updateProgress(id, progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
@@ -138,6 +154,8 @@ public class SprintController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteSprint(@PathVariable long id) {
 
+		log.debug("API:DELETE/api/project/sprints/{} invoked", id);
+		
 		sprintService.deleteSprint(id);
 
 		return ResponseEntity.status(204).build();

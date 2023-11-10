@@ -13,7 +13,7 @@ public interface TaskAttachmentService {
 	
 	public URL getAttachmentDownloadUrl(long attachmentId);
 	
-	public TaskAttachment createAttachment(MultipartFile file);
+	public TaskAttachment createAttachment(long taskId,MultipartFile file);
 	
 	public void deleteAttachment(long attachmentId);
 	

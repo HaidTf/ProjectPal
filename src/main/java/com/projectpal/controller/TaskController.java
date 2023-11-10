@@ -37,32 +37,39 @@ import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/userstories")
 @RequiredArgsConstructor
+@Slf4j
 public class TaskController {
 
 	private final TaskService taskService;
-	
+
 	private final TaskMapper taskMapper;
 
 	@GetMapping("/tasks/{taskId}")
-	public ResponseEntity<TaskResponseDto> getTask(@AuthenticationPrincipal User currentUser, @PathVariable long taskId) {
+	public ResponseEntity<TaskResponseDto> getTask(@AuthenticationPrincipal User currentUser,
+			@PathVariable long taskId) {
+
+		log.debug("API:GET/api/userstories/tasks/{} invoked", taskId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
-		TaskResponseDto taskDto = taskService.findTaskDtoByIdAndProject(taskId,currentUser.getProject());
+		TaskResponseDto taskDto = taskService.findTaskDtoByIdAndProject(taskId, currentUser.getProject());
 
 		return ResponseEntity.ok(taskDto);
 
 	}
 
 	@GetMapping("/{userStoryId}/tasks")
-	public ResponseEntity<ListHolderResponse<TaskResponseDto>> getUserStoryTaskList(@AuthenticationPrincipal User currentUser,
-			@PathVariable long userStoryId,
+	public ResponseEntity<ListHolderResponse<TaskResponseDto>> getUserStoryTaskList(
+			@AuthenticationPrincipal User currentUser, @PathVariable long userStoryId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
+
+		log.debug("API:GET/api/userstories/{}/tasks invoked", userStoryId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -73,10 +80,13 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PostMapping("/{userStoryId}/tasks")
-	public ResponseEntity<Task> createTask(@PathVariable long userStoryId, @Valid @RequestBody TaskCreationDto taskCreationDto) {
+	public ResponseEntity<Task> createTask(@PathVariable long userStoryId,
+			@Valid @RequestBody TaskCreationDto taskCreationDto) {
+
+		log.debug("API:POST/api/userstories/{}/tasks invoked", userStoryId);
 
 		Task task = taskMapper.toTask(taskCreationDto);
-		
+
 		taskService.createTask(userStoryId, task);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/userstories/tasks/" + task.getId()).build();
@@ -91,6 +101,8 @@ public class TaskController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long taskId) {
 
+		log.debug("API:PATCH/api/userstories/tasks/{}/description invoked", taskId);
+
 		taskService.updateDescription(taskId, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
@@ -101,6 +113,8 @@ public class TaskController {
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityUpdateRequest,
 			@PathVariable long taskId) {
 
+		log.debug("API:GET/api/userstories/tasks/{}/priority invoked", taskId);
+
 		taskService.updatePriority(taskId, priorityUpdateRequest.getPriority());
 
 		return ResponseEntity.status(204).build();
@@ -110,8 +124,9 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@PatchMapping("/tasks/{taskId}/progress")
 	public ResponseEntity<Void> updateProgress(
-			@RequestBody @Valid ProgressAndReportDto taskProgressAndReportUpdateRequest,
-			@PathVariable long taskId) {
+			@RequestBody @Valid ProgressAndReportDto taskProgressAndReportUpdateRequest, @PathVariable long taskId) {
+
+		log.debug("API:PATCH/api/userstories/tasks/{}/progress invoked", taskId);
 
 		taskService.updateProgressAndReport(taskId, taskProgressAndReportUpdateRequest.getProgress(),
 				taskProgressAndReportUpdateRequest.getReport());
@@ -121,8 +136,9 @@ public class TaskController {
 
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@PatchMapping("/tasks/{taskId}/assigned-user")
-	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdDto userIdHolder,
-			@PathVariable long taskId) {
+	public ResponseEntity<Void> updateAssignedUser(@RequestBody @Valid IdDto userIdHolder, @PathVariable long taskId) {
+
+		log.debug("API:PATCH/api/userstories/tasks/{}/assigned-user invoked", taskId);
 
 		taskService.updateAssignedUser(taskId, userIdHolder.getId());
 
@@ -133,6 +149,8 @@ public class TaskController {
 	@DeleteMapping("/tasks/{taskId}/assigned-user")
 	public ResponseEntity<Void> removeAssignedUser(@PathVariable long taskId) {
 
+		log.debug("API:DELETE/api/userstories/tasks/{}/assigned-user invoked", taskId);
+
 		taskService.removeTaskAssignedUser(taskId);
 
 		return ResponseEntity.status(204).build();
@@ -141,6 +159,8 @@ public class TaskController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/tasks/{taskId}")
 	public ResponseEntity<Void> deleteTask(@PathVariable long taskId) {
+
+		log.debug("API:DELETE/api/userstories/tasks/{} invoked", taskId);
 
 		taskService.deleteTask(taskId);
 

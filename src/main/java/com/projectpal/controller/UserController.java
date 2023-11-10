@@ -28,10 +28,12 @@ import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/users/me")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
 	private final UserService userService;
@@ -40,6 +42,9 @@ public class UserController {
 
 	@GetMapping("")
 	public ResponseEntity<User> getUser(@AuthenticationPrincipal User user) {
+
+		log.debug("API:GET/api/users/me invoked by User(id:{})", user.getId());
+
 		return ResponseEntity.ok(user);
 	}
 
@@ -48,8 +53,10 @@ public class UserController {
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@PageableDefault(page = 0, size = 20, sort = "priority", direction = Direction.DESC) Pageable pageable) {
 
+		log.debug("API:GET/api/users/me/tasks invoked by User(id:{})", user.getId());
+
 		ProjectMembershipValidator.verifyUserProjectMembership(user);
-		
+
 		Page<Task> tasks = taskService.findPageByUserAndProgressSet(user, progress, pageable);
 
 		return ResponseEntity.ok(new CustomPageResponse<Task>(tasks));
@@ -60,6 +67,8 @@ public class UserController {
 	public ResponseEntity<Void> updatePassword(@AuthenticationPrincipal User user,
 			@RequestBody @Valid PasswordDto passwordUpdateRequest) {
 
+		log.info("API:PATCH/api/users/me/password invoked by User(id:{})", user.getId());
+
 		userService.updateUserPassword(user, passwordUpdateRequest.getPassword());
 
 		return ResponseEntity.status(204).build();
@@ -68,6 +77,8 @@ public class UserController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR','USER_PROJECT_PARTICIPATOR')")
 	@DeleteMapping("/project/membership")
 	public ResponseEntity<Void> exitCurrentProject(@AuthenticationPrincipal User user) {
+
+		log.debug("API:DELETE/api/users/me/project/membership invoked by User(id:{})", user.getId());
 
 		userService.exitUserProject(user);
 

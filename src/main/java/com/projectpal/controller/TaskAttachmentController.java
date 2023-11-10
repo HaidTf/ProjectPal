@@ -23,16 +23,20 @@ import com.projectpal.entity.TaskAttachment;
 import com.projectpal.service.taskAttachment.TaskAttachmentService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
+@Slf4j
 public class TaskAttachmentController {
 
 	private final TaskAttachmentService taskAttachmentService;
 
 	@GetMapping("/{taskId}/attachments")
 	public ResponseEntity<ListHolderResponse<TaskAttachment>> getTaskAttachments(@PathVariable long taskId) {
+
+		log.debug("API:GET/tasks/{}/attachments invoked", taskId);
 
 		List<TaskAttachment> attachments = taskAttachmentService.findAttachmentsByTaskId(taskId);
 
@@ -43,15 +47,20 @@ public class TaskAttachmentController {
 	@GetMapping("/attachments/{attachmentId}")
 	public ResponseEntity<UrlResponseDto> getAttachmentDownloadUrl(@PathVariable long attachmentId) {
 
+		log.debug("API:GET/tasks/attachments/{} invoked", attachmentId);
+
 		URL url = taskAttachmentService.getAttachmentDownloadUrl(attachmentId);
 
 		return ResponseEntity.ok(new UrlResponseDto(url.toString()));
 	}
 
-	@PostMapping("/attachments")
-	public ResponseEntity<TaskAttachment> createAttachment(@RequestParam("file") MultipartFile file) {
+	@PostMapping("/{taskId}/attachments")
+	public ResponseEntity<TaskAttachment> createAttachment(@PathVariable long taskId,
+			@RequestParam("file") MultipartFile file) {
 
-		TaskAttachment attachment = taskAttachmentService.createAttachment(file);
+		log.debug("API:GET/tasks/{}/attachments invoked", taskId);
+
+		TaskAttachment attachment = taskAttachmentService.createAttachment(taskId, file);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/tasks/attachments/" + attachment.getId()).build();
 		URI location = uriComponents.toUri();
@@ -63,6 +72,8 @@ public class TaskAttachmentController {
 	@DeleteMapping("/attachments/{attachmentId}")
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	public ResponseEntity<Void> deleteAttachment(@PathVariable long attachmentId) {
+
+		log.debug("API:DELETE/tasks/attachments/{} invoked", attachmentId);
 
 		taskAttachmentService.deleteAttachment(attachmentId);
 
