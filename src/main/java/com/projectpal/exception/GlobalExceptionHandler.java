@@ -21,6 +21,7 @@ import com.projectpal.dto.response.exception.ValidationExceptionResponse;
 import com.projectpal.exception.client.BadRequestException;
 import com.projectpal.exception.client.ForbiddenException;
 import com.projectpal.exception.client.ResourceNotFoundException;
+import com.projectpal.exception.server.InternalServerErrorException;
 
 @ControllerAdvice({"com.projectpal.controller"})
 public class GlobalExceptionHandler {
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
 	// Default Exception Object
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
-		ex.printStackTrace(System.out);
+
 		return ResponseEntity.status(500).body(new ExceptionResponse(ex.getMessage()));
 	}
 
@@ -71,6 +72,14 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(403).body(new ExceptionResponse(ex.getMessage()));
 	}
 
+	// Raised Explicitly
+	
+	@ExceptionHandler(InternalServerErrorException.class)
+	public ResponseEntity<ExceptionResponse> handleException(InternalServerErrorException ex) {
+		
+		return ResponseEntity.status(500).body(new ExceptionResponse(ex.getMessage()));
+	}
+	
 	// Raised Explicitly
 
 	@ExceptionHandler(ResourceNotFoundException.class)
