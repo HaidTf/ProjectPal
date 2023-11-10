@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
 	// Raised when null request is received into a @RequestBody annotated method
 	// parameter
 
-	@ExceptionHandler({ HttpMessageNotReadableException.class, HttpMediaTypeNotSupportedException.class })
+	@ExceptionHandler( HttpMessageNotReadableException.class)
 	public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(Exception ex) {
 
 		log.debug("@RequestBody body not found Error: {}", ex.getMessage());
