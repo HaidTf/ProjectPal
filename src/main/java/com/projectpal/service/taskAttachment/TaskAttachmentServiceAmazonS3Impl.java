@@ -35,7 +35,7 @@ public class TaskAttachmentServiceAmazonS3Impl implements TaskAttachmentService 
 	}
 
 	@Override
-	public TaskAttachment createAttachment(MultipartFile file) {
+	public TaskAttachment createAttachment(long taskId,MultipartFile file) {
 
 		// TODO create TaskAttachment at DB level and save file in S3
 
