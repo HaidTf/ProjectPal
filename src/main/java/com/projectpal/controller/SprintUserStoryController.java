@@ -27,10 +27,12 @@ import com.projectpal.validation.ProjectMembershipValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/sprints/{sprintId}/userstories")
 @RequiredArgsConstructor
+@Slf4j
 public class SprintUserStoryController {
 
 	private final SprintUserStoryService sprintUserStoryService;
@@ -40,6 +42,8 @@ public class SprintUserStoryController {
 			@AuthenticationPrincipal User currentUser, @PathVariable long sprintId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
+
+		log.debug("API:GET/api/sprints/{}/userstories invoked", sprintId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -54,6 +58,8 @@ public class SprintUserStoryController {
 	public ResponseEntity<Void> addUserStoryToSprint(@PathVariable long sprintId,
 			@RequestBody @Valid IdDto userStoryIdHolder) {
 
+		log.debug("API:POST/api/sprints/{}/userstories invoked", sprintId);
+
 		sprintUserStoryService.addUserStoryToSprint(userStoryIdHolder.getId(), sprintId);
 
 		return ResponseEntity.status(204).build();
@@ -62,6 +68,8 @@ public class SprintUserStoryController {
 	@PreAuthorize("hasAnyRole('USER_PROJECT_OWNER','USER_PROJECT_OPERATOR')")
 	@DeleteMapping("/{userStoryId}")
 	public ResponseEntity<Void> removeUserStoryFromSprint(@PathVariable long sprintId, @PathVariable long userStoryId) {
+
+		log.debug("API:DELETE/api/sprints/{}/userstories/{} invoked", sprintId, userStoryId);
 
 		sprintUserStoryService.removeUserStoryFromSprint(userStoryId, sprintId);
 

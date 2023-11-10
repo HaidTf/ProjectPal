@@ -37,10 +37,12 @@ import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/project/epics")
 @RequiredArgsConstructor
+@Slf4j
 public class EpicController {
 
 	private final EpicService epicService;
@@ -49,6 +51,8 @@ public class EpicController {
 
 	@GetMapping("/{epicId}")
 	public ResponseEntity<Epic> getEpic(@AuthenticationPrincipal User currentUser, @PathVariable long epicId) {
+
+		log.debug("API:GET/api/project/epics/{} invoked", epicId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -62,6 +66,8 @@ public class EpicController {
 	public ResponseEntity<ListHolderResponse<Epic>> getEpics(@AuthenticationPrincipal User currentUser,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
+
+		log.debug("API:GET/api/project/epics invoked");
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -79,6 +85,8 @@ public class EpicController {
 	public ResponseEntity<Epic> createEpic(@AuthenticationPrincipal User currentUser,
 			@Valid @RequestBody EpicCreationDto epicCreationDto) {
 
+		log.debug("API:POST/api/project/epics invoked");
+		
 		Project project = currentUser.getProject();
 
 		Epic epic = epicMapper.toEpic(epicCreationDto);
@@ -96,6 +104,8 @@ public class EpicController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/epics/{}/description invoked", id);
+		
 		epicService.updateDescription(id, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
@@ -105,6 +115,8 @@ public class EpicController {
 	@PatchMapping("/{id}/priority")
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityHolder, @PathVariable long id) {
 
+		log.debug("API:PATCH/api/project/epics/{}/priority invoked", id);
+		
 		epicService.updatePriority(id, priorityHolder.getPriority());
 
 		return ResponseEntity.status(204).build();
@@ -115,6 +127,8 @@ public class EpicController {
 	@PatchMapping("/{id}/progress")
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long id) {
+		
+		log.debug("API:PATCH/api/project/epics/{}/progress invoked", id);
 
 		epicService.updateProgress(id, progressUpdateRequest.getProgress());
 
@@ -125,6 +139,8 @@ public class EpicController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteEpic(@PathVariable long id) {
 
+		log.debug("API:DELETE/api/project/epics/{} invoked", id);
+		
 		epicService.deleteEpic(id);
 
 		return ResponseEntity.status(204).build();

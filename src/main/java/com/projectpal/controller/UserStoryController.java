@@ -36,23 +36,27 @@ import com.projectpal.validation.SortObjectValidator;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/epics")
 @RequiredArgsConstructor
+@Slf4j
 public class UserStoryController {
 
 	private final UserStoryService userStoryService;
-	
+
 	private final UserStoryMapper userStoryMapper;
 
 	@GetMapping("/userstories/{userStoryId}")
 	public ResponseEntity<UserStory> getUserStory(@AuthenticationPrincipal User currentUser,
 			@PathVariable long userStoryId) {
 
+		log.debug("API:GET/api/epics/userstories/{} invoked", userStoryId);
+
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
-		UserStory userStory = userStoryService.findUserStoryByIdAndEpicProject(userStoryId,currentUser.getProject());
+		UserStory userStory = userStoryService.findUserStoryByIdAndEpicProject(userStoryId, currentUser.getProject());
 
 		return ResponseEntity.ok(userStory);
 
@@ -63,6 +67,8 @@ public class UserStoryController {
 			@PathVariable long epicId,
 			@RequestParam(required = false, defaultValue = "TODO,INPROGRESS") Set<Progress> progress,
 			@SortDefault(sort = "priority", direction = Sort.Direction.DESC) Sort sort) {
+
+		log.debug("API:GET/api/epics/{}/userstories invoked", epicId);
 
 		ProjectMembershipValidator.verifyUserProjectMembership(currentUser);
 
@@ -80,8 +86,10 @@ public class UserStoryController {
 	public ResponseEntity<UserStory> createUserStory(@Valid @RequestBody UserStoryCreationDto userStoryCreationDto,
 			@PathVariable long epicId) {
 
-		UserStory userStory = userStoryMapper.toUserStory(userStoryCreationDto);
+		log.debug("API:POST/api/epics/{}/userstories invoked", epicId);
 		
+		UserStory userStory = userStoryMapper.toUserStory(userStoryCreationDto);
+
 		userStoryService.createUserStory(epicId, userStory);
 
 		UriComponents uriComponents = UriComponentsBuilder.fromPath("/api/epics/userstories/" + userStory.getId())
@@ -96,6 +104,8 @@ public class UserStoryController {
 	public ResponseEntity<Void> updateDescription(@RequestBody DescriptionDto descriptionUpdateRequest,
 			@PathVariable long userStoryId) {
 
+		log.debug("API:PATCH/api/epics/userstories/{}/description invoked", userStoryId);
+		
 		userStoryService.updateDescription(userStoryId, descriptionUpdateRequest.getDescription());
 
 		return ResponseEntity.status(204).build();
@@ -106,6 +116,8 @@ public class UserStoryController {
 	public ResponseEntity<Void> updatePriority(@RequestBody @Valid PriorityDto priorityUpdateRequest,
 			@PathVariable long userStoryId) {
 
+		log.debug("API:PATCH/api/epics/userstories/{}/priority invoked", userStoryId);
+		
 		userStoryService.updatePriority(userStoryId, priorityUpdateRequest.getPriority());
 
 		return ResponseEntity.status(204).build();
@@ -117,6 +129,8 @@ public class UserStoryController {
 	public ResponseEntity<Void> updateProgress(@RequestBody @Valid ProgressDto progressUpdateRequest,
 			@PathVariable long userStoryId) {
 
+		log.debug("API:PATCH/api/epics/userstories/{}/progress invoked", userStoryId);
+		
 		userStoryService.updateProgress(userStoryId, progressUpdateRequest.getProgress());
 
 		return ResponseEntity.status(204).build();
@@ -126,6 +140,8 @@ public class UserStoryController {
 	@DeleteMapping("/userstories/{userStoryId}")
 	public ResponseEntity<Void> deleteUserStory(@PathVariable long userStoryId) {
 
+		log.debug("API:DELETE/api/epics/userstories/{} invoked", userStoryId);
+		
 		userStoryService.deleteUserStory(userStoryId);
 
 		return ResponseEntity.status(204).build();
