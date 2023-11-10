@@ -46,8 +46,8 @@ public class SecurityConfig {
 						.xssProtection(
 								xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
 						.contentSecurityPolicy("default-src 'self'"))
-				.authorizeHttpRequests().requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/error")
-				.permitAll().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.authorizeHttpRequests().requestMatchers("/auth/**", "/docs/**", "/error").permitAll().and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).formLogin().disable()
 				.httpBasic().disable().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
@@ -66,8 +66,8 @@ public class SecurityConfig {
 								xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
 						.contentSecurityPolicy("default-src 'self'"))
 				.authorizeHttpRequests().requestMatchers("/auth/**", "/error").permitAll()
-				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/admin").hasAnyRole("ADMIN", "SUPER_ADMIN")
-				.anyRequest().authenticated().and().sessionManagement()
+				.requestMatchers("/v3/api-docs/**", "/docs", "/swagger-ui/**", "/admin")
+				.hasAnyRole("ADMIN", "SUPER_ADMIN").anyRequest().authenticated().and().sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).exceptionHandling()
