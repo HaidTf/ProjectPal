@@ -52,7 +52,6 @@ public class Announcement {
 	@Temporal(TemporalType.DATE)
 	@CreatedDate
 	@Setter(AccessLevel.NONE)
-	@Column(nullable = false)
 	private LocalDate issueDate;
 
 	@ManyToOne

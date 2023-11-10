@@ -89,7 +89,6 @@ public class Task implements Serializable {
 	@Temporal(TemporalType.DATE)
 	@CreatedDate
 	@Setter(AccessLevel.NONE)
-	@Column(nullable = false)
 	private LocalDate creationDate;
 
 	@ManyToOne
