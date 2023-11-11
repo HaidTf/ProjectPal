@@ -9,17 +9,19 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisCacheServiceImpl<T> implements CacheService<T> {
 
 	@PostConstruct
-	private void clearCacheAndSetTransactionAware() {
+	private void clearCache() {
 		try {
 			redis.getCacheNames().forEach(cacheName -> redis.getCache(cacheName).clear());
 		} catch (Exception ex) {
-
+			log.warn("Cache: Cache clearing failed; {}", ex.getMessage());
 		}
 	}
 
@@ -34,6 +36,9 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 			objects = redis.getCache(cacheName).get(cacheKey, List.class);
 
 		} catch (Exception ex) {
+
+			log.warn("Cache: List retrieval failed for {} cache with {} key; {}", cacheName, cacheKey, ex.getMessage());
+
 			return Optional.empty();
 		}
 
@@ -45,6 +50,8 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 		try {
 			redis.getCache(cacheName).putIfAbsent(cacheKey, objects);
 		} catch (Exception ex) {
+			log.warn("Cache: List storage in cache of name {} and key {} failed; ", cacheName, cacheKey,
+					ex.getMessage());
 		}
 	}
 
@@ -62,6 +69,10 @@ public class RedisCacheServiceImpl<T> implements CacheService<T> {
 			}
 
 		} catch (Exception ex) {
+
+			log.error("Cache: Failed to add object to List in Cache of name {} and key {}; {}", cacheName, cacheKey,
+					ex.getMessage());
+
 			Cache cache = redis.getCache(cacheName);
 			if (cache != null)
 				cache.evictIfPresent(cacheKey);
