@@ -22,9 +22,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
@@ -44,12 +46,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		final String uri = request.getRequestURI();
 
 		if (uri.startsWith("/api/auth/") || uri.startsWith("/api/docs")) {
+
+			log.debug("JwtAuthenticationFilter allows passage of request due to uri prefix");
+
 			filterChain.doFilter(request, response);
 			return;
 
 		}
 
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+
+			log.debug(
+					"Jwt Authentication failed: No Jwt token is in the Authorization header; request commenced to AuthenticationEntryPoint");
 
 			authEntryPoint.commence(request, response, new CustomAuthenticationException(
 					"Jwt Authentication failed: No Jwt token is in the Authorization header"));
@@ -63,11 +71,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			userEmail = jwtService.extractEmail(jwt);
 
 		} catch (IndexOutOfBoundsException ex) {
+			
+			log.debug(
+					"Jwt Authentication failed: No Jwt token is in the Authorization header; request commenced to AuthenticationEntryPoint");
+			
 			authEntryPoint.commence(request, response, new CustomAuthenticationException(
 					"Jwt Authentication failed: No Jwt token is in the Authorization header", ex));
 			return;
 
 		} catch (ExpiredJwtException ex) {
+			
+			log.debug(
+					"Jwt Authentication failed: Jwt token is expired; request commenced to AuthenticationEntryPoint");
+			
 			authEntryPoint.commence(request, response,
 					new CustomAuthenticationException("Jwt Authentication failed: Jwt token is expired", ex));
 			return;
@@ -84,6 +100,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			} catch (UsernameNotFoundException ex) {
 
+				log.debug(
+						"Jwt Authentication failed: User not found; request commenced to AuthenticationEntryPoint");
+				
 				authEntryPoint.commence(request, response,
 						new CustomAuthenticationException("Jwt Authentication failed: User not found", ex));
 				return;
@@ -96,6 +115,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						null, userDetails.getAuthorities());
 				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authToken);
+				
+				log.debug("Jwt authentication success, security context populated");
 			}
 		}
 		filterChain.doFilter(request, response);
